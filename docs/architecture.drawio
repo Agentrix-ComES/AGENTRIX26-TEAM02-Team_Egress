@@ -1,0 +1,268 @@
+<mxfile host="app.diagrams.net" agent="Claude" version="24.0.0">
+  <diagram id="trip-agentic-architecture" name="Trip Agentic Architecture">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ============ USER CHANNELS ============ -->
+        <mxCell id="grpChannels" value="User Channels" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontSize=14;fontStyle=1;align=left;spacingLeft=15;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="120" y="40" width="1460" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="UWeb" value="Web / Mobile App" style="shape=mxgraph.android.phone2;html=1;whiteSpace=wrap;labelPosition=right;align=left;verticalAlign=middle;spacingLeft=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="80" width="55" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="UChat" value="WhatsApp / Telegram Bot" style="shape=mxgraph.gcp2.chat;html=1;fillColor=#1A73E8;strokeColor=#ffffff;labelPosition=right;align=left;verticalAlign=middle;spacingLeft=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="700" y="90" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="UAdmin" value="Admin / Partner Console" style="shape=mxgraph.mscae.general.user;html=1;labelPosition=right;align=left;verticalAlign=middle;spacingLeft=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="85" width="55" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- ============ API GATEWAY ============ -->
+        <mxCell id="APIGW" value="API Gateway / Backend Router" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;fontStyle=1;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="640" y="220" width="420" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ============ AGENTIC BACKEND ============ -->
+        <mxCell id="grpAgentic" value="Agentic Backend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;fontSize=14;fontStyle=1;align=left;spacingLeft=15;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="120" y="320" width="1460" height="340" as="geometry" />
+        </mxCell>
+
+        <mxCell id="Orchestrator" value="Trip Orchestrator Agent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="640" y="355" width="420" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Specialized Agents subgroup -->
+        <mxCell id="grpAgents" value="Specialized Agents" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f0fa;strokeColor=#9673a6;verticalAlign=top;fontSize=12;fontStyle=1;align=left;spacingLeft=10;spacingTop=5;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="150" y="450" width="800" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="PlannerA" value="Planner Agent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="170" y="510" width="170" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="LogisticsA" value="Logistics Agent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="510" width="170" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="DisruptionA" value="Disruption Agent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="550" y="510" width="170" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="CultureA" value="Culture &amp; Etiquette Agent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="740" y="510" width="190" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Memory &amp; State subgroup -->
+        <mxCell id="grpState" value="Memory &amp; State" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;fontSize=12;fontStyle=1;align=left;spacingLeft=10;spacingTop=5;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="990" y="450" width="560" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="TripDB" value="Trip DB&#xa;(Postgres)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="510" width="170" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="VecDB" value="Vector DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="510" width="170" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- ============ DOMAIN SERVICES ============ -->
+        <mxCell id="grpDomain" value="Domain Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;fontSize=14;fontStyle=1;align=left;spacingLeft=15;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="120" y="700" width="1460" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ItinSvc" value="Itinerary&#xa;Optimizer Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="770" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="RouteSvc" value="Routing &amp;&#xa;Transport Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="390" y="770" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ClimateSvc" value="Climate &amp;&#xa;Seasonality Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="770" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="EventSvc" value="Events &amp;&#xa;Festivals Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="770" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="CultureSvc" value="Cultural&#xa;Knowledge Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="770" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="GraphDB" value="Graph DB&#xa;(Routes)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="770" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- ============ EXTERNAL APIS ============ -->
+        <mxCell id="grpExternal" value="External APIs &amp; Feeds" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;fontSize=14;fontStyle=1;align=left;spacingLeft=15;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="120" y="950" width="1460" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="WeatherAPI" value="Weather &amp;&#xa;Advisories APIs" style="shape=mxgraph.networking.cloud;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;verticalLabelPosition=middle;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="180" y="1010" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="MapsAPI" value="Maps / Geocoding /&#xa;Routing APIs" style="shape=mxgraph.networking.cloud;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;verticalLabelPosition=middle;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="490" y="1010" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="TransportAPI" value="Train / Bus /&#xa;Park Status Feeds" style="shape=mxgraph.networking.cloud;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;verticalLabelPosition=middle;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="800" y="1010" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="TourismAPI" value="Official Tourism &amp;&#xa;Cultural Content" style="shape=mxgraph.networking.cloud;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;verticalLabelPosition=middle;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="1010" width="220" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- ============ EDGES ============ -->
+        <!-- Channels -> APIGW -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1.5;" edge="1" parent="1" source="UWeb" target="APIGW">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1.5;" edge="1" parent="1" source="UChat" target="APIGW">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1.5;" edge="1" parent="1" source="UAdmin" target="APIGW">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- APIGW -> Orchestrator -->
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d79b00;strokeWidth=2;" edge="1" parent="1" source="APIGW" target="Orchestrator">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Orchestrator -> Agents -->
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#b85450;strokeWidth=1.5;" edge="1" parent="1" source="Orchestrator" target="PlannerA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#b85450;strokeWidth=1.5;" edge="1" parent="1" source="Orchestrator" target="LogisticsA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#b85450;strokeWidth=1.5;" edge="1" parent="1" source="Orchestrator" target="DisruptionA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#b85450;strokeWidth=1.5;" edge="1" parent="1" source="Orchestrator" target="CultureA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Orchestrator <-> State -->
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;strokeColor=#6c8ebf;strokeWidth=1.5;dashed=0;" edge="1" parent="1" source="Orchestrator" target="TripDB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;strokeColor=#6c8ebf;strokeWidth=1.5;" edge="1" parent="1" source="Orchestrator" target="VecDB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Planner -> Domain -->
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;" edge="1" parent="1" source="PlannerA" target="ItinSvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;" edge="1" parent="1" source="PlannerA" target="ClimateSvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;" edge="1" parent="1" source="PlannerA" target="EventSvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Logistics -> Domain -->
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;" edge="1" parent="1" source="LogisticsA" target="RouteSvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;" edge="1" parent="1" source="LogisticsA" target="ItinSvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Disruption -> Domain -->
+        <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;" edge="1" parent="1" source="DisruptionA" target="ItinSvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;" edge="1" parent="1" source="DisruptionA" target="ClimateSvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;" edge="1" parent="1" source="DisruptionA" target="EventSvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Culture -> Domain -->
+        <mxCell id="e19" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;" edge="1" parent="1" source="CultureA" target="CultureSvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e20" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;" edge="1" parent="1" source="CultureA" target="EventSvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Route -> GraphDB -->
+        <mxCell id="e21" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1.5;" edge="1" parent="1" source="RouteSvc" target="GraphDB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Domain -> External -->
+        <mxCell id="e22" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;" edge="1" parent="1" source="ClimateSvc" target="WeatherAPI">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e23" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;" edge="1" parent="1" source="ItinSvc" target="WeatherAPI">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e24" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;" edge="1" parent="1" source="RouteSvc" target="MapsAPI">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e25" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;" edge="1" parent="1" source="RouteSvc" target="TransportAPI">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e26" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;" edge="1" parent="1" source="EventSvc" target="TransportAPI">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e27" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;" edge="1" parent="1" source="EventSvc" target="TourismAPI">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e28" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;" edge="1" parent="1" source="CultureSvc" target="TourismAPI">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Domain -> Persistence (dashed to avoid clutter) -->
+        <mxCell id="e29" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="ItinSvc" target="TripDB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e30" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="RouteSvc" target="TripDB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e31" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="ClimateSvc" target="TripDB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="EventSvc" target="TripDB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e33" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="CultureSvc" target="TripDB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e34" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#9673a6;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="ItinSvc" target="VecDB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e35" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#9673a6;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="CultureSvc" target="VecDB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="Legend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;verticalAlign=top;fontSize=11;fontStyle=1;align=left;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1610" y="40" width="80" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="legSolid" value="Call / Invoke" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1620" y="70" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legSolidLine" style="endArrow=block;html=1;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1620" y="95" as="sourcePoint" />
+            <mxPoint x="1680" y="95" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legDash" value="Persistence" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1620" y="110" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legDashLine" style="endArrow=block;html=1;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1620" y="135" as="sourcePoint" />
+            <mxPoint x="1680" y="135" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legBi" value="Read / Write" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1620" y="150" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legBiLine" style="startArrow=classic;endArrow=classic;html=1;strokeColor=#6c8ebf;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1620" y="175" as="sourcePoint" />
+            <mxPoint x="1680" y="175" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
