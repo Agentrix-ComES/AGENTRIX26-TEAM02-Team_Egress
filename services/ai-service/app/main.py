@@ -9,8 +9,10 @@ from app.core.config import settings
 from app.core.langsmith import configure_langsmith
 from app.db.neo4j import close_neo4j, verify_neo4j
 from app.db.qdrant import close_qdrant, init_qdrant
+from app.db.redis import close_redis, verify_redis
 from app.db.session import close_db, init_db
 from app.graph.checkpointer import close_checkpointer, init_checkpointer
+from app.providers.base import close_http_client
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(settings.service_name)
@@ -18,6 +20,7 @@ logger = logging.getLogger(settings.service_name)
 TAGS_METADATA = [
     {"name": "chat", "description": "Plan, modify, and converse about trips in one endpoint."},
     {"name": "conversations", "description": "Read conversation history and the current itinerary."},
+    {"name": "data", "description": "Real-time weather and OpenStreetMap content ingestion into Qdrant."},
     {"name": "llm-config", "description": "Manage LLM provider/model parameters."},
     {"name": "health", "description": "Service liveness checks."},
 ]
@@ -30,12 +33,15 @@ async def lifespan(app: FastAPI):
     await init_db()
     await init_qdrant()
     await verify_neo4j()
+    await verify_redis()
     await init_checkpointer()
     logger.info("%s startup complete", settings.service_name)
     try:
         yield
     finally:
         await close_checkpointer()
+        await close_http_client()
+        await close_redis()
         await close_neo4j()
         await close_qdrant()
         await close_db()
