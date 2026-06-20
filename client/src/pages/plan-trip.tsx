@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowRight, Loader2, Sparkles, Wand2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
+import { toast } from "sonner";
+import { Loader2, Sparkles, Wand2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { sendChat, itineraryToTrip } from "@/lib/api";
 
 const interestOptions = [
   "Culture",
@@ -23,20 +26,62 @@ const interestOptions = [
 ];
 
 export function PlanTripPage() {
+  const { getToken } = useAuth();
+  const navigate = useNavigate();
   const [interests, setInterests] = useState<string[]>(["Culture", "Trains"]);
   const [generating, setGenerating] = useState(false);
-  const [done, setDone] = useState(false);
 
   const toggle = (i: string) =>
     setInterests((cur) => (cur.includes(i) ? cur.filter((x) => x !== i) : [...cur, i]));
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const title = String(fd.get("title") ?? "Sri Lanka trip");
+    const start = String(fd.get("start") ?? "");
+    const end = String(fd.get("end") ?? "");
+    const travelers = Number(fd.get("travelers") ?? 1);
+    const budget = Number(fd.get("budget") ?? 0);
+    const pace = String(fd.get("pace") ?? "balanced");
+    const notes = String(fd.get("notes") ?? "");
+
+    const message = [
+      `Plan a ${pace} trip titled "${title}" from ${start} to ${end} in Sri Lanka.`,
+      `${travelers} traveller(s), budget USD ${budget}.`,
+      interests.length ? `Interests: ${interests.join(", ")}.` : "",
+      notes ? `Additional notes: ${notes}` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
     setGenerating(true);
-    setTimeout(() => {
+    try {
+      const res = await sendChat(getToken, {
+        message,
+        preferences: interests,
+        start_date: start || undefined,
+        end_date: end || undefined,
+      });
+      const trip = res.itinerary
+        ? itineraryToTrip(res.itinerary, {
+            id: res.conversation_id,
+            title,
+            preferences: interests,
+          })
+        : undefined;
+      navigate("/workspace", {
+        state: {
+          conversationId: res.conversation_id,
+          trip: trip ? { ...trip, travelers, budget } : undefined,
+          initialReply: res.reply,
+        },
+      });
+    } catch (err) {
+      console.error("Plan request failed", err);
+      toast.error("Couldn't generate the timeline. Please try again.");
+    } finally {
       setGenerating(false);
-      setDone(true);
-    }, 1400);
+    }
   };
 
   return (
@@ -58,30 +103,30 @@ export function PlanTripPage() {
             <form onSubmit={submit} className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="title">Trip title</Label>
-                <Input id="title" placeholder="e.g. Hill country & temples" defaultValue="Sri Lanka Heritage & Hills" />
+                <Input id="title" name="title" placeholder="e.g. Hill country & temples" defaultValue="Sri Lanka Heritage & Hills" />
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="start">Start date</Label>
-                  <Input id="start" type="date" defaultValue="2026-07-12" />
+                  <Input id="start" name="start" type="date" defaultValue="2026-07-12" />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="end">End date</Label>
-                  <Input id="end" type="date" defaultValue="2026-07-19" />
+                  <Input id="end" name="end" type="date" defaultValue="2026-07-19" />
                 </div>
               </div>
               <div className="grid sm:grid-cols-3 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="travelers">Travelers</Label>
-                  <Input id="travelers" type="number" min={1} defaultValue={2} />
+                  <Input id="travelers" name="travelers" type="number" min={1} defaultValue={2} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="budget">Budget (USD)</Label>
-                  <Input id="budget" type="number" min={0} defaultValue={2400} />
+                  <Input id="budget" name="budget" type="number" min={0} defaultValue={2400} />
                 </div>
                 <div className="grid gap-2">
                   <Label>Pace</Label>
-                  <Select defaultValue="balanced">
+                  <Select name="pace" defaultValue="balanced">
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -120,6 +165,7 @@ export function PlanTripPage() {
                 <Label htmlFor="notes">Anything else?</Label>
                 <Textarea
                   id="notes"
+                  name="notes"
                   placeholder="Dietary needs, accessibility, must-see places, things to avoid…"
                   rows={4}
                 />
@@ -136,13 +182,6 @@ export function PlanTripPage() {
                     </>
                   )}
                 </Button>
-                {done && (
-                  <Button asChild variant="outline">
-                    <Link to="/timeline">
-                      Open timeline <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                )}
               </div>
             </form>
           </CardContent>
