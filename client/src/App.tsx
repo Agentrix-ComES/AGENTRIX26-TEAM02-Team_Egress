@@ -23,6 +23,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   );
 }
 
+function RootRoute() {
+  return (
+    <>
+      <SignedOut><LandingPage /></SignedOut>
+      <SignedIn><Navigate to="/app" replace /></SignedIn>
+    </>
+  );
+}
+
 import { Toaster } from "sonner";
 
 export default function App() {
@@ -32,12 +41,12 @@ export default function App() {
       <BrowserRouter>
         <AuthSync />
         <Routes>
-          <Route path="/welcome" element={<LandingPage />} />
+          <Route path="/" element={<RootRoute />} />
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
-          
+
           <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
-            <Route path="/" element={<OverviewPage />} />
+            <Route path="/app" element={<OverviewPage />} />
             <Route path="/plan" element={<PlanTripPage />} />
             <Route path="/workspace" element={<WorkspacePage />} />
             <Route path="/chat" element={<Navigate to="/workspace" replace />} />
