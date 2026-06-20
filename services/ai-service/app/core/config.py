@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     ingest_max_hotels: int = Field(default=500)
     ingest_max_activities: int = Field(default=800)
     ingest_max_transport: int = Field(default=300)
+    ingest_max_dining: int = Field(default=600)
     # Rule-based quality gates (rule-based, no AI involved).
     # POI must have at least this many OSM tags to be considered useful.
     ingest_min_tags: int = Field(default=3)
@@ -96,6 +97,9 @@ class Settings(BaseSettings):
     weather_api_key: str | None = Field(default=None)
     transport_api_key: str | None = Field(default=None)
     tourism_api_key: str | None = Field(default=None)
+    # The Guardian Open Platform — free key at https://open-platform.theguardian.com/access/
+    # Falls back to "test" key (anonymous, 1 req/s) when not set.
+    guardian_api_key: str | None = Field(default=None)
 
     # --- Real-time data providers (free sources) ---
     # Open-Meteo: forecast + geocoding, no API key required.
@@ -139,6 +143,8 @@ class Settings(BaseSettings):
     cache_ttl_geocode: int = Field(default=2592000)    # 30 days
     cache_ttl_places: int = Field(default=86400)       # 1 day
     cache_ttl_routing: int = Field(default=86400)      # 1 day
+    cache_ttl_news_alerts: int = Field(default=900)    # 15 min — news is time-sensitive
+    cache_ttl_travel_advisory: int = Field(default=21600)  # 6 hours
 
     @property
     def postgres_dsn(self) -> str:

@@ -17,7 +17,7 @@ from qdrant_client.http import models as qmodels
 
 from app.core.config import settings
 from app.db.qdrant import get_qdrant
-from app.db.qdrant_collections import ACTIVITIES, HOTELS, TRANSPORT, collection_name
+from app.db.qdrant_collections import ACTIVITIES, DINING, HOTELS, TRANSPORT, collection_name
 from app.graph.llm import get_embeddings
 from app.providers import images_wikimedia as images
 from app.providers import osm_overpass as osm
@@ -33,6 +33,7 @@ _CATEGORY_TO_COLLECTION: dict[Category, str] = {
     "hotels": HOTELS,
     "activities": ACTIVITIES,
     "transport": TRANSPORT,
+    "dining": DINING,
 }
 
 # Deterministic namespace so the same OSM id always maps to the same point id.
@@ -43,6 +44,7 @@ _CATEGORY_CAPS: dict[str, int] = {
     "hotels": settings.ingest_max_hotels,
     "activities": settings.ingest_max_activities,
     "transport": settings.ingest_max_transport,
+    "dining": settings.ingest_max_dining,
 }
 
 # --------------------------------------------------------------------------
@@ -76,6 +78,8 @@ def _quality_score(poi: dict[str, Any], category: Category) -> int:
     elif category == "activities" and (poi.get("activity_category") or poi.get("subtype")):
         score += 1
     elif category == "transport" and poi.get("mode"):
+        score += 1
+    elif category == "dining" and (poi.get("venue_type") or poi.get("cuisine")):
         score += 1
     return score
 
@@ -162,10 +166,31 @@ def _transport_document(poi: dict[str, Any]) -> str:
     return " ".join(sentences)
 
 
+def _dining_document(poi: dict[str, Any]) -> str:
+    """Natural-language description of a dining venue for embedding."""
+    name = poi.get("name", "This place")
+    venue = poi.get("venue_type") or "eatery"
+    cuisine = poi.get("cuisine")
+    cuisine_str = f" serving {cuisine} cuisine" if cuisine else ""
+    sentences = [f"{name} is a {venue}{cuisine_str} {_location_phrase(poi)}."]
+    if poi.get("description"):
+        sentences.append(str(poi["description"]).rstrip(".") + ".")
+    dietary = poi.get("dietary")
+    if dietary:
+        options = ", ".join(dietary) if isinstance(dietary, list) else dietary
+        sentences.append(f"Dietary options available: {options}.")
+    if poi.get("price_tier"):
+        sentences.append(f"It is a {poi['price_tier']} option.")
+    if poi.get("opening_hours"):
+        sentences.append(f"Opening hours: {poi['opening_hours']}.")
+    return " ".join(sentences)
+
+
 _DOCUMENT_BUILDERS = {
     "hotels": _hotel_document,
     "activities": _activity_document,
     "transport": _transport_document,
+    "dining": _dining_document,
 }
 
 
@@ -226,6 +251,16 @@ def _payload(poi: dict[str, Any], category: Category, content: str) -> dict[str,
                 "activity_category": poi.get("activity_category"),
                 "indoor_outdoor": poi.get("indoor_outdoor"),
                 "fee": poi.get("fee"),
+            }
+        )
+    elif category == "dining":
+        payload.update(
+            {
+                "venue_type": poi.get("venue_type"),
+                "cuisine": poi.get("cuisine"),
+                "dietary": poi.get("dietary"),
+                "takeaway": poi.get("takeaway"),
+                "price_tier": poi.get("price_tier"),
             }
         )
     else:  # transport
@@ -319,8 +354,8 @@ async def ingest_category(category: Category, *, limit: int = 200) -> dict[str, 
 
 
 async def ingest_all(*, limit: int = 200) -> dict[str, Any]:
-    """Ingest hotels, activities and transport for Sri Lanka."""
+    """Ingest hotels, activities, transport and dining for Sri Lanka."""
     results = {}
-    for category in ("hotels", "activities", "transport"):
+    for category in ("hotels", "activities", "transport", "dining"):
         results[category] = await ingest_category(category, limit=limit)  # type: ignore[arg-type]
     return {"results": results}

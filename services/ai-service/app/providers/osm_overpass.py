@@ -17,7 +17,7 @@ from app.providers.base import fetch_json
 
 logger = logging.getLogger(__name__)
 
-Category = Literal["hotels", "activities", "transport"]
+Category = Literal["hotels", "activities", "transport", "dining"]
 
 # Overpass tag filters per content category. Each entry produces node/way/relation
 # selectors over the Sri Lanka bounding box.
@@ -52,6 +52,15 @@ _TAG_FILTERS: dict[Category, list[str]] = {
         'highway=bus_stop',
         'aeroway=aerodrome',
         'amenity=ferry_terminal',
+    ],
+    "dining": [
+        'amenity=restaurant',
+        'amenity=cafe',
+        'amenity=fast_food',
+        'amenity=food_court',
+        'amenity=bar',
+        'amenity=pub',
+        'tourism=restaurant',
     ],
 }
 
@@ -147,6 +156,21 @@ def _category_details(tags: dict[str, Any], category: Category) -> dict[str, Any
             "indoor_outdoor": "outdoor" if subtype in outdoor_subtypes else "indoor",
             "fee": tags.get("fee"),
             "opening_hours": tags.get("opening_hours"),
+        }
+    if category == "dining":
+        amenity = tags.get("amenity") or tags.get("tourism")
+        cuisine = tags.get("cuisine")
+        dietary: list[str] = []
+        for key in ("diet:vegetarian", "diet:vegan", "diet:halal", "diet:kosher"):
+            if tags.get(key) in ("yes", "only"):
+                dietary.append(key.split(":", 1)[1])
+        return {
+            "venue_type": amenity,
+            "cuisine": cuisine,
+            "dietary": dietary or None,
+            "takeaway": tags.get("takeaway"),
+            "opening_hours": tags.get("opening_hours"),
+            "price_tier": _price_tier(tags),
         }
     # transport
     mode_map = {

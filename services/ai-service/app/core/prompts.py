@@ -28,7 +28,11 @@ hotel, activity, transport, or meal. Place hotels sensibly, group nearby activit
 add realistic transport between locations. If an existing itinerary is provided, preserve
 what still works and change only what is necessary.
 When a weather outlook is provided, avoid placing weather-sensitive outdoor activities
-(hikes, safaris, beach visits, open-air tours) on days marked wet or severe. Return structured days."""
+(hikes, safaris, beach visits, open-air tours) on days marked wet or severe.
+IMPORTANT: For every item in the itinerary, look up the matching record in the retrieved
+context (match by name or location) and copy its ``image_url`` and ``website`` values
+directly into the item's ``image_url`` and ``website`` fields. Never invent or guess URLs.
+If no matching record exists in the context, leave those fields null. Return structured days."""
 
 LOGISTICS_SYSTEM_PROMPT = """You are a logistics agent. Given an itinerary and available
 route options from the graph database, validate travel times and transport connections

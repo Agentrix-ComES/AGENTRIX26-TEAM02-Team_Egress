@@ -18,6 +18,10 @@ class GraphState(TypedDict, total=False):
     retrieved: list[dict[str, Any]]
     routes: list[dict[str, Any]]
     weather: dict[str, Any] | None
+    # Live travel alerts (Guardian news, GDACS, US State Dept advisory).
+    # Fetched once per planning run and injected into the disruption + planner
+    # prompts so decisions reflect real-world conditions.
+    live_alerts: dict[str, Any] | None
     itinerary: dict[str, Any]
     disruption: dict[str, Any] | None
     disruption_analysis: str
