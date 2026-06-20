@@ -65,9 +65,16 @@ async def retrieve(state: GraphState) -> GraphState:
     intent = state.get("intent", "plan")
     collections = _COLLECTIONS_BY_INTENT.get(intent, _DEFAULT_COLLECTIONS)
 
-    # Lightly bias results to the destination city when we know it. City is a
-    # keyword-indexed payload field on hotels/activities/dining/events.
-    filters: Filters | None = None
+    # Bias results to the destination city when we know it.
+    # City is a keyword-indexed payload field on hotels/activities/dining/events.
+    # Culture and transport collections use region/origin not city, so we skip
+    # the filter for those to avoid excluding useful results.
+    _CITY_FILTERABLE = {HOTELS, ACTIVITIES, DINING, EVENTS}
+    filters: Filters | None = (
+        {"city": destination}
+        if destination and any(c in _CITY_FILTERABLE for c in collections)
+        else None
+    )
 
     grouped = await multi_search(query, collections=collections, filters=filters)
 

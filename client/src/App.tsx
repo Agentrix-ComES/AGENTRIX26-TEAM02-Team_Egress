@@ -1,35 +1,47 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
-import { Toaster } from "sonner";
-import { ThemeProvider } from "@/hooks/use-theme";
-import { CurrentUserProvider, useCurrentUser } from "@/hooks/use-current-user";
-import { AppShell } from "@/components/layout/app-shell";
 import { AdminShell } from "@/components/layout/admin-shell";
+import { AppShell } from "@/components/layout/app-shell";
+import { CurrentUserProvider, useCurrentUser } from "@/hooks/use-current-user";
+import { ThemeProvider } from "@/hooks/use-theme";
+import { AdminPage } from "@/pages/admin";
+import { AdminSignInPage } from "@/pages/admin-sign-in";
+import { AdminDestinationsPage } from "@/pages/admin/destinations";
+import { AdminProductsPage } from "@/pages/admin/products";
+import { AdminRegionDetailPage } from "@/pages/admin/region-detail";
+import { AdminServicesPage } from "@/pages/admin/services";
+import { AdminUsersPage } from "@/pages/admin/users";
+import { TripsPage } from "@/pages/trips";
+import { TripDetailPage } from "@/pages/trips/detail";
+import { AlertsPage } from "@/pages/alerts";
+import { BotPreviewPage } from "@/pages/bot-preview";
 import { LandingPage } from "@/pages/landing";
 import { OverviewPage } from "@/pages/overview";
 import { PlanTripPage } from "@/pages/plan-trip";
-import { WorkspacePage } from "@/pages/workspace";
-import { AlertsPage } from "@/pages/alerts";
-import { BotPreviewPage } from "@/pages/bot-preview";
-import { AdminPage } from "@/pages/admin";
-import { AdminUsersPage } from "@/pages/admin/users";
-import { AdminServicesPage } from "@/pages/admin/services";
-import { AdminProductsPage } from "@/pages/admin/products";
 import { SettingsPage } from "@/pages/settings";
 import { SignInPage } from "@/pages/sign-in";
 import { SignUpPage } from "@/pages/sign-up";
-import { AdminSignInPage } from "@/pages/admin-sign-in";
+import { WorkspacePage } from "@/pages/workspace";
+import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Toaster } from "sonner";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return (
     <>
       <SignedIn>{children}</SignedIn>
-      <SignedOut><RedirectToSignIn /></SignedOut>
+      <SignedOut>
+        <RedirectToSignIn />
+      </SignedOut>
     </>
   );
 }
 
-function RoleGate({ role, children }: { role: "Admin" | "User"; children: React.ReactNode }) {
+function RoleGate({
+  role,
+  children,
+}: {
+  role: "Admin" | "User";
+  children: React.ReactNode;
+}) {
   const { user, loading } = useCurrentUser();
   if (loading || !user) {
     return (
@@ -48,7 +60,9 @@ function RootRoute() {
   const { user, loading } = useCurrentUser();
   return (
     <>
-      <SignedOut><LandingPage /></SignedOut>
+      <SignedOut>
+        <LandingPage />
+      </SignedOut>
       <SignedIn>
         {loading || !user ? (
           <div className="grid place-items-center min-h-screen text-muted-foreground">
@@ -86,8 +100,16 @@ export default function App() {
               <Route path="/app" element={<OverviewPage />} />
               <Route path="/plan" element={<PlanTripPage />} />
               <Route path="/workspace" element={<WorkspacePage />} />
-              <Route path="/chat" element={<Navigate to="/workspace" replace />} />
-              <Route path="/timeline" element={<Navigate to="/workspace" replace />} />
+              <Route path="/trips" element={<TripsPage />} />
+              <Route path="/trips/:tripId" element={<TripDetailPage />} />
+              <Route
+                path="/chat"
+                element={<Navigate to="/workspace" replace />}
+              />
+              <Route
+                path="/timeline"
+                element={<Navigate to="/workspace" replace />}
+              />
               <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/bot" element={<BotPreviewPage />} />
               <Route path="/settings" element={<SettingsPage />} />
@@ -106,6 +128,8 @@ export default function App() {
               <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/admin/services" element={<AdminServicesPage />} />
               <Route path="/admin/products" element={<AdminProductsPage />} />
+              <Route path="/admin/destinations" element={<AdminDestinationsPage />} />
+              <Route path="/admin/destinations/:regionId" element={<AdminRegionDetailPage />} />
             </Route>
           </Routes>
         </CurrentUserProvider>

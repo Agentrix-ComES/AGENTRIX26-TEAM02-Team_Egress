@@ -1,4 +1,6 @@
 """Data routes: real-time weather, content ingestion, and POI browsing."""
+import uuid
+from collections import defaultdict
 from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Query
@@ -6,8 +8,11 @@ from fastapi import APIRouter, HTTPException, Query
 from app.core.config import settings
 from app.db.qdrant import get_qdrant
 from app.db.qdrant_collections import collection_name
+from app.graph.llm import get_embeddings
 from app.graph.tools.qdrant_search import build_filter, search_collection
-from app.services import content_ingest_service, weather_service
+from app.schemas.ai import ManualUpsertRequest, ManualUpsertResponse
+from app.services import alerts_service, content_ingest_service, weather_service
+from qdrant_client.http import models as qmodels
 
 router = APIRouter(prefix="/data", tags=["data"])
 
@@ -16,6 +21,7 @@ _BROWSABLE: dict[str, str] = {
     "hotels": "hotels",
     "activities": "activities",
     "transport": "transport",
+    "dining": "dining",
 }
 
 
@@ -35,13 +41,45 @@ async def weather(
     return summary
 
 
+@router.get(
+    "/alerts",
+    summary="Real-time Sri Lanka travel alerts and news",
+    response_description="Merged feed of disaster alerts, travel advisory, and news from free sources.",
+)
+async def travel_alerts(
+    news: bool = Query(True, description="Include Guardian news articles"),
+    gdacs: bool = Query(True, description="Include GDACS disaster RSS alerts"),
+    advisory: bool = Query(True, description="Include US State Dept travel advisory"),
+    local: bool = Query(True, description="Include Daily Mirror LK local news RSS"),
+    max_news: int = Query(10, ge=1, le=30, description="Max articles from The Guardian"),
+) -> dict[str, Any]:
+    """Aggregate real-time Sri Lanka travel alerts from three free sources:
+
+    - **The Guardian** — news about road closures, protests, weather events,
+      strikes affecting Sri Lanka. Uses the free Guardian Open Platform API
+      (`GUARDIAN_API_KEY` env var; falls back to anonymous "test" key).
+    - **GDACS** — Global Disaster Alert: floods, storms, earthquakes (keyless RSS).
+    - **US State Dept** — official travel advisory level (1–4) for Sri Lanka (keyless JSON).
+    - **Daily Mirror LK** — local Sri Lanka news RSS (keyless, fallback).
+
+    All results are cached for 15 minutes. High-severity items appear first.
+    """
+    return await alerts_service.get_alerts(
+        include_news=news,
+        include_gdacs=gdacs,
+        include_advisory=advisory,
+        include_local=local,
+        max_news=max_news,
+    )
+
+
 @router.post(
     "/ingest",
     summary="Ingest Sri Lanka POIs from OpenStreetMap into Qdrant",
     response_description="Counts of fetched, quality-filtered, and upserted items per category.",
 )
 async def ingest(
-    category: Literal["hotels", "activities", "transport", "all"] = Query(
+    category: Literal["hotels", "activities", "transport", "dining", "all"] = Query(
         "all", description="Which content category to ingest"
     ),
     limit: int = Query(200, ge=1, le=2000, description="Max POIs to fetch per category"),
@@ -52,13 +90,75 @@ async def ingest(
     return await content_ingest_service.ingest_category(category, limit=limit)  # type: ignore[arg-type]
 
 
+@router.post(
+    "/upsert",
+    response_model=ManualUpsertResponse,
+    summary="Manually upsert records into any Qdrant collection",
+    response_description="Count of records embedded and upserted per collection.",
+)
+async def manual_upsert(body: ManualUpsertRequest) -> ManualUpsertResponse:
+    """Embed and upsert manually authored records into any Qdrant collection.
+
+    Use this to seed content that cannot be sourced from OSM:
+    - **culture** — temple etiquette, dress codes, photography rules, customs.
+    - **events** — festivals, processions, road closures, seasonal impacts.
+    - **destinations** — region/place overviews for high-level trip grounding.
+    - **dining / hotels / activities / transport** — supplement or correct OSM data.
+
+    Records with the same ``id`` are idempotently overwritten (upsert semantics).
+    Each item's ``content`` field is embedded; all other fields become filterable payload.
+    """
+    embeddings = get_embeddings()
+    client = get_qdrant()
+
+    texts = [item.content for item in body.items]
+    try:
+        vectors = await embeddings.aembed_documents(texts)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Embedding failed: {exc}") from exc
+
+    upserted = 0
+    failed = 0
+    summary: dict[str, int] = defaultdict(int)
+
+    # Group by collection for batched upserts.
+    by_collection: dict[str, list[qmodels.PointStruct]] = defaultdict(list)
+    for item, vector in zip(body.items, vectors):
+        point_id = item.id or str(uuid.uuid4())
+        payload: dict[str, Any] = {
+            "content": item.content,
+            "name": item.name,
+            "category": item.collection,
+            "source": "manual",
+            **{k: v for k, v in item.metadata.items() if v not in (None, "", [])},
+        }
+        by_collection[item.collection].append(
+            qmodels.PointStruct(id=point_id, vector=vector, payload=payload)
+        )
+
+    for col_key, points in by_collection.items():
+        col = collection_name(col_key)
+        try:
+            await client.upsert(collection_name=col, points=points)
+            upserted += len(points)
+            summary[col_key] += len(points)
+        except Exception:
+            failed += len(points)
+
+    return ManualUpsertResponse(
+        upserted=upserted,
+        failed=failed,
+        collection_summary=dict(summary),
+    )
+
+
 @router.get(
     "/places",
     summary="Browse stored POIs by category with optional filters",
     response_description="Paginated list of POIs with payload metadata.",
 )
 async def browse_places(
-    category: Literal["hotels", "activities", "transport"] = Query(
+    category: Literal["hotels", "activities", "transport", "dining"] = Query(
         ..., description="Category to browse"
     ),
     city: str | None = Query(None, description="Filter by city name (exact match)"),
