@@ -11,6 +11,11 @@ class Settings(BaseSettings):
     postgres_schema: str = Field(default="public")
 
     clerk_secret_key: str = Field(default="", env="CLERK_SECRET_KEY")
+    admin_emails: str = Field(default="", env="ADMIN_EMAILS")
+
+    @property
+    def admin_email_set(self) -> set[str]:
+        return {e.strip().lower() for e in self.admin_emails.split(",") if e.strip()}
 
     @property
     def postgres_dsn(self) -> str:

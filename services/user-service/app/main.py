@@ -2,18 +2,50 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from sqlalchemy import update, func
 
 from app.core.config import settings
-from app.db.session import close_db, init_db
+from app.db.session import AsyncSessionLocal, close_db, init_db
+from app.models.user import User
 from app.api.routes import users
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(settings.service_name)
 
+
+async def reconcile_admin_roles() -> None:
+    """Apply the ADMIN_EMAILS env allowlist to existing user rows.
+
+    Emails in the allowlist are promoted to Admin; anyone else previously marked
+    Admin is demoted back to User so the env stays the single source of truth.
+    """
+    admin_emails = settings.admin_email_set
+    async with AsyncSessionLocal() as session:
+        if admin_emails:
+            await session.execute(
+                update(User)
+                .where(func.lower(User.email).in_(admin_emails))
+                .values(role="Admin")
+            )
+            await session.execute(
+                update(User)
+                .where(~func.lower(User.email).in_(admin_emails))
+                .where(User.role == "Admin")
+                .values(role="User")
+            )
+        else:
+            await session.execute(
+                update(User).where(User.role == "Admin").values(role="User")
+            )
+        await session.commit()
+    logger.info("Admin reconciliation complete (%d allowlisted)", len(admin_emails))
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize resources on startup and clean up on shutdown."""
     await init_db()
+    await reconcile_admin_roles()
     logger.info("%s startup complete", settings.service_name)
     try:
         yield
