@@ -1,12 +1,23 @@
 """Schemas for LLM configuration."""
 import uuid
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
+
+LLMTier = Literal["primary", "secondary", "tertiary", "embedding"]
+"""Role a model plays:
+
+- ``primary``: hard intelligence (planning, complex reasoning, replanning).
+- ``secondary``: medium tasks (conversation, disruption analysis).
+- ``tertiary``: low/cheap tasks (intent classification, data extraction).
+- ``embedding``: vector embeddings for retrieval.
+"""
 
 
 class LLMConfigBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
+    tier: LLMTier = Field(default="primary", description="Capability tier this model serves.")
     provider: str = Field(default="openai", max_length=50)
     model: str = Field(..., max_length=100)
     temperature: float = Field(default=0.2, ge=0.0, le=2.0)
@@ -19,6 +30,7 @@ class LLMConfigCreate(LLMConfigBase):
 
 
 class LLMConfigUpdate(BaseModel):
+    tier: LLMTier | None = None
     provider: str | None = Field(default=None, max_length=50)
     model: str | None = Field(default=None, max_length=100)
     temperature: float | None = Field(default=None, ge=0.0, le=2.0)
