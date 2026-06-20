@@ -1,9 +1,7 @@
 name: travel-platform
 
 services:
-  # ---------------------------------------------------------------------------
-  # Databases & infrastructure
-  # ---------------------------------------------------------------------------
+
   postgres:
     image: pgvector/pgvector:pg16
     container_name: travel-postgres
@@ -93,9 +91,7 @@ services:
     networks:
       - travel-net
 
-  # ---------------------------------------------------------------------------
-  # Application services
-  # ---------------------------------------------------------------------------
+
   ai-service:
     build:
       context: ./services/ai-service
@@ -123,9 +119,6 @@ services:
     networks:
       - travel-net
 
-  # ---------------------------------------------------------------------------
-  # Frontend (Vite + React + shadcn) — production nginx image
-  # ---------------------------------------------------------------------------
   client:
     build:
       context: ./client
@@ -147,8 +140,6 @@ services:
     networks:
       - travel-net
 
-  # Dev variant — Vite dev server with HMR.
-  # Enable with:  docker compose --profile dev up client-dev
   client-dev:
     image: node:22-alpine
     container_name: travel-client-dev
