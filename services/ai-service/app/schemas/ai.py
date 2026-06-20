@@ -31,9 +31,26 @@ class Itinerary(BaseModel):
 
 
 class IntentDecision(BaseModel):
-    """Structured intent classification result (LLM structured output)."""
+    """Structured intent classification result (LLM structured output).
+
+    The LLM classifies intent and, when it can be inferred from the message,
+    also extracts destination, start_date, and end_date so downstream nodes
+    (retrieve, climate, planner) have the context they need.
+    """
 
     intent: Literal["plan", "modify", "disruption", "chat"]
+    destination: str | None = Field(
+        default=None,
+        description="Destination extracted from the message (e.g. 'Kandy'). Null if not mentioned.",
+    )
+    start_date: str | None = Field(
+        default=None,
+        description="Trip start date in ISO format (YYYY-MM-DD) if mentioned. Null otherwise.",
+    )
+    end_date: str | None = Field(
+        default=None,
+        description="Trip end date in ISO format (YYYY-MM-DD) if mentioned. Null otherwise.",
+    )
 
 
 class PlannerOutput(BaseModel):
