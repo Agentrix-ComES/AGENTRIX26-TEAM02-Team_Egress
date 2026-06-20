@@ -15,9 +15,10 @@ export default function App() {
     <ThemeProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/welcome" element={<LandingPage />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/welcome" element={<Navigate to="/" replace />} />
           <Route element={<AppShell />}>
-            <Route path="/" element={<OverviewPage />} />
+            <Route path="/app" element={<OverviewPage />} />
             <Route path="/plan" element={<PlanTripPage />} />
             <Route path="/workspace" element={<WorkspacePage />} />
             <Route path="/chat" element={<Navigate to="/workspace" replace />} />
