@@ -36,6 +36,22 @@ class Settings(BaseSettings):
     qdrant_https: bool = Field(default=False)
     qdrant_collection_travel: str = Field(default="travel_items")
     qdrant_api_key: str | None = Field(default=None)
+    # Optional namespace prefix applied to every collection (useful per-env).
+    qdrant_collection_prefix: str = Field(default="")
+    # Minimum cosine score a hit must reach to be returned (0 = no filter).
+    qdrant_score_threshold: float = Field(default=0.0)
+    # Default number of hits to pull per collection during retrieval.
+    qdrant_top_k: int = Field(default=5)
+    # --- Accuracy / index tuning ---
+    # HNSW graph: higher m = better recall, more memory; ef_construct = build quality.
+    qdrant_hnsw_m: int = Field(default=32)
+    qdrant_hnsw_ef_construct: int = Field(default=256)
+    # Query-time search breadth: higher = more accurate, slower. None = server default.
+    qdrant_hnsw_ef_search: int = Field(default=128)
+    # Over-fetch factor: pull k * factor candidates, then rerank down to k.
+    qdrant_overfetch_factor: int = Field(default=4)
+    # MMR diversity (0 = pure relevance, 1 = pure diversity) to reduce near-dupes.
+    qdrant_mmr_lambda: float = Field(default=0.7)
 
     # Neo4j
     neo4j_uri: str = Field(default="bolt://neo4j:7687")
@@ -47,22 +63,24 @@ class Settings(BaseSettings):
     langsmith_project: str = Field(default="travel-platform")
     langchain_tracing_v2: bool = Field(default=False)
 
-    # LLM / providers
-    openai_api_key: str | None = Field(default=None)
-    default_llm_model: str = Field(default="gpt-4o-mini")
+    # LLM / providers (Google Gemini)
+    gemini_api_key: str | None = Field(default=None)
+    default_llm_model: str = Field(default="gemini-2.5-flash")
     default_temperature: float = Field(default=0.2)
-    embedding_model: str = Field(default="text-embedding-3-small")
+    # gemini-embedding-001 supports configurable output dims (Matryoshka),
+    # so embedding_dim can stay 1536 to match existing Qdrant collections.
+    embedding_model: str = Field(default="gemini-embedding-001")
     embedding_dim: int = Field(default=1536)
 
     # LLM tiers — route each task to the right model.
     #   primary:   hard intelligence (planning, complex reasoning, replanning)
     #   secondary: medium tasks (conversation, disruption analysis)
     #   tertiary:  low/cheap tasks (intent classification, data extraction)
-    primary_llm_model: str = Field(default="gpt-4o")
+    primary_llm_model: str = Field(default="gemini-2.5-pro")
     primary_temperature: float = Field(default=0.3)
-    secondary_llm_model: str = Field(default="gpt-4o-mini")
+    secondary_llm_model: str = Field(default="gemini-2.5-flash")
     secondary_temperature: float = Field(default=0.4)
-    tertiary_llm_model: str = Field(default="gpt-4o-mini")
+    tertiary_llm_model: str = Field(default="gemini-2.5-flash")
     tertiary_temperature: float = Field(default=0.0)
 
     # External APIs
@@ -70,6 +88,38 @@ class Settings(BaseSettings):
     weather_api_key: str | None = Field(default=None)
     transport_api_key: str | None = Field(default=None)
     tourism_api_key: str | None = Field(default=None)
+
+    # --- Real-time data providers (free sources) ---
+    # Open-Meteo: forecast + geocoding, no API key required.
+    openmeteo_forecast_url: str = Field(default="https://api.open-meteo.com/v1/forecast")
+    openmeteo_geocoding_url: str = Field(
+        default="https://geocoding-api.open-meteo.com/v1/search"
+    )
+    # OSM Overpass: keyless POIs (hotels, activities, transport).
+    overpass_url: str = Field(default="https://overpass-api.de/api/interpreter")
+    # OpenTripMap: attractions w/ ratings + descriptions (instant free key, optional).
+    opentripmap_url: str = Field(default="https://api.opentripmap.com/0.1/en/places")
+    opentripmap_api_key: str | None = Field(default=None)
+    # OpenRouteService: routing/transfers (instant free key, optional).
+    openrouteservice_url: str = Field(default="https://api.openrouteservice.org")
+    openrouteservice_api_key: str | None = Field(default=None)
+
+    # Sri Lanka bounding box (S, W, N, E) used for Overpass area queries.
+    sl_bbox_south: float = Field(default=5.9)
+    sl_bbox_west: float = Field(default=79.6)
+    sl_bbox_north: float = Field(default=9.9)
+    sl_bbox_east: float = Field(default=81.9)
+
+    # HTTP client behaviour for provider calls.
+    http_timeout_seconds: float = Field(default=30.0)
+    http_max_retries: int = Field(default=3)
+    http_user_agent: str = Field(default="travel-platform-ai/0.1 (+https://example.com)")
+
+    # Cache TTLs (seconds). Volatile data is cached short; content longer.
+    cache_ttl_weather: int = Field(default=1800)       # 30 min
+    cache_ttl_geocode: int = Field(default=2592000)    # 30 days
+    cache_ttl_places: int = Field(default=86400)       # 1 day
+    cache_ttl_routing: int = Field(default=86400)      # 1 day
 
     @property
     def postgres_dsn(self) -> str:
@@ -85,6 +135,12 @@ class Settings(BaseSettings):
             f"postgresql://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
+
+    @property
+    def redis_dsn(self) -> str:
+        """redis:// URL for the async Redis cache client."""
+        auth = f":{self.redis_password}@" if self.redis_password else ""
+        return f"redis://{auth}{self.redis_host}:{self.redis_port}/0"
 
 
 @lru_cache
