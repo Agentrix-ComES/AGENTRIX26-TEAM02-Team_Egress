@@ -45,11 +45,14 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db() -> None:
-    """Ensure the AI-domain schema and pgvector extension exist.
+    """Ensure the AI-domain schema, pgvector extension, and all ORM tables exist.
 
-    Table creation is owned by Alembic migrations (``alembic upgrade head``),
-    not by this function.
+    Uses SQLAlchemy ``create_all`` to create tables that don't exist yet.
+    This is idempotent (checkfirst=True) and runs on every startup.
+    Alembic migrations are still used for schema *changes* after initial creation.
     """
+    import app.models  # noqa: F401 — register all ORM models on Base.metadata
+
     from sqlalchemy import text
 
     async with engine.begin() as conn:
@@ -57,6 +60,8 @@ async def init_db() -> None:
         await conn.execute(
             text(f"CREATE SCHEMA IF NOT EXISTS {settings.postgres_schema}")
         )
+        # Create all tables declared on Base that don't yet exist.
+        await conn.run_sync(Base.metadata.create_all, checkfirst=True)
 
 
 async def close_db() -> None:
