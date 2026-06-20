@@ -3,13 +3,13 @@
 Flow (chat-centric):
 
     START → intent
-        ├─ plan / modify → retrieve → climate → planner → logistics → END
-        ├─ disruption    → disruption → retrieve → climate → planner → logistics → END
+        ├─ plan / modify → retrieve → [climate, alerts] → planner → logistics → END
+        ├─ disruption    → [disruption, alerts] → retrieve → [climate, alerts] → planner → logistics → END
         └─ chat          → chat → END
 
-A disruption that occurs after a plan exists is analyzed, then the planner
-rebuilds the affected parts of the timeline (disruption-driven replanning).
-The climate node attaches a real-time weather outlook before planning.
+climate and alerts run in parallel after retrieval (both are I/O-bound and
+independent). The planner and disruption nodes consume both results so all
+decisions reflect current weather AND live travel alerts/advisories.
 """
 from functools import lru_cache
 from typing import TYPE_CHECKING
@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 from langgraph.graph import END, START, StateGraph
 
 from app.graph.checkpointer import get_checkpointer
+from app.graph.nodes.alerts import fetch_alerts
 from app.graph.nodes.chat import chat
 from app.graph.nodes.climate import climate
 from app.graph.nodes.disruption import handle_disruption
@@ -69,12 +70,13 @@ def build_graph(checkpointer: "BaseCheckpointSaver | None" = None):
     graph = StateGraph(GraphState)
     retry = _retry_kwargs()
 
-    # I/O-bound nodes (LLM / Qdrant / Neo4j) get bounded retries for resilience.
+    # I/O-bound nodes (LLM / Qdrant / Neo4j / external APIs) get bounded retries.
     graph.add_node("intent", classify_intent, **retry)
     graph.add_node("chat", chat, **retry)
     graph.add_node("disruption", handle_disruption, **retry)
     graph.add_node("retrieve", retrieve, **retry)
     graph.add_node("climate", climate, **retry)
+    graph.add_node("alerts", fetch_alerts, **retry)
     graph.add_node("planner", plan, **retry)
     graph.add_node("logistics", logistics, **retry)
 
@@ -85,11 +87,18 @@ def build_graph(checkpointer: "BaseCheckpointSaver | None" = None):
         {"disruption": "disruption", "retrieve": "retrieve", "chat": "chat"},
     )
 
-    # Disruption is analyzed, then the trip is replanned around it.
+    # Disruption is analyzed first, then flows into retrieval for replanning.
     graph.add_edge("disruption", "retrieve")
-    # Retrieval feeds a real-time weather check before planning.
+
+    # After retrieval, climate and alerts run in parallel (both I/O-bound,
+    # fully independent). LangGraph fans out automatically on list edges.
     graph.add_edge("retrieve", "climate")
+    graph.add_edge("retrieve", "alerts")
+
+    # Both parallel nodes must complete before the planner runs.
     graph.add_edge("climate", "planner")
+    graph.add_edge("alerts", "planner")
+
     graph.add_edge("planner", "logistics")
     graph.add_edge("logistics", END)
     graph.add_edge("chat", END)

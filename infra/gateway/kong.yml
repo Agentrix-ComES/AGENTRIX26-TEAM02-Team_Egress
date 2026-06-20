@@ -17,6 +17,34 @@ services:
           - /api/users
         strip_path: false
 
+  - name: trip-service
+    url: http://trip-service:8002
+    routes:
+      - name: trip-route
+        paths:
+          - /api/v1/trips
+        strip_path: false
+
+  - name: booking-service
+    url: http://booking-service:8004
+    routes:
+      - name: booking-route
+        paths:
+          - /api/v1/hotel-bookings
+          - /api/v1/hotels
+          - /api/v1/dining-reservations
+          - /api/v1/transport-bookings
+        strip_path: false
+
+  - name: destination-service
+    url: http://destination-service:8003
+    routes:
+      - name: destination-route
+        paths:
+          - /api/v1/regions
+          - /api/v1/locations
+        strip_path: false
+
 plugins:
   - name: cors
     config:

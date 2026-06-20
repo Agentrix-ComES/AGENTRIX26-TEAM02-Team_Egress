@@ -110,3 +110,32 @@ async def fetch_json(
     if use_cache:
         await cache_set_json(key, data, cache_ttl)
     return data
+
+
+async def fetch_text(
+    method: str,
+    url: str,
+    *,
+    cache_namespace: str | None = None,
+    cache_ttl: int | None = None,
+    cache_payload: Any | None = None,
+    **kwargs: Any,
+) -> str:
+    """Make a retried request returning raw text (e.g. for RSS/XML responses).
+
+    Caches the raw string under the same Redis-backed cache as ``fetch_json``.
+    """
+    use_cache = cache_namespace is not None and cache_ttl is not None
+    key = ""
+    if use_cache:
+        key = cache_key(cache_namespace, cache_payload if cache_payload is not None else kwargs)
+        cached = await cache_get_json(key)
+        if cached is not None:
+            return str(cached)
+
+    resp = await _request(method, url, **kwargs)
+    text = resp.text
+
+    if use_cache:
+        await cache_set_json(key, text, cache_ttl)
+    return text

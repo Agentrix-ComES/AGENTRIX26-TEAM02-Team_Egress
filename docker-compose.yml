@@ -85,7 +85,6 @@ services:
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
-      - ADMIN_EMAILS=${ADMIN_EMAILS:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -221,6 +220,9 @@ services:
     depends_on:
       - ai-service
       - user-service
+      - trip-service
+      - booking-service
+      - destination-service
     networks:
       - travel-net
   # ---------------------------------------------------------------------------
@@ -232,7 +234,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}}
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api}
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8001/api}
     image: travel-platform/client:latest
     container_name: travel-client
     restart: unless-stopped
@@ -277,3 +279,4 @@ volumes:
   neo4j_data:
   neo4j_logs:
   client_node_modules:
+    

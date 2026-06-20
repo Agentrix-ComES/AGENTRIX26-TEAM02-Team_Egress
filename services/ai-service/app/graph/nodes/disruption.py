@@ -24,9 +24,27 @@ async def handle_disruption(state: GraphState) -> GraphState:
         if isinstance(disruption, dict)
         else str(disruption)
     )
+
+    # Include live alerts so the disruption agent knows about active advisories,
+    # disasters, or news events that may be compounding the disruption.
+    live_alerts = state.get("live_alerts")
+    alerts_section = ""
+    if live_alerts:
+        advisory = live_alerts.get("advisory")
+        alerts = live_alerts.get("alerts", [])
+        if advisory:
+            level = advisory.get("advisory_label", "unknown").upper()
+            alerts_section += f"\nTravel Advisory: {level} — {advisory.get('title')}. {advisory.get('summary') or ''}"
+        if alerts:
+            alerts_section += "\nActive alerts (high/medium severity):\n" + "\n".join(
+                f"- [{a.get('severity','?').upper()}] {a.get('title')} ({a.get('source')})"
+                for a in alerts[:5]
+            )
+
     user = (
         f"Disruption: {disruption_text}\n"
         f"Current itinerary: {json.dumps(itinerary, ensure_ascii=False)[:3000]}"
+        + alerts_section
     )
     response = await model.ainvoke(
         [SystemMessage(content=DISRUPTION_SYSTEM_PROMPT), HumanMessage(content=user)]

@@ -31,5 +31,16 @@ async def classify_intent(state: GraphState) -> GraphState:
     # Without an existing itinerary there is nothing to modify or replan.
     if intent in ("modify", "disruption") and not state.get("itinerary"):
         intent = "plan"
-    return {"intent": intent}
+
+    # Propagate extracted context only when not already set by the caller.
+    # This lets the API caller override with explicit fields while still
+    # falling back to NL extraction for conversational use.
+    updates: GraphState = {"intent": intent}
+    if decision.destination and not state.get("destination"):
+        updates["destination"] = decision.destination
+    if decision.start_date and not state.get("start_date"):
+        updates["start_date"] = decision.start_date
+    if decision.end_date and not state.get("end_date"):
+        updates["end_date"] = decision.end_date
+    return updates
 
