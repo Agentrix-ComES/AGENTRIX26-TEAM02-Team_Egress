@@ -47,7 +47,7 @@ export async function listRegions(
   getToken: TokenGetter,
   params: { country?: string; search?: string; skip?: number; limit?: number } = {},
 ): Promise<RegionListResponse> {
-  const res = await authedFetch(`/api/v1/regions${qs(params)}`, getToken);
+  const res = await authedFetch(`/v1/regions${qs(params)}`, getToken);
   return asJson<RegionListResponse>(res);
 }
 
@@ -55,7 +55,7 @@ export async function getRegion(
   getToken: TokenGetter,
   regionId: string,
 ): Promise<RegionDetailResponse> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}`, getToken);
+  const res = await authedFetch(`/v1/regions/${regionId}`, getToken);
   return asJson<RegionDetailResponse>(res);
 }
 
@@ -63,7 +63,7 @@ export async function createRegion(
   getToken: TokenGetter,
   body: RegionCreateRequest,
 ): Promise<RegionResponse> {
-  const res = await authedFetch("/api/v1/regions", getToken, {
+  const res = await authedFetch("/v1/regions", getToken, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -71,7 +71,7 @@ export async function createRegion(
 }
 
 export async function deleteRegion(getToken: TokenGetter, regionId: string): Promise<void> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}`, getToken, { method: "DELETE" });
+  const res = await authedFetch(`/v1/regions/${regionId}`, getToken, { method: "DELETE" });
   await asJson<void>(res);
 }
 
@@ -122,7 +122,7 @@ export async function listLocations(
   regionId: string,
   params: { category?: string; skip?: number; limit?: number } = {},
 ): Promise<VisitableLocationListResponse> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/locations${qs(params)}`, getToken);
+  const res = await authedFetch(`/v1/regions/${regionId}/locations${qs(params)}`, getToken);
   return asJson<VisitableLocationListResponse>(res);
 }
 
@@ -131,7 +131,7 @@ export async function createLocation(
   regionId: string,
   body: VisitableLocationCreateRequest,
 ): Promise<VisitableLocationResponse> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/locations`, getToken, {
+  const res = await authedFetch(`/v1/regions/${regionId}/locations`, getToken, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -143,7 +143,7 @@ export async function deleteLocation(
   regionId: string,
   locationId: string,
 ): Promise<void> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/locations/${locationId}`, getToken, {
+  const res = await authedFetch(`/v1/regions/${regionId}/locations/${locationId}`, getToken, {
     method: "DELETE",
   });
   await asJson<void>(res);
@@ -190,7 +190,7 @@ export async function listActivities(
   regionId: string,
   params: { difficulty?: string } = {},
 ): Promise<ActivityResponse[]> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/activities${qs(params)}`, getToken);
+  const res = await authedFetch(`/v1/regions/${regionId}/activities${qs(params)}`, getToken);
   return asJson<ActivityResponse[]>(res);
 }
 
@@ -199,7 +199,7 @@ export async function createActivity(
   regionId: string,
   body: ActivityCreateRequest,
 ): Promise<ActivityResponse> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/activities`, getToken, {
+  const res = await authedFetch(`/v1/regions/${regionId}/activities`, getToken, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -211,7 +211,7 @@ export async function deleteActivity(
   regionId: string,
   activityId: string,
 ): Promise<void> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/activities/${activityId}`, getToken, {
+  const res = await authedFetch(`/v1/regions/${regionId}/activities/${activityId}`, getToken, {
     method: "DELETE",
   });
   await asJson<void>(res);
@@ -261,7 +261,7 @@ export async function listDiningOptions(
   regionId: string,
   params: { cuisine?: string; dietary_filter?: string } = {},
 ): Promise<DiningOptionResponse[]> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/dining${qs(params)}`, getToken);
+  const res = await authedFetch(`/v1/regions/${regionId}/dining${qs(params)}`, getToken);
   return asJson<DiningOptionResponse[]>(res);
 }
 
@@ -270,7 +270,7 @@ export async function createDiningOption(
   regionId: string,
   body: DiningOptionCreateRequest,
 ): Promise<DiningOptionResponse> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/dining`, getToken, {
+  const res = await authedFetch(`/v1/regions/${regionId}/dining`, getToken, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -282,7 +282,7 @@ export async function deleteDiningOption(
   regionId: string,
   diningId: string,
 ): Promise<void> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/dining/${diningId}`, getToken, {
+  const res = await authedFetch(`/v1/regions/${regionId}/dining/${diningId}`, getToken, {
     method: "DELETE",
   });
   await asJson<void>(res);
@@ -330,7 +330,7 @@ export async function getEmergencyServices(
   getToken: TokenGetter,
   regionId: string,
 ): Promise<EmergencyServicesResponse> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/emergency`, getToken);
+  const res = await authedFetch(`/v1/regions/${regionId}/emergency`, getToken);
   return asJson<EmergencyServicesResponse>(res);
 }
 
@@ -339,7 +339,7 @@ export async function createEmergencyService(
   regionId: string,
   body: EmergencyServiceCreateRequest,
 ): Promise<EmergencyServiceResponse> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/emergency`, getToken, {
+  const res = await authedFetch(`/v1/regions/${regionId}/emergency`, getToken, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -351,7 +351,7 @@ export async function deleteEmergencyService(
   regionId: string,
   serviceId: string,
 ): Promise<void> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/emergency/${serviceId}`, getToken, {
+  const res = await authedFetch(`/v1/regions/${regionId}/emergency/${serviceId}`, getToken, {
     method: "DELETE",
   });
   await asJson<void>(res);
@@ -395,7 +395,7 @@ export async function listOffers(
   regionId: string,
   params: { category?: string } = {},
 ): Promise<OfferResponse[]> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/offers${qs(params)}`, getToken);
+  const res = await authedFetch(`/v1/regions/${regionId}/offers${qs(params)}`, getToken);
   return asJson<OfferResponse[]>(res);
 }
 
@@ -404,7 +404,7 @@ export async function createOffer(
   regionId: string,
   body: OfferCreateRequest,
 ): Promise<OfferResponse> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/offers`, getToken, {
+  const res = await authedFetch(`/v1/regions/${regionId}/offers`, getToken, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -416,7 +416,7 @@ export async function deleteOffer(
   regionId: string,
   offerId: string,
 ): Promise<void> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/offers/${offerId}`, getToken, {
+  const res = await authedFetch(`/v1/regions/${regionId}/offers/${offerId}`, getToken, {
     method: "DELETE",
   });
   await asJson<void>(res);
@@ -448,6 +448,6 @@ export async function getCulturalContext(
   getToken: TokenGetter,
   regionId: string,
 ): Promise<CulturalContextResponse> {
-  const res = await authedFetch(`/api/v1/regions/${regionId}/culture`, getToken);
+  const res = await authedFetch(`/v1/regions/${regionId}/culture`, getToken);
   return asJson<CulturalContextResponse>(res);
 }

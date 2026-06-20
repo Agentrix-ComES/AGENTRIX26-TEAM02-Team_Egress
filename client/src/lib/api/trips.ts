@@ -63,12 +63,12 @@ export async function listTrips(
   getToken: TokenGetter,
   params: { status?: string; skip?: number; limit?: number } = {},
 ): Promise<TripListResponse> {
-  const res = await authedFetch(`/api/v1/trips${qs(params)}`, getToken);
+  const res = await authedFetch(`/v1/trips${qs(params)}`, getToken);
   return asJson<TripListResponse>(res);
 }
 
 export async function getTrip(getToken: TokenGetter, tripId: string): Promise<TripDetailResponse> {
-  const res = await authedFetch(`/api/v1/trips/${tripId}`, getToken);
+  const res = await authedFetch(`/v1/trips/${tripId}`, getToken);
   return asJson<TripDetailResponse>(res);
 }
 
@@ -76,7 +76,7 @@ export async function createTrip(
   getToken: TokenGetter,
   body: TripCreateRequest,
 ): Promise<TripResponse> {
-  const res = await authedFetch("/api/v1/trips", getToken, {
+  const res = await authedFetch("/v1/trips", getToken, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -88,7 +88,7 @@ export async function updateTrip(
   tripId: string,
   body: TripUpdateRequest,
 ): Promise<TripResponse> {
-  const res = await authedFetch(`/api/v1/trips/${tripId}`, getToken, {
+  const res = await authedFetch(`/v1/trips/${tripId}`, getToken, {
     method: "PATCH",
     body: JSON.stringify(body),
   });
@@ -96,7 +96,7 @@ export async function updateTrip(
 }
 
 export async function deleteTrip(getToken: TokenGetter, tripId: string): Promise<void> {
-  const res = await authedFetch(`/api/v1/trips/${tripId}`, getToken, { method: "DELETE" });
+  const res = await authedFetch(`/v1/trips/${tripId}`, getToken, { method: "DELETE" });
   await asJson<void>(res);
 }
 
@@ -147,7 +147,7 @@ export async function getTimeline(
   getToken: TokenGetter,
   tripId: string,
 ): Promise<TimelineResponse> {
-  const res = await authedFetch(`/api/v1/trips/${tripId}/timeline`, getToken);
+  const res = await authedFetch(`/v1/trips/${tripId}/timeline`, getToken);
   return asJson<TimelineResponse>(res);
 }
 
@@ -156,7 +156,7 @@ export async function createRegionNode(
   tripId: string,
   body: RegionNodeCreateRequest,
 ): Promise<RegionNodeResponse> {
-  const res = await authedFetch(`/api/v1/trips/${tripId}/timeline/regions`, getToken, {
+  const res = await authedFetch(`/v1/trips/${tripId}/timeline/regions`, getToken, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -170,7 +170,7 @@ export async function updateRegionNode(
   body: RegionNodeUpdateRequest,
 ): Promise<RegionNodeResponse> {
   const res = await authedFetch(
-    `/api/v1/trips/${tripId}/timeline/regions/${regionNodeId}`,
+    `/v1/trips/${tripId}/timeline/regions/${regionNodeId}`,
     getToken,
     { method: "PATCH", body: JSON.stringify(body) },
   );
@@ -183,7 +183,7 @@ export async function deleteRegionNode(
   regionNodeId: string,
 ): Promise<void> {
   const res = await authedFetch(
-    `/api/v1/trips/${tripId}/timeline/regions/${regionNodeId}`,
+    `/v1/trips/${tripId}/timeline/regions/${regionNodeId}`,
     getToken,
     { method: "DELETE" },
   );
@@ -212,7 +212,7 @@ export interface SelectedLocationResponse {
 }
 
 const slBase = (tripId: string, regionNodeId: string) =>
-  `/api/v1/trips/${tripId}/timeline/regions/${regionNodeId}/locations/selected`;
+  `/v1/trips/${tripId}/timeline/regions/${regionNodeId}/locations/selected`;
 
 export async function listSelectedLocations(
   getToken: TokenGetter,
@@ -280,7 +280,7 @@ export async function listAlerts(
   tripId: string,
   status?: string,
 ): Promise<TripAlertResponse[]> {
-  const res = await authedFetch(`/api/v1/trips/${tripId}/alerts${qs({ status })}`, getToken);
+  const res = await authedFetch(`/v1/trips/${tripId}/alerts${qs({ status })}`, getToken);
   return asJson<TripAlertResponse[]>(res);
 }
 
@@ -289,7 +289,7 @@ export async function createAlert(
   tripId: string,
   body: TripAlertCreateRequest,
 ): Promise<TripAlertResponse> {
-  const res = await authedFetch(`/api/v1/trips/${tripId}/alerts`, getToken, {
+  const res = await authedFetch(`/v1/trips/${tripId}/alerts`, getToken, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -302,7 +302,7 @@ export async function updateAlertStatus(
   alertId: string,
   status: string,
 ): Promise<TripAlertResponse> {
-  const res = await authedFetch(`/api/v1/trips/${tripId}/alerts/${alertId}/status`, getToken, {
+  const res = await authedFetch(`/v1/trips/${tripId}/alerts/${alertId}/status`, getToken, {
     method: "PATCH",
     body: JSON.stringify({ status }),
   });

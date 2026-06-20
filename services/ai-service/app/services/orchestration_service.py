@@ -37,7 +37,11 @@ def _to_itinerary(value: dict | None) -> Itinerary | None:
 
 async def run_chat(session: AsyncSession, request: ChatRequest) -> ChatResponse:
 
-    conversation_id = request.conversation_id or request.user_id or str(uuid.uuid4())
+    # conversation_id is the LangGraph thread id. It must be a UUID so the
+    # /conversations/{id} route (which validates UUID) can read history later.
+    # Falling back to the caller's user_id here would tie the whole thread to
+    # the user and return non-UUID ids to the FE.
+    conversation_id = str(request.conversation_id) if request.conversation_id else str(uuid.uuid4())
     run_type = "disruption" if request.disruption else "chat"
 
     run = AgentRun(

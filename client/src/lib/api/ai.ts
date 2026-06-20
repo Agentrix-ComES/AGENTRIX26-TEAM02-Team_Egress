@@ -13,6 +13,26 @@ export async function sendChat(
   return asJson<ChatResponse>(res);
 }
 
+export interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
+  created_at?: string | null;
+}
+
+export interface ConversationState {
+  conversation_id: string;
+  messages: ConversationMessage[];
+  itinerary: ApiItinerary | null;
+}
+
+export async function getConversation(
+  getToken: TokenGetter,
+  conversationId: string,
+): Promise<ConversationState> {
+  const res = await authedFetch(`/ai/conversations/${conversationId}`, getToken);
+  return asJson<ConversationState>(res);
+}
+
 export type PlaceCategory = "hotels" | "activities" | "transport";
 
 export interface Place {
