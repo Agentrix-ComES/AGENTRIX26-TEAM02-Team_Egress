@@ -29,12 +29,13 @@ export default function App() {
       <BrowserRouter>
         <AuthSync />
         <Routes>
-          <Route path="/welcome" element={<LandingPage />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/welcome" element={<Navigate to="/" replace />} />
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
-          
+
           <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
-            <Route path="/" element={<OverviewPage />} />
+            <Route path="/app" element={<OverviewPage />} />
             <Route path="/plan" element={<PlanTripPage />} />
             <Route path="/workspace" element={<WorkspacePage />} />
             <Route path="/chat" element={<Navigate to="/workspace" replace />} />
