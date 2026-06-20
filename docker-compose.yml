@@ -130,6 +130,25 @@ services:
     networks:
       - travel-net
 
+  destination-service:
+    build:
+      context: ./services/destination-service
+      dockerfile: Dockerfile
+    container_name: travel-destination-service
+    restart: unless-stopped
+    ports:
+      - "${DESTINATION_SERVICE_PORT:-8005}:8003"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-travel_platform}
+      - DB_ECHO=false
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:-super-secret-dev-jwt-secret-change-me}
+      - AUTH_DISABLED=${DESTINATION_SERVICE_AUTH_DISABLED:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - travel-net
+
   neo4j:
     image: neo4j:5-community
     container_name: travel-neo4j
