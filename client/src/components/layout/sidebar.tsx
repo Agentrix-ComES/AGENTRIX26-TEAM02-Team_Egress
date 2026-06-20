@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { to: "/", icon: LayoutDashboard, label: "Overview", end: true },
+  { to: "/app", icon: LayoutDashboard, label: "Overview", end: true },
   { to: "/plan", icon: Sparkles, label: "Plan a Trip" },
   { to: "/workspace", icon: MessagesSquare, label: "Workspace" },
   { to: "/alerts", icon: ShieldAlert, label: "Alerts" },
