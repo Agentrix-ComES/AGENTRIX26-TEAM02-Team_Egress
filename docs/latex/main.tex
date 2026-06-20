@@ -1,0 +1,251 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+
+% Core packages
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+
+% Hyperlink setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    urlcolor=blue!60!black,
+    citecolor=blue!60!black
+}
+
+% Section formatting
+\titleformat{\section}{\Large\bfseries}{\thesection}{0.75em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.75em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{0.75em}{}
+
+% Paragraphs and lists
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.8\baselineskip}
+\setlist[itemize]{topsep=0.25em,itemsep=0.2em,leftmargin=1.5em}
+\setlist[enumerate]{topsep=0.25em,itemsep=0.2em,leftmargin=1.75em}
+
+\title{Interim Submission Summary: AI-Powered Timeline Travel Planning and Assistance Platform}
+\author{Team\_Egress}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Problem Statement}
+
+Modern travel planning is fragmented, manual, and difficult to adapt once a trip begins. Travelers move between many disconnected platforms to compare attractions, transport, accommodation, food, weather, local events, cultural expectations, and emergency information. This makes planning slow beforehand and stressful during the journey, especially when conditions change unexpectedly.
+
+The difficulty is sharper in Sri Lanka, where a compact geography packs in beaches, heritage sites, temples, wildlife parks, hill-country routes, food experiences, festivals, adventure activities, and local markets. The same density that makes the country attractive also makes it hard to plan: a single trip may require long-distance transfers, local transport, hotel check-ins, activity reservations, temple etiquette, weather-sensitive outdoor activities, and route delays to all line up within a limited schedule.
+
+Existing tools mostly produce \emph{static} itineraries. They suggest places but do not model the trip as a timeline with dependencies between activities. When a train is delayed, a road is blocked, a storm affects a hike, or a venue closes early, the traveler is left to manually rework the rest of the day, often resulting in missed bookings, rushed travel, invalid check-in times, unsafe routes, and wasted time.
+
+Two further gaps stand out. First, recommendations are typically generic and reactive: they do not continuously reflect a traveler's budget, style, dietary needs, accessibility requirements, preferred transport, and interests, nor the current state of the trip. Second, cultural awareness is often missing. Many Sri Lankan destinations are temples, religious sites, festivals, and culturally sensitive communities, where travelers may not know the dress codes, photography restrictions, behavioral expectations, or religious timing constraints, and can unintentionally cause offense or miss important context.
+
+The core problem is therefore the absence of an intelligent, adaptive, context-aware travel assistant that represents a trip as a \emph{living timeline}, understands each item in detail, monitors changing conditions, and helps travelers make better decisions before and during the journey.
+
+\subsection{Key Issues Identified}
+
+\begin{itemize}
+    \item Travel information is scattered across platforms and service providers, forcing manual coordination of transport, stays, activities, meals, prices, and local guidance.
+    \item Current itinerary tools are static; delays and disruptions are not automatically propagated across the rest of the plan.
+    \item Recommendations are generic and do not reflect user preferences or real-time context.
+    \item Travelers often lack cultural guidance for temples, festivals, religious locations, and local customs.
+    \item There is no unified timeline that combines transport, accommodation, activities, food, emergency support, risks, and constraints in one place.
+\end{itemize}
+
+\section{Chosen Domain}
+
+The chosen domain is \textbf{Tourism and Travel Planning}, with a specific focus on Sri Lanka. The project combines travel technology, intelligent scheduling, constraint-aware planning, recommendation systems, and agentic AI.
+
+The platform does not merely recommend attractions; it manages the complete journey as a sequence of timeline nodes. Each node represents a concrete part of the trip, such as a hotel stay, a transport segment, an attraction visit, a meal stop, a temple visit, or a weather-sensitive outdoor activity. Modeling travel this way lets the platform reason about how one activity affects another and respond intelligently when plans change.
+
+Sri Lanka is a suitable focus because travel there involves many interacting real-world variables, including coastal travel, mountain routes, wildlife parks, ancient cities, religious locations, train journeys, tuk-tuk transfers, and weather-dependent activities. A timeline-based system can help travelers make better use of this diversity while reducing uncertainty and stress.
+
+The domain also emphasizes \emph{in-trip} support. Most platforms focus on pre-trip planning, but travelers also need help while the trip is happening: what to do after a delay, whether an attraction is still reachable, which cultural rules apply at the next temple, where to eat nearby, or whether a route is safe during rain.
+
+\subsection{Domain Focus Areas}
+
+\begin{itemize}
+    \item Timeline-based itinerary planning and management.
+    \item Real-time trip assistance before and during travel.
+    \item Dynamic disruption handling and delay propagation.
+    \item Personalized recommendations for activities, routes, dining, stays, and time slots.
+    \item Cultural guidance for religious, social, and local contexts.
+    \item Context-aware interaction in which users do not need to repeat trip details.
+\end{itemize}
+
+\section{Solution Outline}
+
+The proposed solution is an \textbf{AI-powered Timeline Travel Planning and Assistance Platform}. The platform represents a trip as a time-ordered timeline of actionable nodes. Each node carries the information needed to understand, preview, modify, and monitor that part of the journey, including transport details, stay information, the visiting location, food and dining options, emergency contacts, cultural context, constraints, and risk indicators. This turns an itinerary from a list of places into a structured plan that can be monitored, edited, and adapted as the trip progresses.
+
+At the center is the \textbf{Trip Orchestrator Agent}, which receives user requests, establishes the current trip context, identifies the relevant timeline node, and coordinates \textbf{four specialized agents} (Planner, Logistics, Disruption, and Culture \& Etiquette). The orchestrator combines their outputs, resolves conflicts, and updates the timeline.
+
+For example, if a traveler reports traffic on the way to Kandy, the orchestrator identifies the active node, the Disruption Agent estimates the delay and updates the node, and the system checks the remaining timeline. If the delay threatens a hotel check-in, a dinner booking, a temple visit, or a train connection, the platform flags the conflict and proposes recovery actions: push later nodes, drop a low-priority activity, take a faster route, replace an activity, or leave the conflict flagged for review.
+
+Node states make the timeline easy to read at a glance. A \emph{green} node has no known problems; a \emph{red} node has a disruption, conflict, or risk that needs attention; a \emph{purple} node has had its tasks completed. The currently active node and upcoming nodes are highlighted distinctly so the traveler always knows where they are in the day.
+
+Users can perform full timeline operations: create, update, reorder, reschedule, or delete nodes, and open any node to preview route options, cultural notes, nearby dining, emergency services, and risk indicators. Travelers interact through a web and mobile app and a WhatsApp/Telegram bot, so they are not tied to one interface, while partners and platform maintainers use a separate admin/partner console.
+
+\subsection{Core Features}
+
+\begin{itemize}
+    \item \textbf{Timeline itinerary:} converts a trip into a sequence of actionable, time-aware nodes.
+    \item \textbf{Node previews:} transport, stay, visit, food, emergency, cultural, and risk details per item.
+    \item \textbf{Disruption handling:} users report delays, closures, storms, and traffic, and the system also detects disruptions automatically from external alerts.
+    \item \textbf{Delay propagation:} automatically checks how one delay affects future reservations, activities, routes, meals, and check-ins.
+    \item \textbf{Personalized recommendations:} suggests better routes, attractions, food, stays, time slots, and replacement activities.
+    \item \textbf{Cultural guidance:} dress codes, etiquette, photography rules, religious expectations, and festival impacts.
+    \item \textbf{Implicit context:} infers the active trip and node from the session, schedule, location, and timeline state, so users need not repeat trip details.
+\end{itemize}
+
+\section{System Architecture}
+
+The platform follows a layered architecture with a clear separation between the user-facing request path, an administrative plane, the agentic backend, a shared memory layer, the domain services, and the external feeds. End-user requests enter through an \textbf{API Gateway / Backend Router} and reach the Trip Orchestrator, which delegates to the specialized agents; the agents draw on domain services, and only those services talk to external APIs. This strict layering keeps each concern in one place: an agent never calls an external API directly.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{Archi_Diagram.png}
+    \caption{High-level system architecture of the AI-Powered Timeline Travel Planning and Assistance Platform.}
+    \label{fig:architecture}
+\end{figure}
+
+\subsection{User-Facing Plane}
+
+Two end-user channels front the system: a \textbf{Web / Mobile App} and a \textbf{WhatsApp / Telegram bot}. Both communicate through the \textbf{API Gateway / Backend Router}, which exchanges messages bidirectionally with the Trip Orchestrator and also serves as the egress path for outbound notifications back to users.
+
+\subsection{Administrative Plane}
+
+Platform maintainers and partners use a separate \textbf{Admin / Partner Console} that connects through an \textbf{Admin API / Ops Backend}. This plane is independent of the traveler request path and is used to operate and configure the domain services and to inspect and manage the shared memory and state.
+
+\subsection{Agentic Backend}
+
+This layer contains the \textbf{Trip Orchestrator Agent} and the \textbf{four specialized agents}, which communicate bidirectionally with the orchestrator.
+
+\begin{itemize}
+    \item \textbf{Trip Orchestrator Agent} --- understands the request, identifies the active trip and node, gathers context, assigns work to the agents, resolves conflicts between their outputs, and writes the final timeline. It reads from and writes to both shared memory stores.
+    \item \textbf{Planner Agent} --- builds and optimizes the itinerary using the Itinerary Optimizer, Climate \& Seasonality, and Events \& Festivals services. Personalized recommendations are produced here, drawing on the Vector DB for preference and similarity matching.
+    \item \textbf{Logistics Agent} --- evaluates transport options, route feasibility, durations, and transfer dependencies using the Routing \& Transport and Itinerary Optimizer services.
+    \item \textbf{Disruption Agent} --- handles delays, closures, cancellations, and storms by recomputing affected nodes through the Itinerary Optimizer, Climate \& Seasonality, and Events \& Festivals services, and proposing recovery actions. It also receives proactive signals from the Alerts Scraper and triggers the Notification Service.
+    \item \textbf{Culture \& Etiquette Agent} --- supplies temple etiquette, clothing requirements, photography rules, and festival impacts via the Cultural Knowledge and Events \& Festivals services.
+\end{itemize}
+
+\subsection{Shared Memory and State}
+
+A separate, shared layer holds the system's persistent state: a \textbf{Trip DB (PostgreSQL)} that stores the canonical trip, bookings, timeline, and node states, and a \textbf{Vector DB (RAG / embeddings)} that stores preferences, past decisions, similar trips, and contextual knowledge for retrieval. The Vector DB is what enables implicit context and increasingly relevant personalization over time. Both the Trip Orchestrator and the administrative plane access this layer.
+
+\subsection{Domain Services}
+
+Seven domain services, backed by a route \textbf{Graph DB}, sit between the agents and the outside world:
+
+\begin{itemize}
+    \item \textbf{Itinerary Optimizer Service} --- orders and re-orders activities under time, location, and opening-hour constraints (uses Weather APIs, Trip DB, Vector DB).
+    \item \textbf{Routing \& Transport Service} --- computes routes and transfers (uses the route Graph DB, Maps APIs, transport feeds, and Trip DB).
+    \item \textbf{Climate \& Seasonality Service} --- assesses weather and seasonal risk (uses Weather APIs and Trip DB).
+    \item \textbf{Events \& Festivals Service} --- tracks events and festival impacts (uses transport feeds, official tourism content, and Trip DB).
+    \item \textbf{Cultural Knowledge Service} --- holds cultural and etiquette knowledge (uses official tourism content, Trip DB, and Vector DB).
+    \item \textbf{Alerts Scraper (Special Events)} --- triggered periodically by a Cron Scheduler; reads external news feeds for special events that could disrupt travel and signals the Disruption Agent when one is found.
+    \item \textbf{Notification Service} --- triggered by the Disruption Agent; pushes updates to users through the API Gateway.
+    \item \textbf{Graph DB (Routes)} --- stores the route and transport network used for routing and reachability.
+\end{itemize}
+
+\subsection{External APIs and Feeds}
+
+Five external sources are consumed only through the domain services: \textbf{Weather \& Advisories APIs}, \textbf{Maps / Geocoding / Routing APIs}, \textbf{Train / Bus / Park Status feeds}, \textbf{Official Tourism \& Cultural Content}, and \textbf{News Feeds (Special Events)}.
+
+\subsection{Proactive Alerts Pipeline}
+
+A \textbf{Cron Scheduler} periodically triggers the Alerts Scraper (Special Events), which scans external news feeds for events that could affect travel, such as processions, road closures, or strikes. When it finds a relevant event, it signals the Disruption Agent, which evaluates the affected timeline and, where needed, triggers the Notification Service to push an update to the user through the API Gateway. This lets the platform surface disruptions proactively, not only when a user reports them.
+
+\subsection{Key Architectural Properties}
+
+\begin{itemize}
+    \item \textbf{Strict layering:} agents call domain services; only domain services call external APIs. This isolates external dependencies and makes individual services replaceable.
+    \item \textbf{Single source of truth:} the shared Trip DB holds the canonical timeline and node states, read and written consistently across layers.
+    \item \textbf{Separate administrative plane:} maintainers operate the domain services and inspect or manage the shared state without going through the traveler request path.
+    \item \textbf{Proactive disruption pipeline:} Cron Scheduler $\rightarrow$ Alerts Scraper $\rightarrow$ Disruption Agent $\rightarrow$ Notification Service $\rightarrow$ API Gateway $\rightarrow$ user, complementing user-reported issues.
+    \item \textbf{Personalization layer:} the Vector DB (RAG / embeddings) underpins implicit context and learning across the orchestrator, Itinerary Optimizer, and Cultural Knowledge service.
+\end{itemize}
+
+\subsection{Expected User Experience}
+
+The traveler shares goals, dates, preferences, budget, and constraints, and the platform generates a timeline of activities, stays, routes, meals, and contextual notes. During the trip, the traveler opens the timeline, inspects nodes, asks questions, and reports issues. When something changes, the platform does not give generic advice: it updates the timeline, checks downstream consequences, highlights conflicts, and explains recovery options, acting as both a planning assistant and a real-time travel companion.
+
+\section{How We Plan to Apply AI}
+
+AI is applied through an agentic architecture in which the Trip Orchestrator coordinates four specialized agents, each contributing a distinct kind of intelligence, with the orchestrator combining their outputs into safe, practical, personalized decisions. The agent responsibilities are detailed in the architecture section above; this section summarizes the AI techniques used and the end-to-end workflow.
+
+\subsection{AI Capabilities Used}
+
+\begin{itemize}
+    \item Natural language understanding to interpret requests and disruption reports.
+    \item Multi-agent reasoning to divide travel tasks across the Planner, Logistics, Disruption, and Culture \& Etiquette agents.
+    \item Constraint-aware planning over time, location, opening hours, bookings, and transport limits, delegated to the Itinerary Optimizer.
+    \item Real-time adaptation to recompute the timeline when conditions change.
+    \item Recommendation generation based on preferences, goals, context, and availability, using the Vector DB.
+    \item Semantic memory to learn behavior and support implicit context.
+    \item Retrieval from domain services for weather, routes, transport, events, dining, and cultural information.
+    \item Conflict resolution that balances preferences, hard constraints, safety, cost, and convenience.
+    \item Explainable responses so users understand why a change or recommendation is proposed.
+\end{itemize}
+
+\subsection{Planned AI Workflow}
+
+\begin{enumerate}
+    \item The user submits a request, asks a question, or reports a disruption (or the Cron-driven Alerts Scraper proactively signals the Disruption Agent).
+    \item The Trip Orchestrator identifies the active trip, node, intent, and required context from the Trip DB and Vector DB.
+    \item The relevant agents call their domain services, which retrieve data from external APIs and feeds.
+    \item Each agent analyzes the problem from its specialty: planning, logistics, disruption, or culture.
+    \item The orchestrator compares outputs, resolves conflicts, and prioritizes user goals and hard constraints.
+    \item The timeline is updated with new times, node states, warnings, recommendations, or alternatives.
+    \item The response is delivered in a clear, actionable format.
+    \item User decisions and feedback are stored to improve future personalization.
+\end{enumerate}
+
+\section{Scope, Feasibility, and Evaluation}
+
+\subsection{Scope for This Phase}
+
+The interim prototype targets the end-to-end timeline experience: generating a Sri Lanka itinerary, previewing nodes, and handling at least one full disruption-and-recovery cycle with delay propagation across the remaining timeline. The Trip Orchestrator and all four specialized agents are in scope, as are the Itinerary Optimizer, Routing \& Transport, Climate \& Seasonality, and Cultural Knowledge services.
+
+\subsection{Identified as Future Work}
+
+\begin{itemize}
+    \item \textbf{Negotiation and offer support} (price comparison, counter-offers, and bundling) is a planned extension. It is not part of the current architecture and would be added as a dedicated agent and service with explicit ethical and policy boundaries.
+    \item Full coverage of the Events \& Festivals, Alerts Scraper, and Notification services, including the Cron-driven proactive disruption pipeline at production scale.
+\end{itemize}
+
+\subsection{Feasibility and Risks}
+
+\begin{itemize}
+    \item \textbf{Data availability:} real-time Train / Bus / Park status for Sri Lanka may have limited or unofficial public APIs. Where live feeds are unavailable, the team will fall back to scheduled data, scraped advisories, and user-reported status, and document the limitation.
+    \item \textbf{Routing accuracy:} hill-country and rural routes can be poorly represented in mapping APIs; the route Graph DB lets us encode local corrections.
+    \item \textbf{Cultural content accuracy:} etiquette and festival guidance will be sourced from official tourism content and reviewed, since errors here carry real social cost.
+\end{itemize}
+
+\subsection{Evaluation Plan}
+
+\begin{itemize}
+    \item \textbf{Functional:} verify that a reported delay correctly propagates and that conflicts (check-ins, bookings, connections) are detected and surfaced.
+    \item \textbf{Quality:} rate the relevance of recommendations and the correctness of cultural guidance against a small benchmark of Sri Lanka trips.
+    \item \textbf{Usability:} measure whether implicit context reduces the need for users to restate trip details, and gather qualitative feedback on the timeline view.
+\end{itemize}
+
+\section{Highlighted Key Points}
+
+\begin{itemize}
+    \item The core idea is a dynamic travel timeline, not a static itinerary list, with each node carrying operational, cultural, contextual, emergency, dining, and risk information.
+    \item A Trip Orchestrator coordinates exactly four specialized agents (Planner, Logistics, Disruption, Culture \& Etiquette) over a strictly layered architecture of seven domain services and five external feeds.
+    \item Delay propagation is central: one disrupted activity is checked against the rest of the trip, and disruptions can be detected proactively via a Cron-driven pipeline (Alerts Scraper $\rightarrow$ Disruption Agent $\rightarrow$ Notification Service $\rightarrow$ user).
+    \item A shared memory layer (Trip DB plus a RAG Vector DB) supports implicit context and learning, so the system improves over time and users need not repeat trip details.
+    \item The focus on Sri Lanka grounds the work in real constraints: weather, geography, transport delays, religious sites, and cultural expectations.
+    \item The goal is to reduce planning effort, decision fatigue, and travel stress while improving safety, personalization, and cultural awareness.
+\end{itemize}
+
+\end{document}

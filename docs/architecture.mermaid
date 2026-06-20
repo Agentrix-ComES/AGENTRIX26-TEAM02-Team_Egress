@@ -1,12 +1,15 @@
 ---
 config:
-  layout: fixed
+  layout: elk
 ---
-flowchart BT
- subgraph Channels["User Channels"]
+flowchart TB
+ subgraph Channels["End-User Channels"]
         UWeb["Web / Mobile App"]
         UChat["WhatsApp / Telegram Bot"]
+  end
+ subgraph Admin["Platform Maintainers"]
         UAdmin["Admin / Partner Console"]
+        AdminGW["Admin API / Ops Backend"]
   end
  subgraph Agents["Specialized Agents"]
         PlannerA["Planner Agent"]
@@ -14,14 +17,13 @@ flowchart BT
         DisruptionA["Disruption Agent"]
         CultureA["Culture & Etiquette Agent"]
   end
- subgraph State["Memory & State"]
-        TripDB[("Trip DB: Postgres")]
-        VecDB[("Vector DB")]
-  end
  subgraph AgenticBackend["Agentic Backend"]
         Orchestrator["Trip Orchestrator Agent"]
         Agents
-        State
+  end
+ subgraph State["Shared Memory & State"]
+        TripDB[("Trip DB: Postgres")]
+        VecDB[("Vector DB (RAG / Embeddings)")]
   end
  subgraph Domain["Domain Services"]
         ItinSvc["Itinerary Optimizer Service"]
@@ -29,7 +31,7 @@ flowchart BT
         ClimateSvc["Climate & Seasonality Service"]
         EventSvc["Events & Festivals Service"]
         CultureSvc["Cultural Knowledge Service"]
-        AlertsScrappingSvc["Alerts Scrapping Service"]
+        AlertsSvc["Alerts Scraper (Special Events)"]
         NotificationSvc["Notification Service"]
         GraphDB[("Graph DB: Routes")]
   end
@@ -38,11 +40,13 @@ flowchart BT
         MapsAPI["Maps / Geocoding / Routing APIs"]
         TransportAPI["Train / Bus / Park Status Feeds"]
         TourismAPI["Official Tourism & Cultural Content"]
-        News&Alerts["News and Alerts (Scrapping)"]
+        NewsAlerts["News Feeds (Special Events)"]
   end
-    Channels --> APIGW["API Gateway / Backend Router"]
-    APIGW --> Orchestrator
-    Orchestrator --> PlannerA & LogisticsA & DisruptionA & CultureA
+    Cron["Cron Scheduler"]
+    UWeb --> APIGW["API Gateway / Backend Router"]
+    UChat --> APIGW
+    APIGW <--> Orchestrator
+    Orchestrator <--> PlannerA & LogisticsA & DisruptionA & CultureA
     Orchestrator <--> TripDB & VecDB
     PlannerA --> ItinSvc & ClimateSvc & EventSvc
     LogisticsA --> RouteSvc & ItinSvc
@@ -53,11 +57,16 @@ flowchart BT
     ItinSvc --> WeatherAPI & TripDB & VecDB
     EventSvc --> TransportAPI & TourismAPI & TripDB
     CultureSvc --> TourismAPI & TripDB & VecDB
-    AlertsScrappingSvc --> News&Alerts & NotificationSvc
-    NotificationSvc --> GraphDB & DisruptionA
-    n1["n1"]
-
-    n1@{ shape: rect}
+    Cron --> AlertsSvc
+    AlertsSvc --> NewsAlerts
+    AlertsSvc --> DisruptionA
+    DisruptionA --> NotificationSvc
+    NotificationSvc --> APIGW
+    UAdmin --> AdminGW
+    AdminGW --> Domain
+    AdminGW --> State
     style AgenticBackend fill:#FFF9C4
     style Domain fill:#C8E6C9
-    style External stroke:transparent,fill:#E1BEE7
+    style External fill:#E1BEE7,stroke:transparent
+    style State fill:#BBDEFB
+    style Admin fill:#FFCCBC

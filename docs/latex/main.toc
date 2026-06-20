@@ -1,0 +1,25 @@
+\contentsline {section}{\numberline {1}Problem Statement}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Key Issues Identified}{3}{subsection.1.1}%
+\contentsline {section}{\numberline {2}Chosen Domain}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Domain Focus Areas}{4}{subsection.2.1}%
+\contentsline {section}{\numberline {3}Solution Outline}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Core Features}{5}{subsection.3.1}%
+\contentsline {section}{\numberline {4}System Architecture}{5}{section.4}%
+\contentsline {subsection}{\numberline {4.1}User-Facing Plane}{6}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Administrative Plane}{6}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Agentic Backend}{7}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Shared Memory and State}{7}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Domain Services}{7}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}External APIs and Feeds}{8}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.7}Proactive Alerts Pipeline}{8}{subsection.4.7}%
+\contentsline {subsection}{\numberline {4.8}Key Architectural Properties}{8}{subsection.4.8}%
+\contentsline {subsection}{\numberline {4.9}Expected User Experience}{9}{subsection.4.9}%
+\contentsline {section}{\numberline {5}How We Plan to Apply AI}{9}{section.5}%
+\contentsline {subsection}{\numberline {5.1}AI Capabilities Used}{9}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Planned AI Workflow}{9}{subsection.5.2}%
+\contentsline {section}{\numberline {6}Scope, Feasibility, and Evaluation}{10}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Scope for This Phase}{10}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Identified as Future Work}{10}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Feasibility and Risks}{10}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Evaluation Plan}{11}{subsection.6.4}%
+\contentsline {section}{\numberline {7}Highlighted Key Points}{11}{section.7}%
