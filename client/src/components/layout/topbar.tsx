@@ -1,7 +1,7 @@
 import { Bell, Moon, Search, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { UserButton } from "@clerk/clerk-react";
 import { useTheme } from "@/hooks/use-theme";
 
 export function Topbar() {
@@ -20,9 +20,7 @@ export function Topbar() {
           <Button variant="ghost" size="icon" aria-label="Alerts">
             <Bell className="h-4 w-4" />
           </Button>
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="bg-primary/15 text-primary">SE</AvatarFallback>
-          </Avatar>
+          <UserButton afterSignOutUrl="/" />
         </div>
       </div>
     </header>
