@@ -15,6 +15,7 @@ class LLMConfig(Base, TimestampMixin):
     tier: Mapped[str] = mapped_column(
         String(20), default="primary", index=True
     ) 
+    
     provider: Mapped[str] = mapped_column(String(50), default="gemini")
     model: Mapped[str] = mapped_column(String(100))
     temperature: Mapped[float] = mapped_column(Float, default=0.2)

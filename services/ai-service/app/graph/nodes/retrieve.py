@@ -2,14 +2,17 @@
 
 This is the advanced RAG step. Based on the conversation intent we fan a single
 embedded query out across the relevant Qdrant collections (hotels, activities,
-transport, dining, culture, events), optionally filtering by destination city,
-then flatten the source-tagged hits into ``state['retrieved']`` for the planner.
+transport, dining, culture, events), optionally filtering by destination city.
+We retrieve a larger initial set, then use an LLM to rerank them against the
+user's specific preferences, and flatten the top source-tagged hits into 
+``state['retrieved']`` for the planner.
 
 Also fetches Neo4j Place nodes for the destination so the planner can prefer
 locations that have verified transport routes in the graph.
 """
 import asyncio
 import logging
+from typing import Any
 
 from app.db.qdrant_collections import (
     ACTIVITIES,
@@ -25,8 +28,6 @@ from app.graph.state import GraphState
 from app.graph.tools.neo4j_routes import find_places
 from app.graph.tools.qdrant_search import Filters, multi_search
 from app.schemas.ai import RerankedIndices
-
-logger = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
 
