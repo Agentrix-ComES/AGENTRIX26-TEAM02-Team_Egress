@@ -1,10 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
+import { toast } from "sonner";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
-import { CalendarRange, Loader2, MapPin, Send, Sparkles, Wand2 } from "lucide-react";
-import { sendChat, itineraryToTrip } from "@/lib/api";
+import { CalendarRange, ExternalLink, Loader2, MapPin, Send, Sparkles, Wand2 } from "lucide-react";
+import {
+  createTrip,
+  getConversation,
+  itineraryToTrip,
+  sendChat,
+  type ConversationMessage,
+} from "@/lib/api";
 import type { ChatMessage, Trip, TripNode } from "@/types/trip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +71,16 @@ interface WorkspaceLocationState {
   conversationId?: string;
   trip?: Trip;
   initialReply?: string;
+  tripId?: string;
+}
+
+const LS_CONVERSATION = "workspace:conversationId";
+const LS_TRIP_ID = "workspace:tripId";
+
+function toIsoDateTime(s: string | undefined): string | null {
+  if (!s) return null;
+  const d = s.length === 10 ? new Date(`${s}T00:00:00Z`) : new Date(s);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
 export function WorkspacePage() {
@@ -86,7 +103,12 @@ export function WorkspacePage() {
     }
     return [];
   });
-  const [conversationId, setConversationId] = useState<string | undefined>(incoming.conversationId);
+  const [conversationId, setConversationId] = useState<string | undefined>(
+    incoming.conversationId ?? localStorage.getItem(LS_CONVERSATION) ?? undefined,
+  );
+  const [tripId, setTripId] = useState<string | undefined>(
+    incoming.tripId ?? localStorage.getItem(LS_TRIP_ID) ?? undefined,
+  );
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [touched, setTouched] = useState<Set<string>>(new Set());
@@ -99,6 +121,42 @@ export function WorkspacePage() {
   useEffect(() => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, busy]);
+
+  // Restore previous conversation on mount (LangGraph keeps history server-side).
+  // Skip if we already have messages from router state or just-loaded incoming trip.
+  useEffect(() => {
+    let cancelled = false;
+    if (!conversationId || messages.length > 0) return;
+    (async () => {
+      try {
+        const state = await getConversation(getToken, conversationId);
+        if (cancelled) return;
+        const restored: ChatMessage[] = state.messages.map((m: ConversationMessage, i: number) => ({
+          id: `r${i}`,
+          role: m.role,
+          agent: m.role === "assistant" ? "orchestrator" : undefined,
+          content: m.content,
+          timestamp: m.created_at ?? new Date().toISOString(),
+        }));
+        if (restored.length > 0) setMessages(restored);
+        if (state.itinerary && trip.nodes.length === 0) {
+          setTrip((prev) =>
+            itineraryToTrip(state.itinerary!, {
+              id: prev.id,
+              title: prev.title,
+              preferences: prev.preferences,
+            }),
+          );
+        }
+      } catch (err) {
+        console.warn("Couldn't restore conversation", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId]);
 
   const flashTouched = useCallback((ids: string[]) => {
     if (!ids.length) return;
@@ -142,6 +200,7 @@ export function WorkspacePage() {
           end_date: trip.endDate || undefined,
         });
         setConversationId(res.conversation_id);
+        localStorage.setItem(LS_CONVERSATION, res.conversation_id);
 
         setMessages((arr) => [
           ...arr,
@@ -155,9 +214,10 @@ export function WorkspacePage() {
         ]);
 
         if (res.itinerary) {
+          const itin = res.itinerary;
           setTrip((prev) => {
             const before = snapshotMap(prev);
-            const next = itineraryToTrip(res.itinerary!, {
+            const next = itineraryToTrip(itin, {
               id: prev.id,
               title: prev.title,
               preferences: prev.preferences,
@@ -169,6 +229,31 @@ export function WorkspacePage() {
             flashTouched(changed);
             return next;
           });
+
+          // First time we get a real itinerary, materialise a Trip row in
+          // trip-service so it shows up under /trips.
+          if (!tripId) {
+            const start = toIsoDateTime(itin.start_date ?? undefined);
+            const end = toIsoDateTime(itin.end_date ?? undefined);
+            if (start && end && itin.destination) {
+              try {
+                const saved = await createTrip(getToken, {
+                  title: `${itin.destination} trip`,
+                  destination: itin.destination,
+                  start_date: start,
+                  end_date: end,
+                  budget: trip.budget || 0,
+                  currency: trip.currency || "USD",
+                  preferences: { conversation_id: res.conversation_id },
+                });
+                setTripId(saved.id);
+                localStorage.setItem(LS_TRIP_ID, saved.id);
+                toast.success("Trip saved");
+              } catch (err) {
+                console.warn("Failed to persist trip", err);
+              }
+            }
+          }
         }
       } catch (err) {
         console.error("Chat call failed", err);
@@ -186,7 +271,7 @@ export function WorkspacePage() {
         setBusy(false);
       }
     },
-    [busy, conversationId, flashTouched, getToken, trip.destination, trip.endDate, trip.preferences, trip.startDate],
+    [busy, conversationId, flashTouched, getToken, trip.budget, trip.currency, trip.destination, trip.endDate, trip.preferences, trip.startDate, tripId, userId],
   );
 
   return (
@@ -204,9 +289,19 @@ export function WorkspacePage() {
                 Chat to plan and reshape your timeline — agents will animate the changes.
               </CardDescription>
             </div>
-            <Badge variant={busy ? "warning" : "success"}>
-              {busy ? "Agents working…" : "4 agents online"}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {tripId && (
+                <Link
+                  to={`/trips/${tripId}`}
+                  className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                >
+                  Saved trip <ExternalLink className="h-3 w-3" />
+                </Link>
+              )}
+              <Badge variant={busy ? "warning" : "success"}>
+                {busy ? "Agents working…" : "4 agents online"}
+              </Badge>
+            </div>
           </div>
         </CardHeader>
 
