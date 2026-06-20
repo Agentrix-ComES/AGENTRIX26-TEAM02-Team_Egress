@@ -1,0 +1,47 @@
+"""AI Service FastAPI application entrypoint."""
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
+from app.core.config import settings
+from app.core.langsmith import configure_langsmith
+from app.db.neo4j import close_neo4j, verify_neo4j
+from app.db.qdrant import close_qdrant, init_qdrant
+from app.db.session import close_db, init_db
+from app.graph.checkpointer import close_checkpointer, init_checkpointer
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(settings.service_name)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize external resources on startup and clean up on shutdown."""
+    configure_langsmith()
+    await init_db()
+    await init_qdrant()
+    await verify_neo4j()
+    await init_checkpointer()
+    logger.info("%s startup complete", settings.service_name)
+    try:
+        yield
+    finally:
+        await close_checkpointer()
+        await close_neo4j()
+        await close_qdrant()
+        await close_db()
+        logger.info("%s shutdown complete", settings.service_name)
+
+
+app = FastAPI(
+    title="AI Service",
+    description="LangGraph orchestration, retrieval, and routing for the travel platform.",
+    version="0.1.0",
+    lifespan=lifespan,
+)
+
+
+@app.get("/health", tags=["health"])
+async def health() -> dict[str, str]:
+    return {"status": "ok", "service": settings.service_name}
