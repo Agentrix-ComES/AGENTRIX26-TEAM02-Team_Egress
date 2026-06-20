@@ -1,10 +1,14 @@
 
 from __future__ import annotations
 
+import json
+import logging
 import uuid
 
 from langchain_core.messages import AIMessage, HumanMessage
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 from app.graph.builder import get_compiled_graph
 from app.models.agent_run import AgentRun
@@ -61,8 +65,36 @@ async def run_chat(session: AsyncSession, request: ChatRequest) -> ChatResponse:
         input_state["disruption"] = request.disruption
 
     try:
-        result = await graph.ainvoke(input_state, config=_thread_config(conversation_id))
+        config = _thread_config(conversation_id)
+        logger.info(f"Starting chat run for user {request.user_id} (Thread: {conversation_id})")
+        logger.debug(f"Invoking graph with input state: {input_state}")
+        
+        # Helper to handle non-serializable objects (like AIMessage)
+        def _fallback_serializer(obj):
+            return str(obj)
+
+        async for event in graph.astream(input_state, config=config, stream_mode="updates"):
+            for node_name, node_output in event.items():
+                try:
+                    output_str = json.dumps(node_output, default=_fallback_serializer, indent=2)
+                except Exception:
+                    output_str = str(node_output)
+                
+                # Truncate extremely long outputs
+                if len(output_str) > 1500:
+                    output_str = output_str[:1500] + "\n... [truncated]"
+                    
+                logger.info(f"Node Executed: {node_name}")
+                logger.info(f"Output from {node_name}:\n{output_str}")
+
+        logger.info(f"Graph execution completed successfully for conversation {conversation_id}")
+        
+        # Fetch the fully merged state after execution finishes
+        state_snapshot = await graph.aget_state(config)
+        result = state_snapshot.values
+        
     except Exception as exc:  # persist failure, then surface it
+        logger.error(f"Graph execution failed for conversation {conversation_id}: {exc}", exc_info=True)
         run.status = "failed"
         run.error = str(exc)
         await session.flush()
