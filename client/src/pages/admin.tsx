@@ -1,4 +1,14 @@
-import { Database, Server, ShieldCheck, Zap } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@clerk/clerk-react";
+import { formatDistanceToNow } from "date-fns";
+import {
+  Loader2,
+  RefreshCw,
+  Server,
+  ShieldCheck,
+  UserCog,
+  Users,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -8,19 +18,31 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { listUsers, type CurrentUser } from "@/lib/api";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
-const services = [
-  { name: "Itinerary Optimizer", status: "healthy", load: 38 },
-  { name: "Routing & Transport", status: "healthy", load: 71 },
-  { name: "Climate & Seasonality", status: "healthy", load: 22 },
-  { name: "Events & Festivals", status: "degraded", load: 89 },
-  { name: "Cultural Knowledge", status: "healthy", load: 14 },
-  { name: "Alerts Scraper", status: "healthy", load: 9 },
-  { name: "Notification Service", status: "healthy", load: 31 },
+interface ServiceCheck {
+  name: string;
+  url: string;
+  status: "checking" | "ok" | "down";
+}
+
+const initialServiceChecks: ServiceCheck[] = [
+  { name: "AI Service", url: "/ai/health", status: "checking" },
+  { name: "User Service", url: "/users/health", status: "checking" },
+];
+
+const domainServices = [
+  { name: "Itinerary Optimizer", load: 38 },
+  { name: "Routing & Transport", load: 71 },
+  { name: "Climate & Seasonality", load: 22 },
+  { name: "Events & Festivals", load: 89 },
+  { name: "Cultural Knowledge", load: 14 },
+  { name: "Alerts Scraper", load: 9 },
+  { name: "Notification Service", load: 31 },
 ];
 
 const externalFeeds = [
@@ -38,49 +60,174 @@ const partners = [
   { name: "Jetwing", type: "Stay", bookings: 91 },
 ];
 
+const API_BASE =
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") ?? "http://localhost:8001/api";
+
 export function AdminPage() {
+  const { getToken } = useAuth();
+  const { user } = useCurrentUser();
+  const [users, setUsers] = useState<CurrentUser[]>([]);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [usersError, setUsersError] = useState<string | null>(null);
+  const [services, setServices] = useState<ServiceCheck[]>(initialServiceChecks);
+
+  const refreshUsers = async () => {
+    setUsersLoading(true);
+    setUsersError(null);
+    try {
+      setUsers(await listUsers(getToken));
+    } catch (err) {
+      setUsersError((err as Error).message);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const pingServices = async () => {
+    setServices(initialServiceChecks);
+    const results = await Promise.all(
+      initialServiceChecks.map(async (svc) => {
+        try {
+          const res = await fetch(`${API_BASE}${svc.url}`);
+          return { ...svc, status: (res.ok ? "ok" : "down") as ServiceCheck["status"] };
+        } catch {
+          return { ...svc, status: "down" as ServiceCheck["status"] };
+        }
+      }),
+    );
+    setServices(results);
+  };
+
+  useEffect(() => {
+    refreshUsers();
+    pingServices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const adminCount = useMemo(() => users.filter((u) => u.role === "Admin").length, [users]);
+  const userCount = users.length - adminCount;
+  const healthy = services.filter((s) => s.status === "ok").length;
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Admin / Partner Console</h1>
-        <p className="text-muted-foreground">
-          Administrative plane — operate the domain services and inspect shared state.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-semibold">Admin Console</h1>
+          <p className="text-zinc-400">
+            Welcome back, {user?.full_name || user?.email}. Operate domain services and inspect shared state.
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => { refreshUsers(); pingServices(); }} className="border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-100">
+          <RefreshCw className="h-4 w-4" /> Refresh
+        </Button>
       </div>
 
       <div className="grid gap-3 md:grid-cols-4">
-        <Stat label="Active trips" value="1,284" icon={Zap} />
-        <Stat label="Agents online" value="4 / 4" icon={ShieldCheck} />
-        <Stat label="Domain services" value="7 / 7" icon={Server} />
-        <Stat label="Vector DB rows" value="2.1M" icon={Database} />
+        <Stat label="Total users" value={usersLoading ? "…" : String(users.length)} icon={Users} />
+        <Stat label="Admins" value={usersLoading ? "…" : String(adminCount)} icon={UserCog} />
+        <Stat label="Services healthy" value={`${healthy} / ${services.length}`} icon={ShieldCheck} />
+        <Stat label="Domain services" value={`${domainServices.length}`} icon={Server} hint="mocked" />
       </div>
 
-      <Tabs defaultValue="services">
-        <TabsList>
+      <Tabs defaultValue="users" className="space-y-4">
+        <TabsList className="bg-zinc-900 border border-zinc-800">
+          <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="health">Service health</TabsTrigger>
           <TabsTrigger value="services">Domain services</TabsTrigger>
           <TabsTrigger value="feeds">External feeds</TabsTrigger>
           <TabsTrigger value="memory">Shared memory</TabsTrigger>
           <TabsTrigger value="partners">Partners</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="services" className="space-y-3">
-          {services.map((s) => (
-            <Card key={s.name}>
-              <CardContent className="p-4 grid grid-cols-[1fr_120px_180px_120px] items-center gap-4">
+        <TabsContent value="users">
+          <AdminCard
+            title="Registered users"
+            description={`${users.length} total · ${adminCount} admin${adminCount === 1 ? "" : "s"} · ${userCount} traveller${userCount === 1 ? "" : "s"}`}
+          >
+            {usersError ? (
+              <div className="text-sm text-rose-400">Failed to load: {usersError}</div>
+            ) : usersLoading ? (
+              <div className="flex items-center gap-2 text-sm text-zinc-400">
+                <Loader2 className="h-4 w-4 animate-spin" /> Loading users…
+              </div>
+            ) : users.length === 0 ? (
+              <div className="text-sm text-zinc-400">No users yet.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs uppercase text-zinc-500 border-b border-zinc-800">
+                      <th className="py-2 pr-4 font-medium">Name</th>
+                      <th className="py-2 pr-4 font-medium">Email</th>
+                      <th className="py-2 pr-4 font-medium">Role</th>
+                      <th className="py-2 pr-4 font-medium">Joined</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((u) => (
+                      <tr key={u.user_id} className="border-b border-zinc-800/60 last:border-0">
+                        <td className="py-2.5 pr-4 font-medium">{u.full_name || "—"}</td>
+                        <td className="py-2.5 pr-4 text-zinc-400">{u.email}</td>
+                        <td className="py-2.5 pr-4">
+                          <Badge
+                            variant="outline"
+                            className={
+                              u.role === "Admin"
+                                ? "border-indigo-400/40 bg-indigo-500/10 text-indigo-300"
+                                : "border-zinc-700 bg-zinc-900 text-zinc-300"
+                            }
+                          >
+                            {u.role}
+                          </Badge>
+                        </td>
+                        <td className="py-2.5 pr-4 text-zinc-400">
+                          {formatDistanceToNow(new Date(u.created_at), { addSuffix: true })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </AdminCard>
+        </TabsContent>
+
+        <TabsContent value="health" className="space-y-3">
+          {services.map((svc) => (
+            <Card key={svc.name} className="bg-zinc-900 border-zinc-800">
+              <CardContent className="p-4 flex items-center justify-between">
                 <div>
-                  <div className="font-medium">{s.name}</div>
-                  <div className="text-xs text-muted-foreground">domain-service</div>
+                  <div className="font-medium text-zinc-100">{svc.name}</div>
+                  <div className="text-xs text-zinc-500">{API_BASE}{svc.url}</div>
                 </div>
-                <Badge variant={s.status === "healthy" ? "success" : "warning"}>
-                  {s.status}
+                <Badge
+                  variant="outline"
+                  className={
+                    svc.status === "ok"
+                      ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
+                      : svc.status === "down"
+                        ? "border-rose-400/40 bg-rose-500/10 text-rose-300"
+                        : "border-zinc-700 bg-zinc-900 text-zinc-300"
+                  }
+                >
+                  {svc.status === "checking" ? "checking…" : svc.status}
                 </Badge>
+              </CardContent>
+            </Card>
+          ))}
+        </TabsContent>
+
+        <TabsContent value="services" className="space-y-3">
+          {domainServices.map((s) => (
+            <Card key={s.name} className="bg-zinc-900 border-zinc-800">
+              <CardContent className="p-4 grid grid-cols-[1fr_220px] items-center gap-4">
+                <div>
+                  <div className="font-medium text-zinc-100">{s.name}</div>
+                  <div className="text-xs text-zinc-500">domain-service · mocked</div>
+                </div>
                 <div>
                   <Progress value={s.load} />
-                  <div className="text-xs text-muted-foreground mt-1">{s.load}% load</div>
-                </div>
-                <div className="flex items-center gap-2 justify-end">
-                  <Switch defaultChecked />
-                  <span className="text-xs text-muted-foreground">enabled</span>
+                  <div className="text-xs text-zinc-500 mt-1">{s.load}% load</div>
                 </div>
               </CardContent>
             </Card>
@@ -89,56 +236,69 @@ export function AdminPage() {
 
         <TabsContent value="feeds" className="space-y-3">
           {externalFeeds.map((f) => (
-            <Card key={f.name}>
+            <Card key={f.name} className="bg-zinc-900 border-zinc-800">
               <CardContent className="p-4 flex items-center justify-between">
-                <div className="font-medium">{f.name}</div>
-                <Badge variant={f.status === "ok" ? "success" : "warning"}>{f.status}</Badge>
+                <div className="font-medium text-zinc-100">{f.name}</div>
+                <Badge
+                  variant="outline"
+                  className={
+                    f.status === "ok"
+                      ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
+                      : "border-amber-400/40 bg-amber-500/10 text-amber-300"
+                  }
+                >
+                  {f.status}
+                </Badge>
               </CardContent>
             </Card>
           ))}
         </TabsContent>
 
         <TabsContent value="memory" className="grid gap-4 md:grid-cols-2">
-          <Card>
+          <Card className="bg-zinc-900 border-zinc-800">
             <CardHeader>
-              <CardTitle>Trip DB (PostgreSQL)</CardTitle>
-              <CardDescription>Canonical timeline & node states.</CardDescription>
+              <CardTitle className="text-zinc-100">Trip DB (PostgreSQL)</CardTitle>
+              <CardDescription className="text-zinc-500">Canonical timeline & node states.</CardDescription>
             </CardHeader>
-            <CardContent className="text-sm space-y-2">
+            <CardContent className="text-sm space-y-2 text-zinc-300">
               <Row k="Tables" v="trips, nodes, bookings, audits" />
               <Row k="Rows" v="184,221" />
               <Row k="Replication lag" v="48ms" />
-              <Separator />
-              <Button size="sm" variant="outline">Open psql shell</Button>
+              <Separator className="bg-zinc-800" />
+              <Button size="sm" variant="outline" className="border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-100">
+                Open psql shell
+              </Button>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-zinc-900 border-zinc-800">
             <CardHeader>
-              <CardTitle>Vector DB (RAG / embeddings)</CardTitle>
-              <CardDescription>Preferences, past decisions, similar trips.</CardDescription>
+              <CardTitle className="text-zinc-100">Vector DB (RAG / embeddings)</CardTitle>
+              <CardDescription className="text-zinc-500">Preferences, past decisions, similar trips.</CardDescription>
             </CardHeader>
-            <CardContent className="text-sm space-y-2">
+            <CardContent className="text-sm space-y-2 text-zinc-300">
               <Row k="Collections" v="preferences, decisions, cultural-kb" />
               <Row k="Vectors" v="2,124,902" />
-              <Row k="Index health" v={<Badge variant="success">green</Badge>} />
-              <Separator />
-              <Button size="sm" variant="outline">Re-index cultural-kb</Button>
+              <Row k="Index health" v={<Badge variant="outline" className="border-emerald-400/40 bg-emerald-500/10 text-emerald-300">green</Badge>} />
+              <Separator className="bg-zinc-800" />
+              <Button size="sm" variant="outline" className="border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-100">
+                Re-index cultural-kb
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="partners" className="space-y-3">
           {partners.map((p) => (
-            <Card key={p.name}>
-              <CardContent className="p-4 grid grid-cols-[1fr_120px_120px_120px] items-center gap-4">
+            <Card key={p.name} className="bg-zinc-900 border-zinc-800">
+              <CardContent className="p-4 grid grid-cols-[1fr_140px_140px_120px] items-center gap-4">
                 <div>
-                  <div className="font-medium">{p.name}</div>
-                  <div className="text-xs text-muted-foreground">{p.type}</div>
+                  <div className="font-medium text-zinc-100">{p.name}</div>
+                  <div className="text-xs text-zinc-500">{p.type}</div>
                 </div>
-                <div className="text-sm">{p.bookings} bookings</div>
-                <Badge variant="outline">active</Badge>
+                <div className="text-sm text-zinc-300">{p.bookings} bookings</div>
+                <Badge variant="outline" className="border-zinc-700 bg-zinc-900 text-zinc-300">active</Badge>
                 <div className="text-right">
-                  <Button size="sm" variant="ghost">Open</Button>
+                  <Button size="sm" variant="ghost" className="text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800">Open</Button>
                 </div>
               </CardContent>
             </Card>
@@ -149,23 +309,50 @@ export function AdminPage() {
   );
 }
 
+function AdminCard({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card className="bg-zinc-900 border-zinc-800">
+      <CardHeader>
+        <CardTitle className="text-zinc-100">{title}</CardTitle>
+        {description && <CardDescription className="text-zinc-500">{description}</CardDescription>}
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
+}
+
 function Stat({
   label,
   value,
   icon: Icon,
+  hint,
 }: {
   label: string;
   value: string;
   icon: React.ComponentType<{ className?: string }>;
+  hint?: string;
 }) {
   return (
-    <Card>
+    <Card className="bg-zinc-900 border-zinc-800">
       <CardContent className="p-5 flex items-center justify-between">
         <div>
-          <div className="text-xs text-muted-foreground">{label}</div>
-          <div className="text-2xl font-semibold mt-0.5">{value}</div>
+          <div className="text-xs text-zinc-500 flex items-center gap-2">
+            {label}
+            {hint && <span className="text-[10px] uppercase tracking-wider text-zinc-600">{hint}</span>}
+          </div>
+          <div className="text-2xl font-semibold mt-0.5 text-zinc-100">{value}</div>
         </div>
-        <Icon className="h-6 w-6 text-primary" />
+        <div className="grid place-items-center h-10 w-10 rounded-lg bg-indigo-500/10 border border-indigo-400/20">
+          <Icon className="h-5 w-5 text-indigo-300" />
+        </div>
       </CardContent>
     </Card>
   );
@@ -173,9 +360,10 @@ function Stat({
 
 function Row({ k, v }: { k: string; v: React.ReactNode }) {
   return (
-    <div className="flex justify-between border-b pb-1 last:border-0 last:pb-0">
-      <span className="text-muted-foreground">{k}</span>
-      <span className="font-medium">{v}</span>
+    <div className="flex justify-between border-b border-zinc-800 pb-1 last:border-0 last:pb-0">
+      <span className="text-zinc-500">{k}</span>
+      <span className="font-medium text-zinc-100">{v}</span>
     </div>
   );
 }
+

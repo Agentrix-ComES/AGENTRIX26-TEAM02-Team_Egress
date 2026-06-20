@@ -15,7 +15,12 @@
       "Bash(docker rm *)",
       "Bash(curl -sf http://localhost:8001/health)",
       "Bash(curl -sf http://localhost:8002/health)",
-      "Bash(curl -sI http://localhost:8000/api/ai/chat -X POST -H \"Content-Type: application/json\" -d '{\"message\":\"ping\"}')"
+      "Bash(curl -sI http://localhost:8000/api/ai/chat -X POST -H \"Content-Type: application/json\" -d '{\"message\":\"ping\"}')",
+      "Bash(curl -s http://localhost:8001/api/users/health)",
+      "Bash(curl -s http://localhost:8001/api/ai/health)",
+      "Bash(docker exec *)",
+      "Bash(docker run *)",
+      "PowerShell(docker run *)"
     ]
   }
 }
