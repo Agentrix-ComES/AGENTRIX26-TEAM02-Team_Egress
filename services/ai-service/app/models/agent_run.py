@@ -1,4 +1,4 @@
-"""One row per LangGraph orchestration run."""
+
 import uuid
 
 from sqlalchemy import JSON, String, Text
