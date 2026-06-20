@@ -1,0 +1,787 @@
+openapi: 3.0.0
+info:
+  title: Booking Service API
+  description: |
+    Transactional bookings and reservations for the Travel Platform.
+
+    Owns every **stateful transaction** that ties a traveler/trip to a provider:
+    transport bookings, hotel availability search + bookings, and dining reservations.
+    These resources have booking references, statuses, and external-provider integrations.
+
+    **Bounded context**: "Confirmed transactions with providers."
+
+    Cross-service references:
+    - `trip_id` and `region_node_id` link a booking back to the Trip Service itinerary.
+    - `dining_option_id` references the dining catalog in the Destination Service.
+
+    Bookings are modelled as first-class top-level resources (not nested under
+    `/trips/...`) so the Booking Service stays decoupled and independently scalable.
+  version: 1.0.0
+  contact:
+    name: Team Egress
+    email: team-egress@travel-platform.local
+
+servers:
+  - url: http://localhost:8004/api/v1
+    description: Local development
+  - url: https://api.travel-platform.local/booking-service/v1
+    description: Production
+
+tags:
+  - name: Transport Bookings
+    description: Transport legs/trips (flights, trains, buses, etc.) and their bookings
+  - name: Hotels
+    description: Hotel availability search and bookings
+  - name: Dining Reservations
+    description: Restaurant/cafe reservations against the dining catalog
+
+paths:
+  # ===== TRANSPORT BOOKINGS =====
+  /transport-bookings:
+    post:
+      tags: [Transport Bookings]
+      summary: Add a transport booking (1-way or round-trip) to a trip region
+      operationId: create_transport_booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransportBookingCreateRequest'
+      responses:
+        '201':
+          description: Transport booking created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransportBookingResponse'
+
+    get:
+      tags: [Transport Bookings]
+      summary: List transport bookings (filter by trip/region)
+      operationId: list_transport_bookings
+      parameters:
+        - $ref: '#/components/parameters/TripIdQuery'
+        - $ref: '#/components/parameters/RegionNodeIdQuery'
+        - name: booking_status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, cancelled]
+      responses:
+        '200':
+          description: List of transport bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransportBookingResponse'
+
+  /transport-bookings/{booking_id}:
+    get:
+      tags: [Transport Bookings]
+      summary: Get a transport booking
+      operationId: get_transport_booking
+      parameters:
+        - $ref: '#/components/parameters/BookingId'
+      responses:
+        '200':
+          description: Transport booking details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransportBookingResponse'
+        '404':
+          description: Booking not found
+
+    patch:
+      tags: [Transport Bookings]
+      summary: Update a transport booking
+      operationId: update_transport_booking
+      parameters:
+        - $ref: '#/components/parameters/BookingId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransportBookingUpdateRequest'
+      responses:
+        '200':
+          description: Transport booking updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransportBookingResponse'
+
+    delete:
+      tags: [Transport Bookings]
+      summary: Cancel/delete a transport booking
+      operationId: delete_transport_booking
+      parameters:
+        - $ref: '#/components/parameters/BookingId'
+      responses:
+        '204':
+          description: Transport booking deleted
+
+  # ===== HOTELS =====
+  /hotels/search:
+    post:
+      tags: [Hotels]
+      summary: Search available hotels for a region and date range
+      operationId: search_hotels
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HotelSearchRequest'
+      responses:
+        '200':
+          description: List of available hotels
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hotels:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/HotelListing'
+                  recommendations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        hotel_id:
+                          type: string
+                        reason:
+                          type: string
+                          description: Why this hotel is recommended for this user
+
+  /hotel-bookings:
+    post:
+      tags: [Hotels]
+      summary: Book a hotel for a trip region
+      operationId: create_hotel_booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HotelBookingRequest'
+      responses:
+        '201':
+          description: Hotel booked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HotelBookingResponse'
+
+    get:
+      tags: [Hotels]
+      summary: List hotel bookings (filter by trip/region)
+      operationId: list_hotel_bookings
+      parameters:
+        - $ref: '#/components/parameters/TripIdQuery'
+        - $ref: '#/components/parameters/RegionNodeIdQuery'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, cancelled]
+      responses:
+        '200':
+          description: List of hotel bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HotelBookingResponse'
+
+  /hotel-bookings/{booking_id}:
+    get:
+      tags: [Hotels]
+      summary: Get a hotel booking
+      operationId: get_hotel_booking
+      parameters:
+        - $ref: '#/components/parameters/BookingId'
+      responses:
+        '200':
+          description: Hotel booking details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HotelBookingResponse'
+        '404':
+          description: Booking not found
+
+    patch:
+      tags: [Hotels]
+      summary: Update a hotel booking
+      operationId: update_hotel_booking
+      parameters:
+        - $ref: '#/components/parameters/BookingId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HotelBookingUpdateRequest'
+      responses:
+        '200':
+          description: Hotel booking updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HotelBookingResponse'
+
+    delete:
+      tags: [Hotels]
+      summary: Cancel a hotel booking
+      operationId: cancel_hotel_booking
+      parameters:
+        - $ref: '#/components/parameters/BookingId'
+      responses:
+        '204':
+          description: Hotel booking cancelled
+
+  # ===== DINING RESERVATIONS =====
+  /dining-reservations:
+    post:
+      tags: [Dining Reservations]
+      summary: Make a dining reservation (against a Destination dining option)
+      operationId: create_dining_reservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiningReservationRequest'
+      responses:
+        '201':
+          description: Reservation made
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiningReservationResponse'
+
+    get:
+      tags: [Dining Reservations]
+      summary: List dining reservations (filter by trip/region)
+      operationId: list_dining_reservations
+      parameters:
+        - $ref: '#/components/parameters/TripIdQuery'
+        - $ref: '#/components/parameters/RegionNodeIdQuery'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, cancelled]
+      responses:
+        '200':
+          description: List of dining reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiningReservationResponse'
+
+  /dining-reservations/{reservation_id}:
+    get:
+      tags: [Dining Reservations]
+      summary: Get a dining reservation
+      operationId: get_dining_reservation
+      parameters:
+        - $ref: '#/components/parameters/ReservationId'
+      responses:
+        '200':
+          description: Dining reservation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiningReservationResponse'
+        '404':
+          description: Reservation not found
+
+    patch:
+      tags: [Dining Reservations]
+      summary: Update a dining reservation
+      operationId: update_dining_reservation
+      parameters:
+        - $ref: '#/components/parameters/ReservationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiningReservationUpdateRequest'
+      responses:
+        '200':
+          description: Dining reservation updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiningReservationResponse'
+
+    delete:
+      tags: [Dining Reservations]
+      summary: Cancel a dining reservation
+      operationId: cancel_dining_reservation
+      parameters:
+        - $ref: '#/components/parameters/ReservationId'
+      responses:
+        '204':
+          description: Dining reservation cancelled
+
+components:
+  parameters:
+    BookingId:
+      name: booking_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ReservationId:
+      name: reservation_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TripIdQuery:
+      name: trip_id
+      in: query
+      required: true
+      description: Trip the booking belongs to (Trip Service)
+      schema:
+        type: string
+        format: uuid
+    RegionNodeIdQuery:
+      name: region_node_id
+      in: query
+      description: Region node within the trip timeline (Trip Service)
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    # ===== TRANSPORT =====
+    TransportBookingCreateRequest:
+      type: object
+      properties:
+        trip_id:
+          type: string
+          format: uuid
+        region_node_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: "Flight to Colombo"
+        mode:
+          type: string
+          enum: [flight, train, bus, car, tuk-tuk, walking, ferry]
+        departure_location:
+          type: string
+        arrival_location:
+          type: string
+        departure_time:
+          type: string
+          format: date-time
+        arrival_time:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+        distance_km:
+          type: number
+        estimated_cost:
+          type: number
+          format: double
+        currency:
+          type: string
+          default: "USD"
+        provider:
+          type: string
+        booking_reference:
+          type: string
+        booking_status:
+          type: string
+          enum: [pending, confirmed, cancelled]
+          default: "pending"
+        notes:
+          type: string
+      required:
+        - trip_id
+        - region_node_id
+        - title
+        - mode
+        - departure_location
+        - arrival_location
+        - departure_time
+        - arrival_time
+
+    TransportBookingUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        departure_time:
+          type: string
+          format: date-time
+        arrival_time:
+          type: string
+          format: date-time
+        estimated_cost:
+          type: number
+          format: double
+        booking_reference:
+          type: string
+        booking_status:
+          type: string
+          enum: [pending, confirmed, cancelled]
+        notes:
+          type: string
+
+    TransportBookingResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        trip_id:
+          type: string
+          format: uuid
+        region_node_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        mode:
+          type: string
+        departure_location:
+          type: string
+        arrival_location:
+          type: string
+        departure_time:
+          type: string
+          format: date-time
+        arrival_time:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+        distance_km:
+          type: number
+        estimated_cost:
+          type: number
+          format: double
+        currency:
+          type: string
+        provider:
+          type: string
+        booking_reference:
+          type: string
+        booking_status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # ===== HOTELS =====
+    HotelSearchRequest:
+      type: object
+      properties:
+        region_id:
+          type: string
+          format: uuid
+          description: Destination/region to search (Destination Service)
+        check_in_date:
+          type: string
+          format: date
+        check_out_date:
+          type: string
+          format: date
+        guests:
+          type: integer
+        rooms:
+          type: integer
+        max_price_per_night:
+          type: number
+          format: double
+        amenities:
+          type: array
+          items:
+            type: string
+            enum: [wifi, pool, gym, restaurant, parking, air_conditioning, laundry]
+        min_rating:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 5
+      required:
+        - region_id
+        - check_in_date
+        - check_out_date
+
+    HotelListing:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Hotel ID in external system or internal DB
+        name:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        rating:
+          type: number
+          format: double
+        review_count:
+          type: integer
+        price_per_night:
+          type: number
+          format: double
+        currency:
+          type: string
+        room_types:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              available:
+                type: boolean
+              price:
+                type: number
+        amenities:
+          type: array
+          items:
+            type: string
+        check_in_time:
+          type: string
+        check_out_time:
+          type: string
+        cancellation_policy:
+          type: string
+        website:
+          type: string
+        phone:
+          type: string
+
+    HotelBookingRequest:
+      type: object
+      properties:
+        trip_id:
+          type: string
+          format: uuid
+        region_node_id:
+          type: string
+          format: uuid
+        hotel_id:
+          type: string
+        room_type:
+          type: string
+        check_in_date:
+          type: string
+          format: date
+        check_out_date:
+          type: string
+          format: date
+        guests:
+          type: integer
+        rooms:
+          type: integer
+        special_requests:
+          type: string
+      required:
+        - trip_id
+        - region_node_id
+        - hotel_id
+        - room_type
+        - check_in_date
+        - check_out_date
+
+    HotelBookingUpdateRequest:
+      type: object
+      properties:
+        room_type:
+          type: string
+        check_in_date:
+          type: string
+          format: date
+        check_out_date:
+          type: string
+          format: date
+        guests:
+          type: integer
+        rooms:
+          type: integer
+        special_requests:
+          type: string
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled]
+
+    HotelBookingResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        trip_id:
+          type: string
+          format: uuid
+        region_node_id:
+          type: string
+          format: uuid
+        hotel_name:
+          type: string
+        hotel_id:
+          type: string
+        room_type:
+          type: string
+        check_in_date:
+          type: string
+          format: date
+        check_out_date:
+          type: string
+          format: date
+        nights:
+          type: integer
+        guests:
+          type: integer
+        rooms:
+          type: integer
+        total_price:
+          type: number
+          format: double
+        currency:
+          type: string
+        booking_reference:
+          type: string
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled]
+        confirmation_sent:
+          type: boolean
+        cancellation_policy:
+          type: string
+        special_requests:
+          type: string
+        booked_at:
+          type: string
+          format: date-time
+
+    # ===== DINING RESERVATIONS =====
+    DiningReservationRequest:
+      type: object
+      properties:
+        trip_id:
+          type: string
+          format: uuid
+        region_node_id:
+          type: string
+          format: uuid
+        dining_option_id:
+          type: string
+          description: Dining catalog item (Destination Service)
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+          description: Time in HH:MM format
+        party_size:
+          type: integer
+        special_requests:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+      required:
+        - trip_id
+        - dining_option_id
+        - date
+        - time
+        - party_size
+
+    DiningReservationUpdateRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        party_size:
+          type: integer
+        special_requests:
+          type: string
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled]
+
+    DiningReservationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        trip_id:
+          type: string
+          format: uuid
+        region_node_id:
+          type: string
+          format: uuid
+        dining_option_id:
+          type: string
+        dining_option_name:
+          type: string
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        party_size:
+          type: integer
+        reservation_reference:
+          type: string
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled]
+        estimated_wait_time:
+          type: integer
+          description: In minutes
+        contact_number:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []

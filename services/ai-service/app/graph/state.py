@@ -17,6 +17,7 @@ class GraphState(TypedDict, total=False):
     preferences: list[str]
     retrieved: list[dict[str, Any]]
     routes: list[dict[str, Any]]
+    weather: dict[str, Any] | None
     itinerary: dict[str, Any]
     disruption: dict[str, Any] | None
     disruption_analysis: str
