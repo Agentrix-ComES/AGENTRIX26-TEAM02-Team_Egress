@@ -15,6 +15,7 @@ from typing import Any
 
 from qdrant_client.http import models as qmodels
 
+from app.core.config import settings
 from app.db.qdrant import get_qdrant
 from app.db.qdrant_collections import ACTIVITIES, HOTELS, TRANSPORT, collection_name
 from app.graph.llm import get_embeddings
@@ -36,6 +37,70 @@ _CATEGORY_TO_COLLECTION: dict[Category, str] = {
 
 # Deterministic namespace so the same OSM id always maps to the same point id.
 _OSM_NAMESPACE = uuid.UUID("6f0a3d2e-9b1c-4f8a-bd5e-0a1b2c3d4e5f")
+
+# Maximum number of points stored per category (rule-based cap, no AI).
+_CATEGORY_CAPS: dict[str, int] = {
+    "hotels": settings.ingest_max_hotels,
+    "activities": settings.ingest_max_activities,
+    "transport": settings.ingest_max_transport,
+}
+
+# --------------------------------------------------------------------------
+# Rule-based quality scoring (no AI / no LLM involved).
+# Each rule contributes points; POIs below _MIN_QUALITY_SCORE are discarded.
+# --------------------------------------------------------------------------
+_MIN_QUALITY_SCORE = 2  # must satisfy at least 2 rules to be stored
+
+
+def _quality_score(poi: dict[str, Any], category: Category) -> int:
+    """Return a deterministic quality score based on OSM data richness.
+
+    Rules (each worth 1 point):
+      1. Has a non-empty ``name``.
+      2. Has at least ``ingest_min_tags`` OSM tags (data completeness proxy).
+      3. Has city or region (location context useful for filtering).
+      4. Has description, website, or wikidata (enriched / discoverable).
+      5. Category bonus: hotel→property_type; activity→subtype/category; transport→mode.
+    """
+    score = 0
+    if poi.get("name"):
+        score += 1
+    if len(poi.get("tag_keys") or []) >= settings.ingest_min_tags:
+        score += 1
+    if poi.get("city") or poi.get("region"):
+        score += 1
+    if poi.get("description") or poi.get("website") or poi.get("wikidata"):
+        score += 1
+    if category == "hotels" and poi.get("property_type"):
+        score += 1
+    elif category == "activities" and (poi.get("activity_category") or poi.get("subtype")):
+        score += 1
+    elif category == "transport" and poi.get("mode"):
+        score += 1
+    return score
+
+
+def _filter_pois(pois: list[dict[str, Any]], category: Category) -> list[dict[str, Any]]:
+    """Apply rule-based quality gates and the per-category capacity cap.
+
+    Steps (fully deterministic, no AI):
+      1. Score every POI with :func:`_quality_score`.
+      2. Drop POIs below ``_MIN_QUALITY_SCORE``.
+      3. Sort survivors by score descending (best data first).
+      4. Truncate to the category capacity cap.
+    """
+    scored = [(poi, _quality_score(poi, category)) for poi in pois]
+    passed = [(poi, s) for poi, s in scored if s >= _MIN_QUALITY_SCORE]
+    passed.sort(key=lambda x: x[1], reverse=True)
+    cap = _CATEGORY_CAPS[category]
+    selected = [poi for poi, _ in passed[:cap]]
+    dropped = len(pois) - len(passed)
+    over_cap = max(0, len(passed) - cap)
+    logger.info(
+        "[%s] quality filter: %d fetched → %d passed quality → %d over cap → %d stored",
+        category, len(pois), len(passed), over_cap, len(selected),
+    )
+    return selected
 
 
 def _point_id(osm_id: str) -> str:
@@ -207,10 +272,15 @@ async def _enrich_images(pois: list[dict[str, Any]]) -> int:
 
 
 async def ingest_category(category: Category, *, limit: int = 200) -> dict[str, Any]:
-    """Fetch one category from OSM and upsert it into its Qdrant collection."""
-    pois = await osm.fetch_pois(category, limit=limit)
+    """Fetch one category from OSM, apply quality rules, and upsert to Qdrant."""
+    raw_pois = await osm.fetch_pois(category, limit=limit)
+    if not raw_pois:
+        return {"category": category, "fetched": 0, "filtered": 0, "upserted": 0, "with_images": 0}
+
+    # --- Rule-based quality filter + capacity cap (no AI involved) ---
+    pois = _filter_pois(raw_pois, category)
     if not pois:
-        return {"category": category, "fetched": 0, "upserted": 0, "with_images": 0}
+        return {"category": category, "fetched": len(raw_pois), "filtered": 0, "upserted": 0, "with_images": 0}
 
     # Enrich missing images from Wikidata/Wikipedia before embedding/upsert.
     enriched = await _enrich_images(pois)
@@ -241,7 +311,8 @@ async def ingest_category(category: Category, *, limit: int = 200) -> dict[str, 
     )
     return {
         "category": category,
-        "fetched": len(pois),
+        "fetched": len(raw_pois),
+        "filtered": len(pois),
         "upserted": len(points),
         "with_images": with_images,
     }

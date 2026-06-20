@@ -28,6 +28,14 @@ class Settings(BaseSettings):
     redis_port: int = Field(default=6379)
     redis_password: str | None = Field(default=None)
 
+    # --- Content ingestion capacity caps (max points stored per category) ---
+    ingest_max_hotels: int = Field(default=500)
+    ingest_max_activities: int = Field(default=800)
+    ingest_max_transport: int = Field(default=300)
+    # Rule-based quality gates (rule-based, no AI involved).
+    # POI must have at least this many OSM tags to be considered useful.
+    ingest_min_tags: int = Field(default=3)
+
     # Qdrant
     qdrant_host: str = Field(default="qdrant")
     qdrant_port: int = Field(default=6333)
