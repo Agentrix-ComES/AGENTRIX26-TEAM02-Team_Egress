@@ -2,32 +2,23 @@ openapi: 3.0.0
 info:
   title: Trip Service API
   description: |
-    AI-Powered Timeline Travel Planning and Assistance Platform
-    
-    The Trip Service is the central hub for managing the complete travel timeline experience.
-    It operates on a hierarchical node structure where top-level nodes represent regions 
-    (cities/towns like "Colombo") that expand into rich sub-nodes covering all aspects 
-    of travel in that region.
-    
-    **Core Model**: Region Nodes with 9 Sub-Node Categories
-    - Transport: Multiple trip entries to/from the region
-    - Hotel: Available hotels, bookings, and occupancy
-    - Possible Visitable Locations: Browse all attractions; AI recommendations
-    - Selected Visitable Locations: Attractions user plans to visit (auto-populated from transport or manual)
-    - Activities: Regional experiences; typically admin/external-API managed
-    - Food & Dining: Restaurants, cafes, local food shops
-    - Emergency Services: Hospitals, emergency contacts, medical facilities
-    - Offers & Discounts: Regional promotions and deals
-    - Cultural Context: Regional cultural info + dynamic tips for selected locations
-    
-    **Data Flow**: All enrichment (hotel availability, recommendations, cultural notes) 
-    flows through Trip Service before reaching users. External data integrations happen 
-    at the service layer, not at API boundaries.
-    
-    **Note**: Trip Service handles persistence and orchestration. Recommendation engines, 
-    routing optimization, and disruption propagation are delegated to specialized agents 
-    that call these APIs and perform business logic.
-  version: 2.0.0
+    Itinerary core for the Travel Platform.
+
+    Owns the traveler's **plan**: trips, the chronological timeline of region nodes,
+    the locations a user has selected to visit, and trip-level alerts/disruptions.
+
+    **Bounded context**: "What is the user's plan."
+
+    This service is deliberately compact. It holds the itinerary *structure* and
+    *references* to data owned elsewhere:
+    - Region nodes link to a destination via `region_id` (Destination Service).
+    - Selected locations store a `location_id` reference (Destination Service) plus
+      visit scheduling — not a full copy of the attraction.
+    - Bookings (transport, hotel, dining reservations) live in the Booking Service and
+      are linked back by `trip_id` / `region_node_id`.
+
+    Alerts operate on this trip's own timeline, so they stay here.
+  version: 3.0.0
   contact:
     name: Team Egress
     email: team-egress@travel-platform.local
@@ -40,34 +31,19 @@ servers:
 
 tags:
   - name: Trips
-    description: Trip creation, retrieval, and management
-  - name: Region Nodes
-    description: Top-level region nodes (cities/towns) in the timeline
-  - name: Transport Sub-Node
-    description: Transport trips to/from regions (flights, trains, buses, etc.)
-  - name: Hotel Sub-Node
-    description: Hotel search, booking, and occupancy for regions
-  - name: Visitable Locations
-    description: Browse possible attractions and manage selected locations
-  - name: Activities Sub-Node
-    description: Regional activities and experiences
-  - name: Food & Dining Sub-Node
-    description: Restaurants, cafes, and dining reservations
-  - name: Emergency Services Sub-Node
-    description: Hospitals, medical facilities, and emergency contacts
-  - name: Offers & Discounts Sub-Node
-    description: Regional promotions and discounts
-  - name: Cultural Context Sub-Node
-    description: Regional cultural guidance and location-specific etiquette
+    description: Trip creation, retrieval, and lifecycle management
+  - name: Timeline
+    description: Region nodes (cities/towns) ordered chronologically in the trip
+  - name: Selected Locations
+    description: Attractions the traveler plans to visit (references Destination catalog)
   - name: Trip Alerts
-    description: Disruptions, delays, and alerts affecting trips
+    description: Disruptions, delays, and propagation analysis affecting the trip
 
 paths:
-  # ===== TRIP MANAGEMENT =====
+  # ===== TRIPS =====
   /trips:
     post:
-      tags:
-        - Trips
+      tags: [Trips]
       summary: Create a new trip
       operationId: create_trip
       requestBody:
@@ -87,8 +63,7 @@ paths:
           description: Invalid request
 
     get:
-      tags:
-        - Trips
+      tags: [Trips]
       summary: List all trips for the authenticated user
       operationId: list_trips
       parameters:
@@ -124,17 +99,11 @@ paths:
 
   /trips/{trip_id}:
     get:
-      tags:
-        - Trips
+      tags: [Trips]
       summary: Retrieve a trip by ID
       operationId: get_trip
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
       responses:
         '200':
           description: Trip details with timeline summary
@@ -146,17 +115,11 @@ paths:
           description: Trip not found
 
     patch:
-      tags:
-        - Trips
+      tags: [Trips]
       summary: Update trip metadata
       operationId: update_trip
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
       requestBody:
         required: true
         content:
@@ -172,35 +135,23 @@ paths:
                 $ref: '#/components/schemas/TripResponse'
 
     delete:
-      tags:
-        - Trips
+      tags: [Trips]
       summary: Cancel a trip
       operationId: delete_trip
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
       responses:
         '204':
           description: Trip deleted
 
-  # ===== REGION NODES (MAIN TIMELINE) =====
+  # ===== TIMELINE (REGION NODES) =====
   /trips/{trip_id}/timeline:
     get:
-      tags:
-        - Region Nodes
-      summary: Get the complete timeline (all region nodes ordered chronologically)
+      tags: [Timeline]
+      summary: Get the complete timeline (region nodes, chronologically ordered)
       operationId: get_timeline
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
       responses:
         '200':
           description: Timeline with all region nodes
@@ -228,17 +179,11 @@ paths:
 
   /trips/{trip_id}/timeline/regions:
     post:
-      tags:
-        - Region Nodes
+      tags: [Timeline]
       summary: Add a region (city/town) to the trip timeline
       operationId: create_region_node
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
       requestBody:
         required: true
         content:
@@ -257,49 +202,27 @@ paths:
 
   /trips/{trip_id}/timeline/regions/{region_node_id}:
     get:
-      tags:
-        - Region Nodes
-      summary: Get a region node with all sub-node summaries
+      tags: [Timeline]
+      summary: Get a region node with reference summaries
       operationId: get_region_node
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
       responses:
         '200':
-          description: Region node with all sub-nodes
+          description: Region node with summary counts and references
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegionNodeDetailResponse'
 
     patch:
-      tags:
-        - Region Nodes
+      tags: [Timeline]
       summary: Update region node metadata (dates, notes)
       operationId: update_region_node
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
       requestBody:
         required: true
         content:
@@ -315,465 +238,25 @@ paths:
                 $ref: '#/components/schemas/RegionNodeResponse'
 
     delete:
-      tags:
-        - Region Nodes
+      tags: [Timeline]
       summary: Delete a region from the timeline
       operationId: delete_region_node
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
       responses:
         '204':
           description: Region deleted
 
-  # ===== TRANSPORT SUB-NODE =====
-  /trips/{trip_id}/timeline/regions/{region_node_id}/transport:
+  # ===== SELECTED LOCATIONS =====
+  /trips/{trip_id}/timeline/regions/{region_node_id}/locations/selected:
     get:
-      tags:
-        - Transport Sub-Node
-      summary: Get transport sub-node with all trips
-      operationId: get_transport_subnode
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Transport sub-node
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransportSubNodeResponse'
-
-  /trips/{trip_id}/timeline/regions/{region_node_id}/transport/trips:
-    post:
-      tags:
-        - Transport Sub-Node
-      summary: Add a transport trip (1-way or round-trip) to the region
-      operationId: add_transport_trip
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TransportTripCreateRequest'
-      responses:
-        '201':
-          description: Transport trip added
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransportTripResponse'
-
-    get:
-      tags:
-        - Transport Sub-Node
-      summary: List all transport trips for this region
-      operationId: list_transport_trips
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: List of transport trips
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TransportTripResponse'
-
-  /trips/{trip_id}/timeline/regions/{region_node_id}/transport/trips/{trip_leg_id}:
-    patch:
-      tags:
-        - Transport Sub-Node
-      summary: Update a transport trip
-      operationId: update_transport_trip
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: trip_leg_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TransportTripUpdateRequest'
-      responses:
-        '200':
-          description: Transport trip updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransportTripResponse'
-
-    delete:
-      tags:
-        - Transport Sub-Node
-      summary: Delete a transport trip
-      operationId: delete_transport_trip
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: trip_leg_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: Transport trip deleted
-
-  # ===== HOTEL SUB-NODE =====
-  /trips/{trip_id}/timeline/regions/{region_node_id}/hotel:
-    get:
-      tags:
-        - Hotel Sub-Node
-      summary: Get hotel sub-node for the region
-      operationId: get_hotel_subnode
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Hotel sub-node with available hotels and booking status
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HotelSubNodeResponse'
-
-  /trips/{trip_id}/timeline/regions/{region_node_id}/hotel/search:
-    post:
-      tags:
-        - Hotel Sub-Node
-      summary: Search for available hotels in the region
-      operationId: search_hotels
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/HotelSearchRequest'
-      responses:
-        '200':
-          description: List of available hotels
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  hotels:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/HotelListing'
-                  recommendations:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        hotel_id:
-                          type: string
-                        reason:
-                          type: string
-                          description: Why this hotel is recommended for this user
-
-  /trips/{trip_id}/timeline/regions/{region_node_id}/hotel/book:
-    post:
-      tags:
-        - Hotel Sub-Node
-      summary: Book a hotel for the region
-      operationId: book_hotel
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/HotelBookingRequest'
-      responses:
-        '201':
-          description: Hotel booked successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HotelBookingResponse'
-
-  # ===== VISITABLE LOCATIONS =====
-  /trips/{trip_id}/timeline/regions/{region_node_id}/locations/possible:
-    get:
-      tags:
-        - Visitable Locations
-      summary: Get all possible visitable locations (attractions) in the region
-      operationId: get_possible_locations
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: category
-          in: query
-          schema:
-            type: string
-            enum: [cultural, historical, adventure, relaxation, food, nature, religious]
-        - name: skip
-          in: query
-          schema:
-            type: integer
-            default: 0
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 50
-      responses:
-        '200':
-          description: List of possible locations
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  locations:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/VisitableLocationResponse'
-                  recommendations:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        location_id:
-                          type: string
-                        match_score:
-                          type: number
-                          format: double
-                          description: 0-1 score based on user preferences
-
-    post:
-      tags:
-        - Visitable Locations
-      summary: Create a new visitable location in the region (admin)
-      operationId: create_visitable_location
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VisitableLocationCreateRequest'
-      responses:
-        '201':
-          description: Location created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VisitableLocationResponse'
-
-  /trips/{trip_id}/timeline/regions/{region_node_id}/locations/possible/{location_id}:
-    patch:
-      tags:
-        - Visitable Locations
-      summary: Update a visitable location (admin)
-      operationId: update_visitable_location
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: location_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VisitableLocationUpdateRequest'
-      responses:
-        '200':
-          description: Location updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VisitableLocationResponse'
-
-    delete:
-      tags:
-        - Visitable Locations
-      summary: Delete a visitable location (admin)
-      operationId: delete_visitable_location
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: location_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Location deleted
-    get:
-      tags:
-        - Visitable Locations
-      summary: Get selected (planned) visitable locations for the region
+      tags: [Selected Locations]
+      summary: Get the locations selected for this region
       operationId: get_selected_locations
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
       responses:
         '200':
           description: List of selected locations
@@ -785,41 +268,18 @@ paths:
                   $ref: '#/components/schemas/SelectedLocationResponse'
 
     post:
-      tags:
-        - Visitable Locations
-      summary: Add a location to selected locations
+      tags: [Selected Locations]
+      summary: Add a catalog location to the selected list
       operationId: add_selected_location
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                location_id:
-                  type: string
-                  description: ID of location to add
-                visit_date:
-                  type: string
-                  format: date
-                visit_time:
-                  type: string
-                  description: Preferred visit time (e.g., morning, afternoon)
-              required:
-                - location_id
+              $ref: '#/components/schemas/SelectedLocationCreateRequest'
       responses:
         '201':
           description: Location added to selected
@@ -829,772 +289,48 @@ paths:
                 $ref: '#/components/schemas/SelectedLocationResponse'
 
   /trips/{trip_id}/timeline/regions/{region_node_id}/locations/selected/{location_id}:
+    patch:
+      tags: [Selected Locations]
+      summary: Update visit scheduling for a selected location
+      operationId: update_selected_location
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
+        - $ref: '#/components/parameters/LocationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectedLocationUpdateRequest'
+      responses:
+        '200':
+          description: Selected location updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SelectedLocationResponse'
+
     delete:
-      tags:
-        - Visitable Locations
-      summary: Remove a location from selected locations
+      tags: [Selected Locations]
+      summary: Remove a location from the selected list
       operationId: remove_selected_location
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: location_id
-          in: path
-          required: true
-          schema:
-            type: string
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
+        - $ref: '#/components/parameters/LocationId'
       responses:
         '204':
           description: Location removed
 
-  # ===== ACTIVITIES SUB-NODE =====
-  /trips/{trip_id}/timeline/regions/{region_node_id}/activities:
-    get:
-      tags:
-        - Activities Sub-Node
-      summary: Get activities available in the region
-      operationId: get_activities
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: difficulty
-          in: query
-          schema:
-            type: string
-            enum: [easy, moderate, difficult]
-      responses:
-        '200':
-          description: List of activities
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ActivityResponse'
-
-    post:
-      tags:
-        - Activities Sub-Node
-      summary: Create a new activity for the region (admin)
-      operationId: create_activity
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ActivityCreateRequest'
-      responses:
-        '201':
-          description: Activity created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ActivityResponse'
-
-  /trips/{trip_id}/timeline/regions/{region_node_id}/activities/{activity_id}:
-    patch:
-      tags:
-        - Activities Sub-Node
-      summary: Update an activity (admin)
-      operationId: update_activity
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: activity_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ActivityUpdateRequest'
-      responses:
-        '200':
-          description: Activity updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ActivityResponse'
-
-    delete:
-      tags:
-        - Activities Sub-Node
-      summary: Delete an activity (admin)
-      operationId: delete_activity
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: activity_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Activity deleted
-
-  # ===== FOOD & DINING SUB-NODE =====
-  /trips/{trip_id}/timeline/regions/{region_node_id}/dining:
-    get:
-      tags:
-        - Food & Dining Sub-Node
-      summary: Get restaurants and food shops in the region
-      operationId: get_dining_options
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: cuisine
-          in: query
-          schema:
-            type: string
-        - name: dietary_filter
-          in: query
-          schema:
-            type: string
-            enum: [vegetarian, vegan, halal, kosher, gluten_free]
-      responses:
-        '200':
-          description: List of dining options
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/DiningOptionResponse'
-
-    post:
-      tags:
-        - Food & Dining Sub-Node
-      summary: Add a new dining option to the region (admin)
-      operationId: create_dining_option
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DiningOptionCreateRequest'
-      responses:
-        '201':
-          description: Dining option created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DiningOptionResponse'
-
-  /trips/{trip_id}/timeline/regions/{region_node_id}/dining/{dining_option_id}:
-    patch:
-      tags:
-        - Food & Dining Sub-Node
-      summary: Update a dining option (admin)
-      operationId: update_dining_option
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: dining_option_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DiningOptionUpdateRequest'
-      responses:
-        '200':
-          description: Dining option updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DiningOptionResponse'
-
-    delete:
-      tags:
-        - Food & Dining Sub-Node
-      summary: Delete a dining option (admin)
-      operationId: delete_dining_option
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: dining_option_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Dining option deleted
-
-  /trips/{trip_id}/timeline/regions/{region_node_id}/dining/{dining_option_id}/reserve:
-    post:
-      tags:
-        - Food & Dining Sub-Node
-      summary: Make a dining reservation at this option
-      operationId: make_dining_reservation
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: dining_option_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DiningReservationRequest'
-      responses:
-        '201':
-          description: Reservation made
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DiningReservationResponse'
-
-  # ===== EMERGENCY SERVICES SUB-NODE =====
-  /trips/{trip_id}/timeline/regions/{region_node_id}/emergency:
-    get:
-      tags:
-        - Emergency Services Sub-Node
-      summary: Get emergency services and medical facilities in the region
-      operationId: get_emergency_services
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Emergency services
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmergencyServicesResponse'
-
-    post:
-      tags:
-        - Emergency Services Sub-Node
-      summary: Add emergency service/facility to the region (admin)
-      operationId: create_emergency_service
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EmergencyServiceCreateRequest'
-      responses:
-        '201':
-          description: Emergency service created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmergencyServiceResponse'
-
-  /trips/{trip_id}/timeline/regions/{region_node_id}/emergency/{service_id}:
-    patch:
-      tags:
-        - Emergency Services Sub-Node
-      summary: Update an emergency service (admin)
-      operationId: update_emergency_service
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: service_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EmergencyServiceUpdateRequest'
-      responses:
-        '200':
-          description: Emergency service updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmergencyServiceResponse'
-
-    delete:
-      tags:
-        - Emergency Services Sub-Node
-      summary: Delete an emergency service (admin)
-      operationId: delete_emergency_service
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: service_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Emergency service deleted
-
-  # ===== OFFERS & DISCOUNTS SUB-NODE =====
-  /trips/{trip_id}/timeline/regions/{region_node_id}/offers:
-    get:
-      tags:
-        - Offers & Discounts Sub-Node
-      summary: Get offers and discounts available in the region
-      operationId: get_offers
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: category
-          in: query
-          schema:
-            type: string
-            enum: [activity, dining, accommodation, transport, shopping]
-      responses:
-        '200':
-          description: List of offers
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/OfferResponse'
-
-    post:
-      tags:
-        - Offers & Discounts Sub-Node
-      summary: Create an offer/discount for the region (admin)
-      operationId: create_offer
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OfferCreateRequest'
-      responses:
-        '201':
-          description: Offer created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OfferResponse'
-
-  /trips/{trip_id}/timeline/regions/{region_node_id}/offers/{offer_id}:
-    patch:
-      tags:
-        - Offers & Discounts Sub-Node
-      summary: Update an offer/discount (admin)
-      operationId: update_offer
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: offer_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OfferUpdateRequest'
-      responses:
-        '200':
-          description: Offer updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OfferResponse'
-
-    delete:
-      tags:
-        - Offers & Discounts Sub-Node
-      summary: Delete an offer/discount (admin)
-      operationId: delete_offer
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: offer_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Offer deleted
-
-  # ===== CULTURAL CONTEXT SUB-NODE =====
-  /trips/{trip_id}/timeline/regions/{region_node_id}/culture:
-    get:
-      tags:
-        - Cultural Context Sub-Node
-      summary: Get cultural context for the region including location-specific tips
-      operationId: get_cultural_context
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Cultural context
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CulturalContextResponse'
-
-    patch:
-      tags:
-        - Cultural Context Sub-Node
-      summary: Update regional cultural context (admin)
-      operationId: update_cultural_context
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GeneralCulturalContextUpdateRequest'
-      responses:
-        '200':
-          description: Cultural context updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CulturalContextResponse'
-
-  /trips/{trip_id}/timeline/regions/{region_node_id}/culture/locations/{location_id}:
-    post:
-      tags:
-        - Cultural Context Sub-Node
-      summary: Add location-specific cultural context/tips (admin)
-      operationId: add_location_cultural_context
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: location_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LocationCulturalContextCreateRequest'
-      responses:
-        '201':
-          description: Location cultural context created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LocationCulturalContext'
-
-    patch:
-      tags:
-        - Cultural Context Sub-Node
-      summary: Update location-specific cultural context (admin)
-      operationId: update_location_cultural_context
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: location_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LocationCulturalContextUpdateRequest'
-      responses:
-        '200':
-          description: Location cultural context updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LocationCulturalContext'
-
-    delete:
-      tags:
-        - Cultural Context Sub-Node
-      summary: Delete location-specific cultural context (admin)
-      operationId: delete_location_cultural_context
-      parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: region_node_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: location_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Location cultural context deleted
-
   # ===== TRIP ALERTS =====
   /trips/{trip_id}/alerts:
     post:
-      tags:
-        - Trip Alerts
+      tags: [Trip Alerts]
       summary: Report a disruption affecting the trip
       operationId: create_alert
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
       requestBody:
         required: true
         content:
@@ -1610,17 +346,11 @@ paths:
                 $ref: '#/components/schemas/TripAlertResponse'
 
     get:
-      tags:
-        - Trip Alerts
+      tags: [Trip Alerts]
       summary: List alerts for the trip
       operationId: list_alerts
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
         - name: status
           in: query
           schema:
@@ -1638,23 +368,12 @@ paths:
 
   /trips/{trip_id}/alerts/{alert_id}:
     get:
-      tags:
-        - Trip Alerts
+      tags: [Trip Alerts]
       summary: Get alert details
       operationId: get_alert
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: alert_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/AlertId'
       responses:
         '200':
           description: Alert details
@@ -1664,23 +383,12 @@ paths:
                 $ref: '#/components/schemas/TripAlertDetailedResponse'
 
     patch:
-      tags:
-        - Trip Alerts
+      tags: [Trip Alerts]
       summary: Update alert status
       operationId: update_alert_status
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: alert_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/AlertId'
       requestBody:
         required: true
         content:
@@ -1703,23 +411,12 @@ paths:
 
   /trips/{trip_id}/alerts/{alert_id}/propagate:
     post:
-      tags:
-        - Trip Alerts
-      summary: Analyze disruption propagation effects
+      tags: [Trip Alerts]
+      summary: Analyze disruption propagation effects across the timeline
       operationId: propagate_disruption
       parameters:
-        - name: trip_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: alert_id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/AlertId'
       requestBody:
         required: true
         content:
@@ -1744,8 +441,38 @@ paths:
                 $ref: '#/components/schemas/DisruptionPropagationResponse'
 
 components:
+  parameters:
+    TripId:
+      name: trip_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RegionNodeId:
+      name: region_node_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    LocationId:
+      name: location_id
+      in: path
+      required: true
+      description: Catalog location id (Destination Service)
+      schema:
+        type: string
+    AlertId:
+      name: alert_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
   schemas:
-    # ===== TRIP SCHEMAS =====
+    # ===== TRIP =====
     TripCreateRequest:
       type: object
       properties:
@@ -1892,7 +619,7 @@ components:
                         type: string
                         format: date-time
 
-    # ===== REGION NODE SCHEMAS =====
+    # ===== REGION NODE =====
     RegionNodeCreateRequest:
       type: object
       properties:
@@ -1900,6 +627,10 @@ components:
           type: string
           example: "Colombo"
           minLength: 1
+        region_id:
+          type: string
+          format: uuid
+          description: Destination this node maps to (Destination Service)
         description:
           type: string
         start_date:
@@ -1908,9 +639,6 @@ components:
         end_date:
           type: string
           format: date-time
-        region_code:
-          type: string
-          description: ISO region code or internal code
         latitude:
           type: number
           format: double
@@ -1949,6 +677,10 @@ components:
         trip_id:
           type: string
           format: uuid
+        region_id:
+          type: string
+          format: uuid
+          description: Destination reference (Destination Service)
         name:
           type: string
         description:
@@ -1959,8 +691,6 @@ components:
         end_date:
           type: string
           format: date-time
-        region_code:
-          type: string
         latitude:
           type: number
           format: double
@@ -1985,1452 +715,84 @@ components:
         - $ref: '#/components/schemas/RegionNodeResponse'
         - type: object
           properties:
-            transport:
-              $ref: '#/components/schemas/TransportSubNodeResponse'
-            hotel:
-              $ref: '#/components/schemas/HotelSubNodeResponse'
-            visitable_locations_summary:
-              type: object
-              properties:
-                possible_count:
-                  type: integer
-                selected_count:
-                  type: integer
-            activities_summary:
-              type: object
-              properties:
-                total_available:
-                  type: integer
-                selected:
-                  type: integer
-            dining_summary:
-              type: object
-              properties:
-                total_options:
-                  type: integer
-                reservations:
-                  type: integer
-            emergency_services_count:
+            selected_locations_count:
               type: integer
-            offers_count:
-              type: integer
-            cultural_context_available:
-              type: boolean
+            booking_summary:
+              type: object
+              description: Counts sourced from the Booking Service
+              properties:
+                transport_bookings:
+                  type: integer
+                hotel_booked:
+                  type: boolean
+                dining_reservations:
+                  type: integer
             state_reason:
               type: string
-              description: If state is red, reason for the disruption
+              description: If state is red, the reason for the disruption
 
-    # ===== TRANSPORT SUB-NODE SCHEMAS =====
-    TransportSubNodeResponse:
-      type: object
-      properties:
-        region_node_id:
-          type: string
-          format: uuid
-        trips:
-          type: array
-          items:
-            $ref: '#/components/schemas/TransportTripResponse'
-        summary:
-          type: object
-          properties:
-            total_trips:
-              type: integer
-            modes_used:
-              type: array
-              items:
-                type: string
-
-    TransportTripCreateRequest:
-      type: object
-      properties:
-        title:
-          type: string
-          example: "Flight to Colombo"
-        mode:
-          type: string
-          enum: [flight, train, bus, car, tuk-tuk, walking, ferry]
-        departure_location:
-          type: string
-        arrival_location:
-          type: string
-        departure_time:
-          type: string
-          format: date-time
-        arrival_time:
-          type: string
-          format: date-time
-        duration_minutes:
-          type: integer
-        distance_km:
-          type: number
-        estimated_cost:
-          type: number
-          format: double
-        currency:
-          type: string
-          default: "USD"
-        provider:
-          type: string
-        booking_reference:
-          type: string
-        booking_status:
-          type: string
-          enum: [pending, confirmed, cancelled]
-          default: "pending"
-        notes:
-          type: string
-      required:
-        - title
-        - mode
-        - departure_location
-        - arrival_location
-        - departure_time
-        - arrival_time
-
-    TransportTripUpdateRequest:
-      type: object
-      properties:
-        title:
-          type: string
-        departure_time:
-          type: string
-          format: date-time
-        arrival_time:
-          type: string
-          format: date-time
-        booking_reference:
-          type: string
-        booking_status:
-          type: string
-          enum: [pending, confirmed, cancelled]
-        notes:
-          type: string
-
-    TransportTripResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        title:
-          type: string
-        mode:
-          type: string
-        departure_location:
-          type: string
-        arrival_location:
-          type: string
-        departure_time:
-          type: string
-          format: date-time
-        arrival_time:
-          type: string
-          format: date-time
-        duration_minutes:
-          type: integer
-        distance_km:
-          type: number
-        estimated_cost:
-          type: number
-          format: double
-        currency:
-          type: string
-        provider:
-          type: string
-        booking_reference:
-          type: string
-        booking_status:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-
-    # ===== HOTEL SUB-NODE SCHEMAS =====
-    HotelSubNodeResponse:
-      type: object
-      properties:
-        region_node_id:
-          type: string
-          format: uuid
-        booked_hotel:
-          $ref: '#/components/schemas/HotelBookingResponse'
-        check_in_date:
-          type: string
-          format: date
-        check_out_date:
-          type: string
-          format: date
-        nights:
-          type: integer
-        available_hotels_count:
-          type: integer
-
-    HotelSearchRequest:
-      type: object
-      properties:
-        check_in_date:
-          type: string
-          format: date
-        check_out_date:
-          type: string
-          format: date
-        guests:
-          type: integer
-        rooms:
-          type: integer
-        max_price_per_night:
-          type: number
-          format: double
-        amenities:
-          type: array
-          items:
-            type: string
-            enum: [wifi, pool, gym, restaurant, parking, air_conditioning, laundry]
-        min_rating:
-          type: number
-          format: double
-          minimum: 0
-          maximum: 5
-
-    HotelListing:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Hotel ID in external system or internal DB
-        name:
-          type: string
-        description:
-          type: string
-        address:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
-        rating:
-          type: number
-          format: double
-        review_count:
-          type: integer
-        price_per_night:
-          type: number
-          format: double
-        currency:
-          type: string
-        room_types:
-          type: array
-          items:
-            type: object
-            properties:
-              type:
-                type: string
-              available:
-                type: boolean
-              price:
-                type: number
-        amenities:
-          type: array
-          items:
-            type: string
-        check_in_time:
-          type: string
-        check_out_time:
-          type: string
-        cancellation_policy:
-          type: string
-        website:
-          type: string
-        phone:
-          type: string
-
-    HotelBookingRequest:
-      type: object
-      properties:
-        hotel_id:
-          type: string
-        room_type:
-          type: string
-        check_in_date:
-          type: string
-          format: date
-        check_out_date:
-          type: string
-          format: date
-        guests:
-          type: integer
-        rooms:
-          type: integer
-        special_requests:
-          type: string
-      required:
-        - hotel_id
-        - room_type
-        - check_in_date
-        - check_out_date
-
-    HotelBookingResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        hotel_name:
-          type: string
-        hotel_id:
-          type: string
-        room_type:
-          type: string
-        check_in_date:
-          type: string
-          format: date
-        check_out_date:
-          type: string
-          format: date
-        nights:
-          type: integer
-        guests:
-          type: integer
-        rooms:
-          type: integer
-        total_price:
-          type: number
-          format: double
-        currency:
-          type: string
-        booking_reference:
-          type: string
-        status:
-          type: string
-          enum: [pending, confirmed, cancelled]
-        confirmation_sent:
-          type: boolean
-        cancellation_policy:
-          type: string
-        special_requests:
-          type: string
-        booked_at:
-          type: string
-          format: date-time
-
-    # ===== VISITABLE LOCATIONS SCHEMAS =====
-    VisitableLocationResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Location ID
-        name:
-          type: string
-        description:
-          type: string
-        category:
-          type: string
-          enum: [cultural, historical, adventure, relaxation, food, nature, religious]
-        location:
-          type: object
-          properties:
-            latitude:
-              type: number
-              format: double
-            longitude:
-              type: number
-              format: double
-            address:
-              type: string
-        rating:
-          type: number
-          format: double
-        review_count:
-          type: integer
-        entry_fee:
-          type: number
-          format: double
-        estimated_duration_minutes:
-          type: integer
-        opening_hours:
-          type: string
-        best_time_to_visit:
-          type: string
-        difficulty_level:
-          type: string
-          enum: [easy, moderate, difficult]
-        accessibility_info:
-          type: string
-        guided_tour_available:
-          type: boolean
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        cultural_context_short:
-          type: string
-          description: Brief cultural/historical info
-
-    VisitableLocationCreateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 3
-        description:
-          type: string
-        category:
-          type: string
-          enum: [cultural, historical, adventure, relaxation, food, nature, religious]
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
-        address:
-          type: string
-        entry_fee:
-          type: number
-          format: double
-        estimated_duration_minutes:
-          type: integer
-        opening_hours:
-          type: string
-        best_time_to_visit:
-          type: string
-        difficulty_level:
-          type: string
-          enum: [easy, moderate, difficult]
-        accessibility_info:
-          type: string
-        guided_tour_available:
-          type: boolean
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        cultural_context_short:
-          type: string
-      required:
-        - name
-        - category
-        - latitude
-        - longitude
-        - address
-
-    VisitableLocationUpdateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        category:
-          type: string
-          enum: [cultural, historical, adventure, relaxation, food, nature, religious]
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
-        address:
-          type: string
-        entry_fee:
-          type: number
-          format: double
-        estimated_duration_minutes:
-          type: integer
-        opening_hours:
-          type: string
-        best_time_to_visit:
-          type: string
-        difficulty_level:
-          type: string
-          enum: [easy, moderate, difficult]
-        accessibility_info:
-          type: string
-        guided_tour_available:
-          type: boolean
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        cultural_context_short:
-          type: string
-      allOf:
-        - $ref: '#/components/schemas/VisitableLocationResponse'
-        - type: object
-          properties:
-            selected_id:
-              type: string
-              format: uuid
-            visit_date:
-              type: string
-              format: date
-            visit_time:
-              type: string
-              description: Preferred visit time
-            added_at:
-              type: string
-              format: date-time
-            duration_scheduled:
-              type: integer
-              description: How many minutes scheduled for this visit
-            full_cultural_context:
-              $ref: '#/components/schemas/LocationCulturalContext'
-
-    # ===== ACTIVITY SCHEMAS =====
-    ActivityResponse:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        category:
-          type: string
-        difficulty_level:
-          type: string
-          enum: [easy, moderate, difficult]
-        duration_hours:
-          type: number
-        estimated_cost:
-          type: number
-          format: double
-        age_requirements:
-          type: object
-          properties:
-            minimum_age:
-              type: integer
-            maximum_age:
-              type: integer
-        physical_requirements:
-          type: string
-        location:
-          type: string
-        operating_hours:
-          type: string
-        best_season:
-          type: string
-        required_equipment:
-          type: array
-          items:
-            type: string
-        instructor_available:
-          type: boolean
-        group_size_limit:
-          type: integer
-        reviews:
-          type: number
-          format: double
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        provider:
-          type: string
-
-    ActivityCreateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 3
-        description:
-          type: string
-        category:
-          type: string
-        difficulty_level:
-          type: string
-          enum: [easy, moderate, difficult]
-        duration_hours:
-          type: number
-        estimated_cost:
-          type: number
-          format: double
-        age_requirements:
-          type: object
-          properties:
-            minimum_age:
-              type: integer
-            maximum_age:
-              type: integer
-        physical_requirements:
-          type: string
-        location:
-          type: string
-        operating_hours:
-          type: string
-        best_season:
-          type: string
-        required_equipment:
-          type: array
-          items:
-            type: string
-        instructor_available:
-          type: boolean
-        group_size_limit:
-          type: integer
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        provider:
-          type: string
-      required:
-        - name
-        - category
-        - difficulty_level
-
-    ActivityUpdateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        category:
-          type: string
-        difficulty_level:
-          type: string
-        duration_hours:
-          type: number
-        estimated_cost:
-          type: number
-          format: double
-        age_requirements:
-          type: object
-        physical_requirements:
-          type: string
-        location:
-          type: string
-        operating_hours:
-          type: string
-        best_season:
-          type: string
-        required_equipment:
-          type: array
-          items:
-            type: string
-        instructor_available:
-          type: boolean
-        group_size_limit:
-          type: integer
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-        provider:
-          type: string
-
-    # ===== DINING OPTION SCHEMAS =====
-    DiningOptionResponse:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        type:
-          type: string
-          enum: [restaurant, cafe, food_shop, street_food, bakery]
-        cuisine:
-          type: string
-        location:
-          type: object
-          properties:
-            address:
-              type: string
-            latitude:
-              type: number
-              format: double
-            longitude:
-              type: number
-              format: double
-        rating:
-          type: number
-          format: double
-        review_count:
-          type: integer
-        average_cost_per_person:
-          type: number
-          format: double
-        operating_hours:
-          type: string
-        dietary_accommodations:
-          type: array
-          items:
-            type: string
-            enum: [vegetarian, vegan, halal, kosher, gluten_free]
-        specialties:
-          type: array
-          items:
-            type: string
-        reservation_required:
-          type: boolean
-        parking_available:
-          type: boolean
-        phone:
-          type: string
-        website:
-          type: string
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-
-    DiningReservationRequest:
-      type: object
-      properties:
-        dining_option_id:
-          type: string
-        date:
-          type: string
-          format: date
-        time:
-          type: string
-          description: Time in HH:MM format
-        party_size:
-          type: integer
-        special_requests:
-          type: string
-        name:
-          type: string
-        phone:
-          type: string
-      required:
-        - dining_option_id
-        - date
-        - time
-        - party_size
-
-    DiningReservationResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        dining_option_name:
-          type: string
-        date:
-          type: string
-          format: date
-        time:
-          type: string
-        party_size:
-          type: integer
-        reservation_reference:
-          type: string
-        status:
-          type: string
-          enum: [pending, confirmed, cancelled]
-        estimated_wait_time:
-          type: integer
-          description: In minutes
-        contact_number:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-
-    DiningOptionCreateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 3
-        type:
-          type: string
-          enum: [restaurant, cafe, food_shop, street_food, bakery]
-        cuisine:
-          type: string
-        address:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
-        rating:
-          type: number
-          format: double
-          minimum: 0
-          maximum: 5
-        average_cost_per_person:
-          type: number
-          format: double
-        operating_hours:
-          type: string
-        dietary_accommodations:
-          type: array
-          items:
-            type: string
-            enum: [vegetarian, vegan, halal, kosher, gluten_free]
-        specialties:
-          type: array
-          items:
-            type: string
-        reservation_required:
-          type: boolean
-        parking_available:
-          type: boolean
-        phone:
-          type: string
-        website:
-          type: string
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-      required:
-        - name
-        - type
-        - address
-
-    DiningOptionUpdateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        type:
-          type: string
-          enum: [restaurant, cafe, food_shop, street_food, bakery]
-        cuisine:
-          type: string
-        address:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
-        rating:
-          type: number
-          format: double
-        average_cost_per_person:
-          type: number
-          format: double
-        operating_hours:
-          type: string
-        dietary_accommodations:
-          type: array
-          items:
-            type: string
-        specialties:
-          type: array
-          items:
-            type: string
-        reservation_required:
-          type: boolean
-        parking_available:
-          type: boolean
-        phone:
-          type: string
-        website:
-          type: string
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-
-    # ===== EMERGENCY SERVICES SCHEMAS =====
-    EmergencyServicesResponse:
-      type: object
-      properties:
-        region_name:
-          type: string
-        hospitals:
-          type: array
-          items:
-            $ref: '#/components/schemas/HospitalInfo'
-        clinics:
-          type: array
-          items:
-            $ref: '#/components/schemas/ClinicInfo'
-        emergency_contacts:
-          type: array
-          items:
-            $ref: '#/components/schemas/EmergencyContactInfo'
-        emergency_helpline:
-          type: string
-        police_station:
-          $ref: '#/components/schemas/PoliceStationInfo'
-        fire_service:
-          $ref: '#/components/schemas/FireServiceInfo'
-        nearest_embassy:
-          $ref: '#/components/schemas/EmbassyInfo'
-
-    EmergencyServiceResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        service_type:
-          type: string
-          enum: [hospital, clinic, emergency_contact, police, fire, embassy]
-        name:
-          type: string
-        address:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
-        phone:
-          type: string
-        emergency_phone:
-          type: string
-        website:
-          type: string
-        additional_info:
-          type: object
-          additionalProperties: true
-
-    EmergencyServiceCreateRequest:
-      type: object
-      properties:
-        service_type:
-          type: string
-          enum: [hospital, clinic, emergency_contact, police, fire, embassy]
-        name:
-          type: string
-          minLength: 3
-        address:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
-        phone:
-          type: string
-        emergency_phone:
-          type: string
-        website:
-          type: string
-        specialties:
-          type: array
-          items:
-            type: string
-        availability:
-          type: string
-          enum: [24_7, business_hours, limited]
-        additional_info:
-          type: object
-          additionalProperties: true
-      required:
-        - service_type
-        - name
-        - address
-        - phone
-
-    EmergencyServiceUpdateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        address:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
-        phone:
-          type: string
-        emergency_phone:
-          type: string
-        website:
-          type: string
-        specialties:
-          type: array
-          items:
-            type: string
-        availability:
-          type: string
-          enum: [24_7, business_hours, limited]
-        additional_info:
-          type: object
-          additionalProperties: true
-
-    HospitalInfo:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        address:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
-        phone:
-          type: string
-        emergency_phone:
-          type: string
-        website:
-          type: string
-        specialties:
-          type: array
-          items:
-            type: string
-        availability:
-          type: string
-          enum: [24_7, business_hours, limited]
-        accepted_insurance:
-          type: array
-          items:
-            type: string
-        average_wait_time:
-          type: integer
-          description: In minutes
-
-    ClinicInfo:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        address:
-          type: string
-        phone:
-          type: string
-        specialties:
-          type: array
-          items:
-            type: string
-        operating_hours:
-          type: string
-        doctor_speaks_english:
-          type: boolean
-
-    EmergencyContactInfo:
-      type: object
-      properties:
-        service_type:
-          type: string
-        name:
-          type: string
-        phone:
-          type: string
-        available_24_7:
-          type: boolean
-
-    PoliceStationInfo:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        address:
-          type: string
-        phone:
-          type: string
-        emergency_phone:
-          type: string
-        latitude:
-          type: number
-          format: double
-        longitude:
-          type: number
-          format: double
-
-    FireServiceInfo:
-      type: object
-      properties:
-        emergency_phone:
-          type: string
-        address:
-          type: string
-
-    EmbassyInfo:
-      type: object
-      properties:
-        country:
-          type: string
-        address:
-          type: string
-        phone:
-          type: string
-        emergency_phone:
-          type: string
-        operating_hours:
-          type: string
-
-    # ===== OFFER SCHEMAS =====
-    OfferResponse:
-      type: object
-      properties:
-        id:
-          type: string
-        title:
-          type: string
-        description:
-          type: string
-        category:
-          type: string
-          enum: [activity, dining, accommodation, transport, shopping, wellness]
-        discount_type:
-          type: string
-          enum: [percentage, fixed_amount, buy_one_get_one, voucher]
-        discount_value:
-          type: number
-          format: double
-        original_price:
-          type: number
-          format: double
-        discounted_price:
-          type: number
-          format: double
-        provider:
-          type: string
-        valid_from:
-          type: string
-          format: date
-        valid_until:
-          type: string
-          format: date
-        terms_and_conditions:
-          type: string
-        code:
-          type: string
-          description: Discount code if applicable
-        applicable_to_user:
-          type: boolean
-          description: Based on user profile/history
-
-    OfferCreateRequest:
-      type: object
-      properties:
-        title:
-          type: string
-          minLength: 3
-        description:
-          type: string
-        category:
-          type: string
-          enum: [activity, dining, accommodation, transport, shopping, wellness]
-        discount_type:
-          type: string
-          enum: [percentage, fixed_amount, buy_one_get_one, voucher]
-        discount_value:
-          type: number
-          format: double
-        original_price:
-          type: number
-          format: double
-        discounted_price:
-          type: number
-          format: double
-        provider:
-          type: string
-        valid_from:
-          type: string
-          format: date
-        valid_until:
-          type: string
-          format: date
-        terms_and_conditions:
-          type: string
-        code:
-          type: string
-      required:
-        - title
-        - category
-        - discount_type
-        - discount_value
-        - valid_from
-        - valid_until
-
-    OfferUpdateRequest:
-      type: object
-      properties:
-        title:
-          type: string
-        description:
-          type: string
-        category:
-          type: string
-          enum: [activity, dining, accommodation, transport, shopping, wellness]
-        discount_type:
-          type: string
-          enum: [percentage, fixed_amount, buy_one_get_one, voucher]
-        discount_value:
-          type: number
-          format: double
-        original_price:
-          type: number
-          format: double
-        discounted_price:
-          type: number
-          format: double
-        provider:
-          type: string
-        valid_from:
-          type: string
-          format: date
-        valid_until:
-          type: string
-          format: date
-        terms_and_conditions:
-          type: string
-        code:
-          type: string
-
-    # ===== CULTURAL CONTEXT SCHEMAS =====
-    CulturalContextResponse:
-      type: object
-      properties:
-        region_name:
-          type: string
-        general_context:
-          $ref: '#/components/schemas/GeneralCulturalContext'
-        selected_locations_context:
-          type: array
-          items:
-            $ref: '#/components/schemas/LocationCulturalContext'
-        regional_festivals_events:
-          type: array
-          items:
-            $ref: '#/components/schemas/FestivalInfo'
-        local_customs_summary:
-          type: string
-
-    GeneralCulturalContext:
-      type: object
-      properties:
-        history:
-          type: string
-        religion_predominant:
-          type: string
-        language:
-          type: string
-        local_customs:
-          type: array
-          items:
-            type: string
-        dress_code_general:
-          type: string
-        photography_etiquette:
-          type: string
-        greetings_customs:
-          type: string
-        dining_etiquette:
-          type: string
-        tips_and_gratuity:
-          type: string
-        business_hours_note:
-          type: string
-
-    GeneralCulturalContextUpdateRequest:
-      type: object
-      properties:
-        history:
-          type: string
-        religion_predominant:
-          type: string
-        language:
-          type: string
-        local_customs:
-          type: array
-          items:
-            type: string
-        dress_code_general:
-          type: string
-        photography_etiquette:
-          type: string
-        greetings_customs:
-          type: string
-        dining_etiquette:
-          type: string
-        tips_and_gratuity:
-          type: string
-        business_hours_note:
-          type: string
-
-    LocationCulturalContext:
+    # ===== SELECTED LOCATIONS =====
+    SelectedLocationCreateRequest:
       type: object
       properties:
         location_id:
           type: string
-        location_name:
+          description: Catalog location id to add (Destination Service)
+        visit_date:
           type: string
-        significance:
+          format: date
+        visit_time:
           type: string
-          description: Religious, historical, cultural significance
-        dress_code:
-          type: string
-          description: Specific dress requirements if any (e.g., white for religious sites)
-        photography_allowed:
-          type: boolean
-        photography_restrictions:
-          type: string
-        behavioral_expectations:
-          type: array
-          items:
-            type: string
-        visiting_hours:
-          type: string
-        important_dates_restricted:
-          type: array
-          items:
-            type: object
-            properties:
-              date:
-                type: string
-                format: date
-              reason:
-                type: string
-              access_level:
-                type: string
-                enum: [restricted, limited, closed]
-        guides_available:
-          type: boolean
-        entry_rituals_if_any:
-          type: string
-        tips:
-          type: array
-          items:
-            type: string
-
-    LocationCulturalContextCreateRequest:
-      type: object
-      properties:
-        location_id:
-          type: string
-        location_name:
-          type: string
-        significance:
-          type: string
-        dress_code:
-          type: string
-        photography_allowed:
-          type: boolean
-        photography_restrictions:
-          type: string
-        behavioral_expectations:
-          type: array
-          items:
-            type: string
-        visiting_hours:
-          type: string
-        important_dates_restricted:
-          type: array
-          items:
-            type: object
-            properties:
-              date:
-                type: string
-                format: date
-              reason:
-                type: string
-              access_level:
-                type: string
-                enum: [restricted, limited, closed]
-        guides_available:
-          type: boolean
-        entry_rituals_if_any:
-          type: string
-        tips:
-          type: array
-          items:
-            type: string
+          description: Preferred visit time (e.g., morning, afternoon)
+        duration_scheduled:
+          type: integer
+          description: Minutes scheduled for this visit
       required:
         - location_id
-        - location_name
 
-    LocationCulturalContextUpdateRequest:
+    SelectedLocationUpdateRequest:
       type: object
       properties:
-        location_name:
-          type: string
-        significance:
-          type: string
-        dress_code:
-          type: string
-        photography_allowed:
-          type: boolean
-        photography_restrictions:
-          type: string
-        behavioral_expectations:
-          type: array
-          items:
-            type: string
-        visiting_hours:
-          type: string
-        important_dates_restricted:
-          type: array
-          items:
-            type: object
-            properties:
-              date:
-                type: string
-                format: date
-              reason:
-                type: string
-              access_level:
-                type: string
-                enum: [restricted, limited, closed]
-        guides_available:
-          type: boolean
-        entry_rituals_if_any:
-          type: string
-        tips:
-          type: array
-          items:
-            type: string
-
-    FestivalInfo:
-      type: object
-      properties:
-        name:
-          type: string
-        date:
+        visit_date:
           type: string
           format: date
-        duration_days:
+        visit_time:
+          type: string
+        duration_scheduled:
           type: integer
-        description:
-          type: string
-        impact_on_travel:
-          type: string
-          enum: [low, medium, high]
-        accessibility:
-          type: string
-          description: Impact on attractions, transport, dining
-        crowds_expected:
-          type: string
-          enum: [low, medium, high]
 
-    # ===== ALERT SCHEMAS =====
+    SelectedLocationResponse:
+      type: object
+      description: A lightweight reference to a catalog location plus visit scheduling.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Selected-location record id
+        region_node_id:
+          type: string
+          format: uuid
+        location_id:
+          type: string
+          description: Catalog location reference (Destination Service)
+        location_name:
+          type: string
+          description: Cached display name for convenience
+        category:
+          type: string
+        visit_date:
+          type: string
+          format: date
+        visit_time:
+          type: string
+        duration_scheduled:
+          type: integer
+          description: Minutes scheduled for this visit
+        added_at:
+          type: string
+          format: date-time
+
+    # ===== ALERTS =====
     TripAlertCreateRequest:
       type: object
       properties:
@@ -3553,7 +915,6 @@ components:
                 enum: [none, low, medium, high, critical]
               impact_type:
                 type: string
-                description: Type of impact (check-in delay, transport miss, etc.)
               original_dates:
                 type: object
                 properties:
