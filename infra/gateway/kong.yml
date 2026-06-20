@@ -10,7 +10,7 @@ services:
         strip_path: false
 
   - name: user-service
-    url: http://user-service:8001
+    url: http://user-service:8002
     routes:
       - name: user-route
         paths:
