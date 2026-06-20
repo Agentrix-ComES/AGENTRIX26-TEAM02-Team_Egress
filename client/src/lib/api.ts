@@ -6,7 +6,7 @@ import type {
 import type { Trip, TripNode, NodeKind } from "@/types/trip";
 
 const BASE_URL =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") ?? "http://localhost:8000/api";
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") ?? "http://localhost:8001/api";
 
 type TokenGetter = () => Promise<string | null>;
 
