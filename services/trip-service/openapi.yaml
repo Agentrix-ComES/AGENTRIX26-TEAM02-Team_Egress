@@ -1,0 +1,971 @@
+openapi: 3.0.0
+info:
+  title: Trip Service API
+  description: |
+    Itinerary core for the Travel Platform.
+
+    Owns the traveler's **plan**: trips, the chronological timeline of region nodes,
+    the locations a user has selected to visit, and trip-level alerts/disruptions.
+
+    **Bounded context**: "What is the user's plan."
+
+    This service is deliberately compact. It holds the itinerary *structure* and
+    *references* to data owned elsewhere:
+    - Region nodes link to a destination via `region_id` (Destination Service).
+    - Selected locations store a `location_id` reference (Destination Service) plus
+      visit scheduling — not a full copy of the attraction.
+    - Bookings (transport, hotel, dining reservations) live in the Booking Service and
+      are linked back by `trip_id` / `region_node_id`.
+
+    Alerts operate on this trip's own timeline, so they stay here.
+  version: 3.0.0
+  contact:
+    name: Team Egress
+    email: team-egress@travel-platform.local
+
+servers:
+  - url: http://localhost:8002/api/v1
+    description: Local development
+  - url: https://api.travel-platform.local/trip-service/v1
+    description: Production
+
+tags:
+  - name: Trips
+    description: Trip creation, retrieval, and lifecycle management
+  - name: Timeline
+    description: Region nodes (cities/towns) ordered chronologically in the trip
+  - name: Selected Locations
+    description: Attractions the traveler plans to visit (references Destination catalog)
+  - name: Trip Alerts
+    description: Disruptions, delays, and propagation analysis affecting the trip
+
+paths:
+  # ===== TRIPS =====
+  /trips:
+    post:
+      tags: [Trips]
+      summary: Create a new trip
+      operationId: create_trip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripCreateRequest'
+      responses:
+        '201':
+          description: Trip created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripResponse'
+        '400':
+          description: Invalid request
+
+    get:
+      tags: [Trips]
+      summary: List all trips for the authenticated user
+      operationId: list_trips
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [planning, active, completed, cancelled]
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of trips
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TripResponse'
+                  total:
+                    type: integer
+
+  /trips/{trip_id}:
+    get:
+      tags: [Trips]
+      summary: Retrieve a trip by ID
+      operationId: get_trip
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+      responses:
+        '200':
+          description: Trip details with timeline summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripDetailResponse'
+        '404':
+          description: Trip not found
+
+    patch:
+      tags: [Trips]
+      summary: Update trip metadata
+      operationId: update_trip
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripUpdateRequest'
+      responses:
+        '200':
+          description: Trip updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripResponse'
+
+    delete:
+      tags: [Trips]
+      summary: Cancel a trip
+      operationId: delete_trip
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+      responses:
+        '204':
+          description: Trip deleted
+
+  # ===== TIMELINE (REGION NODES) =====
+  /trips/{trip_id}/timeline:
+    get:
+      tags: [Timeline]
+      summary: Get the complete timeline (region nodes, chronologically ordered)
+      operationId: get_timeline
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+      responses:
+        '200':
+          description: Timeline with all region nodes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trip_id:
+                    type: string
+                    format: uuid
+                  regions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RegionNodeResponse'
+                  summary:
+                    type: object
+                    properties:
+                      total_regions:
+                        type: integer
+                      duration_days:
+                        type: integer
+                      total_budget:
+                        type: number
+
+  /trips/{trip_id}/timeline/regions:
+    post:
+      tags: [Timeline]
+      summary: Add a region (city/town) to the trip timeline
+      operationId: create_region_node
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegionNodeCreateRequest'
+      responses:
+        '201':
+          description: Region node created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegionNodeResponse'
+        '400':
+          description: Invalid region data
+
+  /trips/{trip_id}/timeline/regions/{region_node_id}:
+    get:
+      tags: [Timeline]
+      summary: Get a region node with reference summaries
+      operationId: get_region_node
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
+      responses:
+        '200':
+          description: Region node with summary counts and references
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegionNodeDetailResponse'
+
+    patch:
+      tags: [Timeline]
+      summary: Update region node metadata (dates, notes)
+      operationId: update_region_node
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegionNodeUpdateRequest'
+      responses:
+        '200':
+          description: Region node updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegionNodeResponse'
+
+    delete:
+      tags: [Timeline]
+      summary: Delete a region from the timeline
+      operationId: delete_region_node
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
+      responses:
+        '204':
+          description: Region deleted
+
+  # ===== SELECTED LOCATIONS =====
+  /trips/{trip_id}/timeline/regions/{region_node_id}/locations/selected:
+    get:
+      tags: [Selected Locations]
+      summary: Get the locations selected for this region
+      operationId: get_selected_locations
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
+      responses:
+        '200':
+          description: List of selected locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SelectedLocationResponse'
+
+    post:
+      tags: [Selected Locations]
+      summary: Add a catalog location to the selected list
+      operationId: add_selected_location
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectedLocationCreateRequest'
+      responses:
+        '201':
+          description: Location added to selected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SelectedLocationResponse'
+
+  /trips/{trip_id}/timeline/regions/{region_node_id}/locations/selected/{location_id}:
+    patch:
+      tags: [Selected Locations]
+      summary: Update visit scheduling for a selected location
+      operationId: update_selected_location
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
+        - $ref: '#/components/parameters/LocationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectedLocationUpdateRequest'
+      responses:
+        '200':
+          description: Selected location updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SelectedLocationResponse'
+
+    delete:
+      tags: [Selected Locations]
+      summary: Remove a location from the selected list
+      operationId: remove_selected_location
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/RegionNodeId'
+        - $ref: '#/components/parameters/LocationId'
+      responses:
+        '204':
+          description: Location removed
+
+  # ===== TRIP ALERTS =====
+  /trips/{trip_id}/alerts:
+    post:
+      tags: [Trip Alerts]
+      summary: Report a disruption affecting the trip
+      operationId: create_alert
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripAlertCreateRequest'
+      responses:
+        '201':
+          description: Alert created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripAlertResponse'
+
+    get:
+      tags: [Trip Alerts]
+      summary: List alerts for the trip
+      operationId: list_alerts
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, resolved, acknowledged]
+      responses:
+        '200':
+          description: List of alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TripAlertResponse'
+
+  /trips/{trip_id}/alerts/{alert_id}:
+    get:
+      tags: [Trip Alerts]
+      summary: Get alert details
+      operationId: get_alert
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/AlertId'
+      responses:
+        '200':
+          description: Alert details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripAlertDetailedResponse'
+
+    patch:
+      tags: [Trip Alerts]
+      summary: Update alert status
+      operationId: update_alert_status
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/AlertId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [active, resolved, acknowledged]
+              required:
+                - status
+      responses:
+        '200':
+          description: Alert updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripAlertResponse'
+
+  /trips/{trip_id}/alerts/{alert_id}/propagate:
+    post:
+      tags: [Trip Alerts]
+      summary: Analyze disruption propagation effects across the timeline
+      operationId: propagate_disruption
+      parameters:
+        - $ref: '#/components/parameters/TripId'
+        - $ref: '#/components/parameters/AlertId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                affected_region_id:
+                  type: string
+                  format: uuid
+                estimated_delay_minutes:
+                  type: integer
+              required:
+                - affected_region_id
+                - estimated_delay_minutes
+      responses:
+        '200':
+          description: Propagation analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisruptionPropagationResponse'
+
+components:
+  parameters:
+    TripId:
+      name: trip_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RegionNodeId:
+      name: region_node_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    LocationId:
+      name: location_id
+      in: path
+      required: true
+      description: Catalog location id (Destination Service)
+      schema:
+        type: string
+    AlertId:
+      name: alert_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    # ===== TRIP =====
+    TripCreateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 200
+          example: "Sri Lanka Adventure 2026"
+        description:
+          type: string
+          maxLength: 1000
+        destination:
+          type: string
+          example: "Sri Lanka"
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        budget:
+          type: number
+          format: double
+        currency:
+          type: string
+          default: "USD"
+        travel_style:
+          type: string
+          enum: [budget, comfort, luxury]
+        dietary_preferences:
+          type: array
+          items:
+            type: string
+            enum: [vegetarian, vegan, halal, kosher, gluten_free, no_restrictions]
+        accessibility_requirements:
+          type: array
+          items:
+            type: string
+        preferences:
+          type: object
+          additionalProperties: true
+      required:
+        - title
+        - destination
+        - start_date
+        - end_date
+        - budget
+
+    TripUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        budget:
+          type: number
+          format: double
+        travel_style:
+          type: string
+        dietary_preferences:
+          type: array
+          items:
+            type: string
+        accessibility_requirements:
+          type: array
+          items:
+            type: string
+        preferences:
+          type: object
+
+    TripResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        destination:
+          type: string
+        status:
+          type: string
+          enum: [planning, active, completed, cancelled]
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        budget:
+          type: number
+          format: double
+        currency:
+          type: string
+        travel_style:
+          type: string
+        dietary_preferences:
+          type: array
+          items:
+            type: string
+        accessibility_requirements:
+          type: array
+          items:
+            type: string
+        preferences:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        user_id:
+          type: string
+          format: uuid
+
+    TripDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/TripResponse'
+        - type: object
+          properties:
+            timeline_summary:
+              type: object
+              properties:
+                total_regions:
+                  type: integer
+                regions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      start_date:
+                        type: string
+                        format: date-time
+                      end_date:
+                        type: string
+                        format: date-time
+
+    # ===== REGION NODE =====
+    RegionNodeCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Colombo"
+          minLength: 1
+        region_id:
+          type: string
+          format: uuid
+          description: Destination this node maps to (Destination Service)
+        description:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        notes:
+          type: string
+      required:
+        - name
+        - start_date
+        - end_date
+
+    RegionNodeUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        notes:
+          type: string
+
+    RegionNodeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        trip_id:
+          type: string
+          format: uuid
+        region_id:
+          type: string
+          format: uuid
+          description: Destination reference (Destination Service)
+        name:
+          type: string
+        description:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        state:
+          type: string
+          enum: [green, red, purple]
+          description: Green=OK, Red=Issue, Purple=Completed
+        sequence:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    RegionNodeDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/RegionNodeResponse'
+        - type: object
+          properties:
+            selected_locations_count:
+              type: integer
+            booking_summary:
+              type: object
+              description: Counts sourced from the Booking Service
+              properties:
+                transport_bookings:
+                  type: integer
+                hotel_booked:
+                  type: boolean
+                dining_reservations:
+                  type: integer
+            state_reason:
+              type: string
+              description: If state is red, the reason for the disruption
+
+    # ===== SELECTED LOCATIONS =====
+    SelectedLocationCreateRequest:
+      type: object
+      properties:
+        location_id:
+          type: string
+          description: Catalog location id to add (Destination Service)
+        visit_date:
+          type: string
+          format: date
+        visit_time:
+          type: string
+          description: Preferred visit time (e.g., morning, afternoon)
+        duration_scheduled:
+          type: integer
+          description: Minutes scheduled for this visit
+      required:
+        - location_id
+
+    SelectedLocationUpdateRequest:
+      type: object
+      properties:
+        visit_date:
+          type: string
+          format: date
+        visit_time:
+          type: string
+        duration_scheduled:
+          type: integer
+
+    SelectedLocationResponse:
+      type: object
+      description: A lightweight reference to a catalog location plus visit scheduling.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Selected-location record id
+        region_node_id:
+          type: string
+          format: uuid
+        location_id:
+          type: string
+          description: Catalog location reference (Destination Service)
+        location_name:
+          type: string
+          description: Cached display name for convenience
+        category:
+          type: string
+        visit_date:
+          type: string
+          format: date
+        visit_time:
+          type: string
+        duration_scheduled:
+          type: integer
+          description: Minutes scheduled for this visit
+        added_at:
+          type: string
+          format: date-time
+
+    # ===== ALERTS =====
+    TripAlertCreateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 3
+          example: "Traffic jam on way to Kandy"
+        description:
+          type: string
+        alert_type:
+          type: string
+          enum: [delay, closure, weather, strike, accident, other]
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        affected_region_id:
+          type: string
+          format: uuid
+          description: Region node directly affected
+        delay_minutes:
+          type: integer
+        source:
+          type: string
+          enum: [user_report, automatic_alert, external_feed]
+          default: "user_report"
+      required:
+        - title
+        - alert_type
+        - severity
+        - affected_region_id
+
+    TripAlertResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        trip_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        alert_type:
+          type: string
+        severity:
+          type: string
+        affected_region_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [active, resolved, acknowledged]
+        delay_minutes:
+          type: integer
+        source:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    TripAlertDetailedResponse:
+      allOf:
+        - $ref: '#/components/schemas/TripAlertResponse'
+        - type: object
+          properties:
+            affected_region:
+              $ref: '#/components/schemas/RegionNodeResponse'
+            downstream_impacts:
+              type: array
+              items:
+                type: object
+                properties:
+                  affected_region_id:
+                    type: string
+                    format: uuid
+                  region_name:
+                    type: string
+                  impact_description:
+                    type: string
+                  potential_issues:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum: [booking_conflict, check_in_miss, transport_miss, reservation_invalid]
+                        description:
+                          type: string
+                        affected_item:
+                          type: string
+            resolution_notes:
+              type: string
+
+    DisruptionPropagationResponse:
+      type: object
+      properties:
+        alert_id:
+          type: string
+          format: uuid
+        primary_affected_region:
+          type: string
+        propagation_analysis:
+          type: array
+          items:
+            type: object
+            properties:
+              region_id:
+                type: string
+                format: uuid
+              region_name:
+                type: string
+              risk_level:
+                type: string
+                enum: [none, low, medium, high, critical]
+              impact_type:
+                type: string
+              original_dates:
+                type: object
+                properties:
+                  start:
+                    type: string
+                    format: date-time
+                  end:
+                    type: string
+                    format: date-time
+              suggested_adjustment:
+                type: object
+                properties:
+                  new_start:
+                    type: string
+                    format: date-time
+                  new_end:
+                    type: string
+                    format: date-time
+                  time_shift_minutes:
+                    type: integer
+              affected_bookings:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      enum: [hotel, transport, activity, dining]
+                    name:
+                      type: string
+                    conflict:
+                      type: string
+              recommendation:
+                type: string
+        summary:
+          type: object
+          properties:
+            total_regions_affected:
+              type: integer
+            critical_issues:
+              type: integer
+            recommended_actions:
+              type: array
+              items:
+                type: string
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []

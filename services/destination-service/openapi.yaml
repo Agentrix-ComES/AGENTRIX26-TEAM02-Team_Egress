@@ -1,0 +1,1855 @@
+openapi: 3.0.0
+info:
+  title: Destination Service API
+  description: |
+    Destination reference catalog for the Travel Platform.
+
+    Owns all **place-scoped reference data** — the things that exist at a destination
+    regardless of which trip or user is looking at them. This content is admin- and
+    external-feed managed, read-heavy, and cacheable.
+
+    **Bounded context**: "What exists at a destination."
+
+    All catalog resources are keyed by `region_id` (a destination such as Colombo),
+    NOT by `trip_id`. The Trip Service references catalog items by their IDs
+    (e.g. `location_id`, `dining_option_id`) and hydrates details from this service.
+
+    **Categories owned here**:
+    - Regions (destination registry)
+    - Visitable Locations (attractions)
+    - Activities
+    - Dining Options (catalog only — reservations live in Booking Service)
+    - Emergency Services
+    - Offers & Discounts
+    - Cultural Context
+  version: 1.0.0
+  contact:
+    name: Team Egress
+    email: team-egress@travel-platform.local
+
+servers:
+  - url: http://localhost:8003/api/v1
+    description: Local development
+  - url: https://api.travel-platform.local/destination-service/v1
+    description: Production
+
+tags:
+  - name: Regions
+    description: Destination registry (cities/towns) and master data
+  - name: Visitable Locations
+    description: Attractions and points of interest in a region
+  - name: Activities
+    description: Regional experiences and activities
+  - name: Dining
+    description: Restaurant/cafe/food-shop catalog (reservations are in Booking Service)
+  - name: Emergency Services
+    description: Hospitals, clinics, and emergency contacts in a region
+  - name: Offers & Discounts
+    description: Regional promotions and deals
+  - name: Cultural Context
+    description: Regional cultural guidance and location-specific etiquette
+
+paths:
+  # ===== REGIONS (DESTINATION REGISTRY) =====
+  /regions:
+    get:
+      tags: [Regions]
+      summary: List destinations (regions)
+      operationId: list_regions
+      parameters:
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: List of regions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RegionResponse'
+                  total:
+                    type: integer
+
+    post:
+      tags: [Regions]
+      summary: Register a new destination (admin)
+      operationId: create_region
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegionCreateRequest'
+      responses:
+        '201':
+          description: Region created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegionResponse'
+
+  /regions/{region_id}:
+    get:
+      tags: [Regions]
+      summary: Get a destination with catalog counts
+      operationId: get_region
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+      responses:
+        '200':
+          description: Region details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegionDetailResponse'
+        '404':
+          description: Region not found
+
+    patch:
+      tags: [Regions]
+      summary: Update destination master data (admin)
+      operationId: update_region
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegionUpdateRequest'
+      responses:
+        '200':
+          description: Region updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegionResponse'
+
+    delete:
+      tags: [Regions]
+      summary: Remove a destination (admin)
+      operationId: delete_region
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+      responses:
+        '204':
+          description: Region deleted
+
+  # ===== VISITABLE LOCATIONS =====
+  /regions/{region_id}/locations:
+    get:
+      tags: [Visitable Locations]
+      summary: List visitable locations in a region
+      operationId: list_locations
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [cultural, historical, adventure, relaxation, food, nature, religious]
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: List of locations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VisitableLocationResponse'
+                  total:
+                    type: integer
+
+    post:
+      tags: [Visitable Locations]
+      summary: Create a visitable location (admin)
+      operationId: create_location
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisitableLocationCreateRequest'
+      responses:
+        '201':
+          description: Location created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitableLocationResponse'
+
+  /regions/{region_id}/locations/{location_id}:
+    get:
+      tags: [Visitable Locations]
+      summary: Get a visitable location
+      operationId: get_location
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/LocationId'
+      responses:
+        '200':
+          description: Location details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitableLocationResponse'
+        '404':
+          description: Location not found
+
+    patch:
+      tags: [Visitable Locations]
+      summary: Update a visitable location (admin)
+      operationId: update_location
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/LocationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisitableLocationUpdateRequest'
+      responses:
+        '200':
+          description: Location updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitableLocationResponse'
+
+    delete:
+      tags: [Visitable Locations]
+      summary: Delete a visitable location (admin)
+      operationId: delete_location
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/LocationId'
+      responses:
+        '204':
+          description: Location deleted
+
+  # ===== ACTIVITIES =====
+  /regions/{region_id}/activities:
+    get:
+      tags: [Activities]
+      summary: List activities in a region
+      operationId: list_activities
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - name: difficulty
+          in: query
+          schema:
+            type: string
+            enum: [easy, moderate, difficult]
+      responses:
+        '200':
+          description: List of activities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityResponse'
+
+    post:
+      tags: [Activities]
+      summary: Create an activity (admin)
+      operationId: create_activity
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityCreateRequest'
+      responses:
+        '201':
+          description: Activity created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+
+  /regions/{region_id}/activities/{activity_id}:
+    patch:
+      tags: [Activities]
+      summary: Update an activity (admin)
+      operationId: update_activity
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/ActivityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityUpdateRequest'
+      responses:
+        '200':
+          description: Activity updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+
+    delete:
+      tags: [Activities]
+      summary: Delete an activity (admin)
+      operationId: delete_activity
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/ActivityId'
+      responses:
+        '204':
+          description: Activity deleted
+
+  # ===== DINING (CATALOG) =====
+  /regions/{region_id}/dining:
+    get:
+      tags: [Dining]
+      summary: List dining options in a region
+      operationId: list_dining_options
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - name: cuisine
+          in: query
+          schema:
+            type: string
+        - name: dietary_filter
+          in: query
+          schema:
+            type: string
+            enum: [vegetarian, vegan, halal, kosher, gluten_free]
+      responses:
+        '200':
+          description: List of dining options
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiningOptionResponse'
+
+    post:
+      tags: [Dining]
+      summary: Add a dining option (admin)
+      operationId: create_dining_option
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiningOptionCreateRequest'
+      responses:
+        '201':
+          description: Dining option created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiningOptionResponse'
+
+  /regions/{region_id}/dining/{dining_option_id}:
+    get:
+      tags: [Dining]
+      summary: Get a dining option
+      operationId: get_dining_option
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/DiningOptionId'
+      responses:
+        '200':
+          description: Dining option details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiningOptionResponse'
+        '404':
+          description: Dining option not found
+
+    patch:
+      tags: [Dining]
+      summary: Update a dining option (admin)
+      operationId: update_dining_option
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/DiningOptionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiningOptionUpdateRequest'
+      responses:
+        '200':
+          description: Dining option updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiningOptionResponse'
+
+    delete:
+      tags: [Dining]
+      summary: Delete a dining option (admin)
+      operationId: delete_dining_option
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/DiningOptionId'
+      responses:
+        '204':
+          description: Dining option deleted
+
+  # ===== EMERGENCY SERVICES =====
+  /regions/{region_id}/emergency:
+    get:
+      tags: [Emergency Services]
+      summary: Get aggregated emergency services for a region
+      operationId: get_emergency_services
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+      responses:
+        '200':
+          description: Emergency services
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyServicesResponse'
+
+    post:
+      tags: [Emergency Services]
+      summary: Add an emergency service/facility (admin)
+      operationId: create_emergency_service
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmergencyServiceCreateRequest'
+      responses:
+        '201':
+          description: Emergency service created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyServiceResponse'
+
+  /regions/{region_id}/emergency/{service_id}:
+    patch:
+      tags: [Emergency Services]
+      summary: Update an emergency service (admin)
+      operationId: update_emergency_service
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/ServiceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmergencyServiceUpdateRequest'
+      responses:
+        '200':
+          description: Emergency service updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyServiceResponse'
+
+    delete:
+      tags: [Emergency Services]
+      summary: Delete an emergency service (admin)
+      operationId: delete_emergency_service
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/ServiceId'
+      responses:
+        '204':
+          description: Emergency service deleted
+
+  # ===== OFFERS & DISCOUNTS =====
+  /regions/{region_id}/offers:
+    get:
+      tags: [Offers & Discounts]
+      summary: List offers in a region
+      operationId: list_offers
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [activity, dining, accommodation, transport, shopping, wellness]
+      responses:
+        '200':
+          description: List of offers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferResponse'
+
+    post:
+      tags: [Offers & Discounts]
+      summary: Create an offer (admin)
+      operationId: create_offer
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferCreateRequest'
+      responses:
+        '201':
+          description: Offer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferResponse'
+
+  /regions/{region_id}/offers/{offer_id}:
+    patch:
+      tags: [Offers & Discounts]
+      summary: Update an offer (admin)
+      operationId: update_offer
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/OfferId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferUpdateRequest'
+      responses:
+        '200':
+          description: Offer updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferResponse'
+
+    delete:
+      tags: [Offers & Discounts]
+      summary: Delete an offer (admin)
+      operationId: delete_offer
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/OfferId'
+      responses:
+        '204':
+          description: Offer deleted
+
+  # ===== CULTURAL CONTEXT =====
+  /regions/{region_id}/culture:
+    get:
+      tags: [Cultural Context]
+      summary: Get cultural context for a region
+      operationId: get_cultural_context
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+      responses:
+        '200':
+          description: Cultural context
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CulturalContextResponse'
+
+    patch:
+      tags: [Cultural Context]
+      summary: Update regional cultural context (admin)
+      operationId: update_cultural_context
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeneralCulturalContextUpdateRequest'
+      responses:
+        '200':
+          description: Cultural context updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CulturalContextResponse'
+
+  /regions/{region_id}/culture/locations/{location_id}:
+    post:
+      tags: [Cultural Context]
+      summary: Add location-specific cultural context (admin)
+      operationId: add_location_cultural_context
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/LocationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationCulturalContextCreateRequest'
+      responses:
+        '201':
+          description: Location cultural context created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationCulturalContext'
+
+    patch:
+      tags: [Cultural Context]
+      summary: Update location-specific cultural context (admin)
+      operationId: update_location_cultural_context
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/LocationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationCulturalContextUpdateRequest'
+      responses:
+        '200':
+          description: Location cultural context updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationCulturalContext'
+
+    delete:
+      tags: [Cultural Context]
+      summary: Delete location-specific cultural context (admin)
+      operationId: delete_location_cultural_context
+      parameters:
+        - $ref: '#/components/parameters/RegionId'
+        - $ref: '#/components/parameters/LocationId'
+      responses:
+        '204':
+          description: Location cultural context deleted
+
+components:
+  parameters:
+    RegionId:
+      name: region_id
+      in: path
+      required: true
+      description: Destination/region identifier
+      schema:
+        type: string
+        format: uuid
+    LocationId:
+      name: location_id
+      in: path
+      required: true
+      schema:
+        type: string
+    ActivityId:
+      name: activity_id
+      in: path
+      required: true
+      schema:
+        type: string
+    DiningOptionId:
+      name: dining_option_id
+      in: path
+      required: true
+      schema:
+        type: string
+    ServiceId:
+      name: service_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    OfferId:
+      name: offer_id
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    # ===== REGION =====
+    RegionCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Colombo"
+          minLength: 1
+        country:
+          type: string
+          example: "Sri Lanka"
+        description:
+          type: string
+        region_code:
+          type: string
+          description: ISO region code or internal code
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        timezone:
+          type: string
+      required:
+        - name
+        - country
+
+    RegionUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        timezone:
+          type: string
+
+    RegionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        country:
+          type: string
+        description:
+          type: string
+        region_code:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        timezone:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    RegionDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/RegionResponse'
+        - type: object
+          properties:
+            catalog_counts:
+              type: object
+              properties:
+                locations:
+                  type: integer
+                activities:
+                  type: integer
+                dining_options:
+                  type: integer
+                emergency_services:
+                  type: integer
+                offers:
+                  type: integer
+                cultural_context_available:
+                  type: boolean
+
+    # ===== VISITABLE LOCATIONS =====
+    VisitableLocationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        region_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [cultural, historical, adventure, relaxation, food, nature, religious]
+        location:
+          type: object
+          properties:
+            latitude:
+              type: number
+              format: double
+            longitude:
+              type: number
+              format: double
+            address:
+              type: string
+        rating:
+          type: number
+          format: double
+        review_count:
+          type: integer
+        entry_fee:
+          type: number
+          format: double
+        estimated_duration_minutes:
+          type: integer
+        opening_hours:
+          type: string
+        best_time_to_visit:
+          type: string
+        difficulty_level:
+          type: string
+          enum: [easy, moderate, difficult]
+        accessibility_info:
+          type: string
+        guided_tour_available:
+          type: boolean
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        cultural_context_short:
+          type: string
+
+    VisitableLocationCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+        description:
+          type: string
+        category:
+          type: string
+          enum: [cultural, historical, adventure, relaxation, food, nature, religious]
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        address:
+          type: string
+        entry_fee:
+          type: number
+          format: double
+        estimated_duration_minutes:
+          type: integer
+        opening_hours:
+          type: string
+        best_time_to_visit:
+          type: string
+        difficulty_level:
+          type: string
+          enum: [easy, moderate, difficult]
+        accessibility_info:
+          type: string
+        guided_tour_available:
+          type: boolean
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        cultural_context_short:
+          type: string
+      required:
+        - name
+        - category
+        - latitude
+        - longitude
+        - address
+
+    VisitableLocationUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [cultural, historical, adventure, relaxation, food, nature, religious]
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        address:
+          type: string
+        entry_fee:
+          type: number
+          format: double
+        estimated_duration_minutes:
+          type: integer
+        opening_hours:
+          type: string
+        best_time_to_visit:
+          type: string
+        difficulty_level:
+          type: string
+          enum: [easy, moderate, difficult]
+        accessibility_info:
+          type: string
+        guided_tour_available:
+          type: boolean
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        cultural_context_short:
+          type: string
+
+    # ===== ACTIVITY =====
+    ActivityResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        region_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        difficulty_level:
+          type: string
+          enum: [easy, moderate, difficult]
+        duration_hours:
+          type: number
+        estimated_cost:
+          type: number
+          format: double
+        age_requirements:
+          type: object
+          properties:
+            minimum_age:
+              type: integer
+            maximum_age:
+              type: integer
+        physical_requirements:
+          type: string
+        location:
+          type: string
+        operating_hours:
+          type: string
+        best_season:
+          type: string
+        required_equipment:
+          type: array
+          items:
+            type: string
+        instructor_available:
+          type: boolean
+        group_size_limit:
+          type: integer
+        reviews:
+          type: number
+          format: double
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        provider:
+          type: string
+
+    ActivityCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+        description:
+          type: string
+        category:
+          type: string
+        difficulty_level:
+          type: string
+          enum: [easy, moderate, difficult]
+        duration_hours:
+          type: number
+        estimated_cost:
+          type: number
+          format: double
+        age_requirements:
+          type: object
+          properties:
+            minimum_age:
+              type: integer
+            maximum_age:
+              type: integer
+        physical_requirements:
+          type: string
+        location:
+          type: string
+        operating_hours:
+          type: string
+        best_season:
+          type: string
+        required_equipment:
+          type: array
+          items:
+            type: string
+        instructor_available:
+          type: boolean
+        group_size_limit:
+          type: integer
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        provider:
+          type: string
+      required:
+        - name
+        - category
+        - difficulty_level
+
+    ActivityUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        difficulty_level:
+          type: string
+        duration_hours:
+          type: number
+        estimated_cost:
+          type: number
+          format: double
+        physical_requirements:
+          type: string
+        location:
+          type: string
+        operating_hours:
+          type: string
+        best_season:
+          type: string
+        required_equipment:
+          type: array
+          items:
+            type: string
+        instructor_available:
+          type: boolean
+        group_size_limit:
+          type: integer
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        provider:
+          type: string
+
+    # ===== DINING OPTION (CATALOG) =====
+    DiningOptionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        region_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          type: string
+          enum: [restaurant, cafe, food_shop, street_food, bakery]
+        cuisine:
+          type: string
+        location:
+          type: object
+          properties:
+            address:
+              type: string
+            latitude:
+              type: number
+              format: double
+            longitude:
+              type: number
+              format: double
+        rating:
+          type: number
+          format: double
+        review_count:
+          type: integer
+        average_cost_per_person:
+          type: number
+          format: double
+        operating_hours:
+          type: string
+        dietary_accommodations:
+          type: array
+          items:
+            type: string
+            enum: [vegetarian, vegan, halal, kosher, gluten_free]
+        specialties:
+          type: array
+          items:
+            type: string
+        reservation_required:
+          type: boolean
+        parking_available:
+          type: boolean
+        phone:
+          type: string
+        website:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+
+    DiningOptionCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+        type:
+          type: string
+          enum: [restaurant, cafe, food_shop, street_food, bakery]
+        cuisine:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        rating:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 5
+        average_cost_per_person:
+          type: number
+          format: double
+        operating_hours:
+          type: string
+        dietary_accommodations:
+          type: array
+          items:
+            type: string
+            enum: [vegetarian, vegan, halal, kosher, gluten_free]
+        specialties:
+          type: array
+          items:
+            type: string
+        reservation_required:
+          type: boolean
+        parking_available:
+          type: boolean
+        phone:
+          type: string
+        website:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+      required:
+        - name
+        - type
+        - address
+
+    DiningOptionUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [restaurant, cafe, food_shop, street_food, bakery]
+        cuisine:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        rating:
+          type: number
+          format: double
+        average_cost_per_person:
+          type: number
+          format: double
+        operating_hours:
+          type: string
+        dietary_accommodations:
+          type: array
+          items:
+            type: string
+        specialties:
+          type: array
+          items:
+            type: string
+        reservation_required:
+          type: boolean
+        parking_available:
+          type: boolean
+        phone:
+          type: string
+        website:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+
+    # ===== EMERGENCY SERVICES =====
+    EmergencyServicesResponse:
+      type: object
+      properties:
+        region_name:
+          type: string
+        hospitals:
+          type: array
+          items:
+            $ref: '#/components/schemas/HospitalInfo'
+        clinics:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClinicInfo'
+        emergency_contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmergencyContactInfo'
+        emergency_helpline:
+          type: string
+        police_station:
+          $ref: '#/components/schemas/PoliceStationInfo'
+        fire_service:
+          $ref: '#/components/schemas/FireServiceInfo'
+        nearest_embassy:
+          $ref: '#/components/schemas/EmbassyInfo'
+
+    EmergencyServiceResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        region_id:
+          type: string
+          format: uuid
+        service_type:
+          type: string
+          enum: [hospital, clinic, emergency_contact, police, fire, embassy]
+        name:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        phone:
+          type: string
+        emergency_phone:
+          type: string
+        website:
+          type: string
+        additional_info:
+          type: object
+          additionalProperties: true
+
+    EmergencyServiceCreateRequest:
+      type: object
+      properties:
+        service_type:
+          type: string
+          enum: [hospital, clinic, emergency_contact, police, fire, embassy]
+        name:
+          type: string
+          minLength: 3
+        address:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        phone:
+          type: string
+        emergency_phone:
+          type: string
+        website:
+          type: string
+        specialties:
+          type: array
+          items:
+            type: string
+        availability:
+          type: string
+          enum: [24_7, business_hours, limited]
+        additional_info:
+          type: object
+          additionalProperties: true
+      required:
+        - service_type
+        - name
+        - address
+        - phone
+
+    EmergencyServiceUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        phone:
+          type: string
+        emergency_phone:
+          type: string
+        website:
+          type: string
+        specialties:
+          type: array
+          items:
+            type: string
+        availability:
+          type: string
+          enum: [24_7, business_hours, limited]
+        additional_info:
+          type: object
+          additionalProperties: true
+
+    HospitalInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        phone:
+          type: string
+        emergency_phone:
+          type: string
+        website:
+          type: string
+        specialties:
+          type: array
+          items:
+            type: string
+        availability:
+          type: string
+          enum: [24_7, business_hours, limited]
+        accepted_insurance:
+          type: array
+          items:
+            type: string
+        average_wait_time:
+          type: integer
+          description: In minutes
+
+    ClinicInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        specialties:
+          type: array
+          items:
+            type: string
+        operating_hours:
+          type: string
+        doctor_speaks_english:
+          type: boolean
+
+    EmergencyContactInfo:
+      type: object
+      properties:
+        service_type:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        available_24_7:
+          type: boolean
+
+    PoliceStationInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        emergency_phone:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+
+    FireServiceInfo:
+      type: object
+      properties:
+        emergency_phone:
+          type: string
+        address:
+          type: string
+
+    EmbassyInfo:
+      type: object
+      properties:
+        country:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        emergency_phone:
+          type: string
+        operating_hours:
+          type: string
+
+    # ===== OFFERS =====
+    OfferResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        region_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [activity, dining, accommodation, transport, shopping, wellness]
+        discount_type:
+          type: string
+          enum: [percentage, fixed_amount, buy_one_get_one, voucher]
+        discount_value:
+          type: number
+          format: double
+        original_price:
+          type: number
+          format: double
+        discounted_price:
+          type: number
+          format: double
+        provider:
+          type: string
+        valid_from:
+          type: string
+          format: date
+        valid_until:
+          type: string
+          format: date
+        terms_and_conditions:
+          type: string
+        code:
+          type: string
+
+    OfferCreateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 3
+        description:
+          type: string
+        category:
+          type: string
+          enum: [activity, dining, accommodation, transport, shopping, wellness]
+        discount_type:
+          type: string
+          enum: [percentage, fixed_amount, buy_one_get_one, voucher]
+        discount_value:
+          type: number
+          format: double
+        original_price:
+          type: number
+          format: double
+        discounted_price:
+          type: number
+          format: double
+        provider:
+          type: string
+        valid_from:
+          type: string
+          format: date
+        valid_until:
+          type: string
+          format: date
+        terms_and_conditions:
+          type: string
+        code:
+          type: string
+      required:
+        - title
+        - category
+        - discount_type
+        - discount_value
+        - valid_from
+        - valid_until
+
+    OfferUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [activity, dining, accommodation, transport, shopping, wellness]
+        discount_type:
+          type: string
+          enum: [percentage, fixed_amount, buy_one_get_one, voucher]
+        discount_value:
+          type: number
+          format: double
+        original_price:
+          type: number
+          format: double
+        discounted_price:
+          type: number
+          format: double
+        provider:
+          type: string
+        valid_from:
+          type: string
+          format: date
+        valid_until:
+          type: string
+          format: date
+        terms_and_conditions:
+          type: string
+        code:
+          type: string
+
+    # ===== CULTURAL CONTEXT =====
+    CulturalContextResponse:
+      type: object
+      properties:
+        region_name:
+          type: string
+        general_context:
+          $ref: '#/components/schemas/GeneralCulturalContext'
+        locations_context:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationCulturalContext'
+        regional_festivals_events:
+          type: array
+          items:
+            $ref: '#/components/schemas/FestivalInfo'
+        local_customs_summary:
+          type: string
+
+    GeneralCulturalContext:
+      type: object
+      properties:
+        history:
+          type: string
+        religion_predominant:
+          type: string
+        language:
+          type: string
+        local_customs:
+          type: array
+          items:
+            type: string
+        dress_code_general:
+          type: string
+        photography_etiquette:
+          type: string
+        greetings_customs:
+          type: string
+        dining_etiquette:
+          type: string
+        tips_and_gratuity:
+          type: string
+        business_hours_note:
+          type: string
+
+    GeneralCulturalContextUpdateRequest:
+      type: object
+      properties:
+        history:
+          type: string
+        religion_predominant:
+          type: string
+        language:
+          type: string
+        local_customs:
+          type: array
+          items:
+            type: string
+        dress_code_general:
+          type: string
+        photography_etiquette:
+          type: string
+        greetings_customs:
+          type: string
+        dining_etiquette:
+          type: string
+        tips_and_gratuity:
+          type: string
+        business_hours_note:
+          type: string
+
+    LocationCulturalContext:
+      type: object
+      properties:
+        location_id:
+          type: string
+        location_name:
+          type: string
+        significance:
+          type: string
+        dress_code:
+          type: string
+        photography_allowed:
+          type: boolean
+        photography_restrictions:
+          type: string
+        behavioral_expectations:
+          type: array
+          items:
+            type: string
+        visiting_hours:
+          type: string
+        important_dates_restricted:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              reason:
+                type: string
+              access_level:
+                type: string
+                enum: [restricted, limited, closed]
+        guides_available:
+          type: boolean
+        entry_rituals_if_any:
+          type: string
+        tips:
+          type: array
+          items:
+            type: string
+
+    LocationCulturalContextCreateRequest:
+      type: object
+      properties:
+        location_name:
+          type: string
+        significance:
+          type: string
+        dress_code:
+          type: string
+        photography_allowed:
+          type: boolean
+        photography_restrictions:
+          type: string
+        behavioral_expectations:
+          type: array
+          items:
+            type: string
+        visiting_hours:
+          type: string
+        important_dates_restricted:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              reason:
+                type: string
+              access_level:
+                type: string
+                enum: [restricted, limited, closed]
+        guides_available:
+          type: boolean
+        entry_rituals_if_any:
+          type: string
+        tips:
+          type: array
+          items:
+            type: string
+      required:
+        - location_name
+
+    LocationCulturalContextUpdateRequest:
+      type: object
+      properties:
+        location_name:
+          type: string
+        significance:
+          type: string
+        dress_code:
+          type: string
+        photography_allowed:
+          type: boolean
+        photography_restrictions:
+          type: string
+        behavioral_expectations:
+          type: array
+          items:
+            type: string
+        visiting_hours:
+          type: string
+        important_dates_restricted:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              reason:
+                type: string
+              access_level:
+                type: string
+                enum: [restricted, limited, closed]
+        guides_available:
+          type: boolean
+        entry_rituals_if_any:
+          type: string
+        tips:
+          type: array
+          items:
+            type: string
+
+    FestivalInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        date:
+          type: string
+          format: date
+        duration_days:
+          type: integer
+        description:
+          type: string
+        impact_on_travel:
+          type: string
+          enum: [low, medium, high]
+        accessibility:
+          type: string
+        crowds_expected:
+          type: string
+          enum: [low, medium, high]
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []
