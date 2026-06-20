@@ -77,6 +77,15 @@ interface WorkspaceLocationState {
 const LS_CONVERSATION = "workspace:conversationId";
 const LS_TRIP_ID = "workspace:tripId";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function readUuidFromStorage(key: string): string | undefined {
+  const v = localStorage.getItem(key);
+  if (v && UUID_RE.test(v)) return v;
+  if (v) localStorage.removeItem(key);
+  return undefined;
+}
+
 function toIsoDateTime(s: string | undefined): string | null {
   if (!s) return null;
   const d = s.length === 10 ? new Date(`${s}T00:00:00Z`) : new Date(s);
@@ -104,10 +113,13 @@ export function WorkspacePage() {
     return [];
   });
   const [conversationId, setConversationId] = useState<string | undefined>(
-    incoming.conversationId ?? localStorage.getItem(LS_CONVERSATION) ?? undefined,
+    (incoming.conversationId && UUID_RE.test(incoming.conversationId)
+      ? incoming.conversationId
+      : undefined) ?? readUuidFromStorage(LS_CONVERSATION),
   );
   const [tripId, setTripId] = useState<string | undefined>(
-    incoming.tripId ?? localStorage.getItem(LS_TRIP_ID) ?? undefined,
+    (incoming.tripId && UUID_RE.test(incoming.tripId) ? incoming.tripId : undefined) ??
+      readUuidFromStorage(LS_TRIP_ID),
   );
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
