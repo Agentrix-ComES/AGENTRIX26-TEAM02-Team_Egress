@@ -23,9 +23,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   );
 }
 
+import { Toaster } from "sonner";
+
 export default function App() {
   return (
     <ThemeProvider>
+      <Toaster />
       <BrowserRouter>
         <AuthSync />
         <Routes>
