@@ -102,7 +102,7 @@ services:
     container_name: travel-ai-service
     restart: unless-stopped
     env_file:
-      - .env.local
+      - .env
     environment:
       POSTGRES_HOST: postgres
       REDIS_HOST: redis
@@ -141,6 +141,43 @@ services:
       - ./infra/gateway/kong.yml:/usr/local/kong/declarative/kong.yml:ro
     depends_on:
       - ai-service
+  # ---------------------------------------------------------------------------
+  # Frontend (Vite + React + shadcn) — production nginx image
+  # ---------------------------------------------------------------------------
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    image: travel-platform/client:latest
+    container_name: travel-client
+    restart: unless-stopped
+    ports:
+      - "${CLIENT_PORT:-5173}:80"
+    depends_on:
+      ai-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - travel-net
+
+  # Dev variant — Vite dev server with HMR.
+  # Enable with:  docker compose --profile dev up client-dev
+  client-dev:
+    image: node:22-alpine
+    container_name: travel-client-dev
+    profiles: ["dev"]
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "${CLIENT_DEV_PORT:-5173}:5173"
+    volumes:
+      - ./client:/app
+      - client_node_modules:/app/node_modules
     networks:
       - travel-net
 
@@ -154,3 +191,4 @@ volumes:
   qdrant_data:
   neo4j_data:
   neo4j_logs:
+  client_node_modules:
