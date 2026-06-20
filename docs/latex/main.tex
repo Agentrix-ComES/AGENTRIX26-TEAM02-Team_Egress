@@ -8,7 +8,6 @@
 \usepackage{titlesec}
 \usepackage{xcolor}
 \usepackage{graphicx}
-\usepackage{float}
 
 % Hyperlink setup
 \hypersetup{
@@ -109,11 +108,11 @@ Users can perform full timeline operations: create, update, reorder, reschedule,
 
 The platform follows a layered architecture with a clear separation between the user-facing request path, an administrative plane, the agentic backend, a shared memory layer, the domain services, and the external feeds. End-user requests enter through an \textbf{API Gateway / Backend Router} and reach the Trip Orchestrator, which delegates to the specialized agents; the agents draw on domain services, and only those services talk to external APIs. This strict layering keeps each concern in one place: an agent never calls an external API directly.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=\linewidth]{Archi_Diagram.png}
-    \caption{High-level system architecture of the AI-Powered Timeline Travel Planning and Assistance Platform.}
-    \label{fig:architecture}
+    \includegraphics[width=0.95\textwidth]{archi_diagram.png}
+    \caption{High-level architecture of the AI-powered timeline travel planning platform.}
+    \label{fig:architecture-diagram}
 \end{figure}
 
 \subsection{User-Facing Plane}
@@ -216,10 +215,7 @@ The interim prototype targets the end-to-end timeline experience: generating a S
 
 \subsection{Identified as Future Work}
 
-\begin{itemize}
-    \item \textbf{Negotiation and offer support} (price comparison, counter-offers, and bundling) is a planned extension. It is not part of the current architecture and would be added as a dedicated agent and service with explicit ethical and policy boundaries.
-    \item Full coverage of the Events \& Festivals, Alerts Scraper, and Notification services, including the Cron-driven proactive disruption pipeline at production scale.
-\end{itemize}
+
 
 \subsection{Feasibility and Risks}
 
