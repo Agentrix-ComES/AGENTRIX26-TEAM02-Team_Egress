@@ -8,6 +8,7 @@ startup, so they are intentionally **not** managed by Alembic.
 from __future__ import annotations
 
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from app.graph.cached_checkpointer import RedisCachedPostgresSaver
 from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
 
@@ -16,6 +17,7 @@ from app.core.config import settings
 _pool: AsyncConnectionPool | None = None
 _checkpointer: AsyncPostgresSaver | None = None
 
+from app.graph.cached_checkpointer import RedisCachedPostgresSaver
 
 async def init_checkpointer() -> AsyncPostgresSaver:
     """Open the connection pool and auto-create checkpoint tables.
@@ -35,7 +37,7 @@ async def init_checkpointer() -> AsyncPostgresSaver:
     )
     await _pool.open()
 
-    _checkpointer = AsyncPostgresSaver(_pool)
+    _checkpointer = RedisCachedPostgresSaver(_pool)
     # Auto-creates the LangGraph checkpoint tables if they do not exist.
     await _checkpointer.setup()
     return _checkpointer

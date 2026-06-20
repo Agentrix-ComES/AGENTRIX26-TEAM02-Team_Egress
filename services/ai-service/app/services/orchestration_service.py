@@ -17,8 +17,8 @@ from app.schemas.ai import (
 )
 
 
-def _thread_config(conversation_id: uuid.UUID) -> dict:
-    return {"configurable": {"thread_id": str(conversation_id)}}
+def _thread_config(conversation_id: str) -> dict:
+    return {"configurable": {"thread_id": conversation_id}}
 
 
 def _to_itinerary(value: dict | None) -> Itinerary | None:
@@ -33,7 +33,7 @@ def _to_itinerary(value: dict | None) -> Itinerary | None:
 
 async def run_chat(session: AsyncSession, request: ChatRequest) -> ChatResponse:
 
-    conversation_id = request.conversation_id or uuid.uuid4()
+    conversation_id = request.conversation_id or request.user_id or str(uuid.uuid4())
     run_type = "disruption" if request.disruption else "chat"
 
     run = AgentRun(
@@ -89,7 +89,7 @@ async def run_chat(session: AsyncSession, request: ChatRequest) -> ChatResponse:
     )
 
 
-async def get_conversation(conversation_id: uuid.UUID) -> ConversationState | None:
+async def get_conversation(conversation_id: str) -> ConversationState | None:
     """Read the persisted conversation history + current itinerary."""
     graph = get_compiled_graph()
     snapshot = await graph.aget_state(_thread_config(conversation_id))
@@ -114,7 +114,7 @@ async def get_conversation(conversation_id: uuid.UUID) -> ConversationState | No
     )
 
 
-async def get_itinerary(conversation_id: uuid.UUID) -> Itinerary | None:
+async def get_itinerary(conversation_id: str) -> Itinerary | None:
     """Read just the latest itinerary for a conversation."""
     state = await get_conversation(conversation_id)
     return state.itinerary if state else None
