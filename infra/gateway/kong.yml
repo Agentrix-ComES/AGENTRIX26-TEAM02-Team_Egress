@@ -2,16 +2,45 @@ _format_version: "3.0"
 
 services:
   - name: ai-service
-    url: http://travel-ai-service:8000
+    url: http://ai-service:8000
     routes:
-      - name: ai-routes
+      - name: ai-route
         paths:
           - /api/ai
         strip_path: false
 
-# Example of how you would configure the Kong JWT plugin later to verify Clerk tokens
-# plugins:
-#   - name: jwt
+  - name: user-service
+    url: http://host.docker.internal:8001
+    routes:
+      - name: user-route
+        paths:
+          - /api/users
+        strip_path: false
+
+plugins:
+  - name: cors
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+      headers:
+        - Accept
+        - Accept-Version
+        - Content-Length
+        - Content-MD5
+        - Content-Type
+        - Date
+        - Authorization
+      exposed_headers:
+        - Authorization
+      credentials: true
+      max_age: 3600
 #     service: ai-service
 #     config:
 #       claims_to_verify:
