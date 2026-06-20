@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
 import { Loader2, MapPin, Send, Sparkles, Wand2 } from "lucide-react";
 import { mockChat, mockTrip } from "@/data/mock";
-import { interpret } from "@/lib/trip-engine";
+import { sendChat, itineraryToTrip } from "@/lib/api";
 import type { ChatMessage, Trip, TripNode } from "@/types/trip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -47,9 +49,33 @@ function snapshotMap(trip: Trip) {
   return new Map(trip.nodes.map((n) => [n.id, JSON.stringify(n)]));
 }
 
+interface WorkspaceLocationState {
+  conversationId?: string;
+  trip?: Trip;
+  initialReply?: string;
+}
+
 export function WorkspacePage() {
-  const [trip, setTrip] = useState<Trip>(mockTrip);
-  const [messages, setMessages] = useState<ChatMessage[]>(mockChat);
+  const { getToken } = useAuth();
+  const location = useLocation();
+  const incoming = (location.state ?? {}) as WorkspaceLocationState;
+
+  const [trip, setTrip] = useState<Trip>(incoming.trip ?? mockTrip);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    if (incoming.initialReply) {
+      return [
+        {
+          id: "m-init",
+          role: "assistant",
+          agent: "orchestrator",
+          content: incoming.initialReply,
+          timestamp: new Date().toISOString(),
+        },
+      ];
+    }
+    return mockChat;
+  });
+  const [conversationId, setConversationId] = useState<string | undefined>(incoming.conversationId);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [touched, setTouched] = useState<Set<string>>(new Set());
@@ -94,13 +120,36 @@ export function WorkspacePage() {
       setMessages((m) => [...m, userMsg]);
       setInput("");
 
-      const steps = interpret(t);
-      for (const step of steps) {
-        await new Promise((r) => window.setTimeout(r, step.delayMs));
-        if (step.apply) {
+      try {
+        const res = await sendChat(getToken, {
+          message: t,
+          conversation_id: conversationId,
+          preferences: trip.preferences,
+          destination: trip.destination || undefined,
+          start_date: trip.startDate || undefined,
+          end_date: trip.endDate || undefined,
+        });
+        setConversationId(res.conversation_id);
+
+        setMessages((arr) => [
+          ...arr,
+          {
+            id: `m${Date.now()}-r`,
+            role: "assistant",
+            agent: "orchestrator",
+            content: res.reply,
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+
+        if (res.itinerary) {
           setTrip((prev) => {
             const before = snapshotMap(prev);
-            const next = step.apply!(prev);
+            const next = itineraryToTrip(res.itinerary!, {
+              id: prev.id,
+              title: prev.title,
+              preferences: prev.preferences,
+            });
             const changed: string[] = [];
             for (const n of next.nodes) {
               if (before.get(n.id) !== JSON.stringify(n)) changed.push(n.id);
@@ -109,19 +158,23 @@ export function WorkspacePage() {
             return next;
           });
         }
-        if (step.message) {
-          const m: ChatMessage = {
-            ...step.message,
-            id: `m${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      } catch (err) {
+        console.error("Chat call failed", err);
+        setMessages((arr) => [
+          ...arr,
+          {
+            id: `m${Date.now()}-e`,
+            role: "assistant",
+            agent: "orchestrator",
+            content: "Sorry — the agents couldn't reach the planner. Please try again.",
             timestamp: new Date().toISOString(),
-          };
-          setMessages((arr) => [...arr, m]);
-        }
+          },
+        ]);
+      } finally {
+        setBusy(false);
       }
-
-      setBusy(false);
     },
-    [busy, flashTouched],
+    [busy, conversationId, flashTouched, getToken, trip.destination, trip.endDate, trip.preferences, trip.startDate],
   );
 
   return (

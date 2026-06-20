@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     # App
     app_env: str = Field(default="development")
     service_name: str = Field(default="ai-service")
-    api_prefix: str = Field(default="/ai")
+    api_prefix: str = Field(default="/api/ai")
 
     # PostgreSQL (pgvector)
     postgres_host: str = Field(default="postgres")
