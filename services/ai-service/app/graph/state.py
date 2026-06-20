@@ -10,6 +10,7 @@ class GraphState(TypedDict, total=False):
     """State object flowing through the planning graph."""
 
     messages: Annotated[list, add_messages]
+    is_safe: bool
     intent: Intent
     destination: str
     start_date: str | None
