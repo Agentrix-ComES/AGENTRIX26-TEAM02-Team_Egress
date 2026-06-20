@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
-import { formatDistanceToNow } from "date-fns";
 import {
+  ArrowRight,
+  Database,
   Loader2,
   RefreshCw,
   Server,
@@ -9,18 +11,10 @@ import {
   UserCog,
   Users,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { listUsers, type CurrentUser } from "@/lib/api";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
@@ -30,34 +24,9 @@ interface ServiceCheck {
   status: "checking" | "ok" | "down";
 }
 
-const initialServiceChecks: ServiceCheck[] = [
+const initialChecks: ServiceCheck[] = [
   { name: "AI Service", url: "/ai/health", status: "checking" },
   { name: "User Service", url: "/users/health", status: "checking" },
-];
-
-const domainServices = [
-  { name: "Itinerary Optimizer", load: 38 },
-  { name: "Routing & Transport", load: 71 },
-  { name: "Climate & Seasonality", load: 22 },
-  { name: "Events & Festivals", load: 89 },
-  { name: "Cultural Knowledge", load: 14 },
-  { name: "Alerts Scraper", load: 9 },
-  { name: "Notification Service", load: 31 },
-];
-
-const externalFeeds = [
-  { name: "Weather & Advisories APIs", status: "ok" },
-  { name: "Maps / Geocoding / Routing", status: "ok" },
-  { name: "Train / Bus / Park Status", status: "limited" },
-  { name: "Official Tourism Content", status: "ok" },
-  { name: "News Feeds (Special Events)", status: "ok" },
-];
-
-const partners = [
-  { name: "Cinnamon Hotels", type: "Stay", bookings: 142 },
-  { name: "ExpoRail", type: "Transport", bookings: 88 },
-  { name: "Leopard Trails", type: "Activity", bookings: 36 },
-  { name: "Jetwing", type: "Stay", bookings: 91 },
 ];
 
 const API_BASE =
@@ -68,25 +37,20 @@ export function AdminPage() {
   const { user } = useCurrentUser();
   const [users, setUsers] = useState<CurrentUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(true);
-  const [usersError, setUsersError] = useState<string | null>(null);
-  const [services, setServices] = useState<ServiceCheck[]>(initialServiceChecks);
+  const [services, setServices] = useState<ServiceCheck[]>(initialChecks);
 
-  const refreshUsers = async () => {
+  const refresh = useCallback(async () => {
     setUsersLoading(true);
-    setUsersError(null);
     try {
       setUsers(await listUsers(getToken));
-    } catch (err) {
-      setUsersError((err as Error).message);
+    } catch {
+      setUsers([]);
     } finally {
       setUsersLoading(false);
     }
-  };
-
-  const pingServices = async () => {
-    setServices(initialServiceChecks);
+    setServices(initialChecks);
     const results = await Promise.all(
-      initialServiceChecks.map(async (svc) => {
+      initialChecks.map(async (svc) => {
         try {
           const res = await fetch(`${API_BASE}${svc.url}`);
           return { ...svc, status: (res.ok ? "ok" : "down") as ServiceCheck["status"] };
@@ -96,28 +60,25 @@ export function AdminPage() {
       }),
     );
     setServices(results);
-  };
+  }, [getToken]);
 
   useEffect(() => {
-    refreshUsers();
-    pingServices();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    refresh();
+  }, [refresh]);
 
-  const adminCount = useMemo(() => users.filter((u) => u.role === "Admin").length, [users]);
-  const userCount = users.length - adminCount;
+  const adminCount = users.filter((u) => u.role === "Admin").length;
   const healthy = services.filter((s) => s.status === "ok").length;
 
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-semibold">Admin Console</h1>
+          <h1 className="text-2xl font-semibold">Overview</h1>
           <p className="text-zinc-400">
             Welcome back, {user?.full_name || user?.email}. Operate domain services and inspect shared state.
           </p>
         </div>
-        <Button variant="outline" onClick={() => { refreshUsers(); pingServices(); }} className="border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-100">
+        <Button variant="outline" onClick={refresh} className="border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-100">
           <RefreshCw className="h-4 w-4" /> Refresh
         </Button>
       </div>
@@ -126,80 +87,19 @@ export function AdminPage() {
         <Stat label="Total users" value={usersLoading ? "…" : String(users.length)} icon={Users} />
         <Stat label="Admins" value={usersLoading ? "…" : String(adminCount)} icon={UserCog} />
         <Stat label="Services healthy" value={`${healthy} / ${services.length}`} icon={ShieldCheck} />
-        <Stat label="Domain services" value={`${domainServices.length}`} icon={Server} hint="mocked" />
+        <Stat label="Vector DB rows" value="2.1M" icon={Database} hint="mocked" />
       </div>
 
-      <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="bg-zinc-900 border border-zinc-800">
-          <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="health">Service health</TabsTrigger>
-          <TabsTrigger value="services">Domain services</TabsTrigger>
-          <TabsTrigger value="feeds">External feeds</TabsTrigger>
-          <TabsTrigger value="memory">Shared memory</TabsTrigger>
-          <TabsTrigger value="partners">Partners</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="users">
-          <AdminCard
-            title="Registered users"
-            description={`${users.length} total · ${adminCount} admin${adminCount === 1 ? "" : "s"} · ${userCount} traveller${userCount === 1 ? "" : "s"}`}
-          >
-            {usersError ? (
-              <div className="text-sm text-rose-400">Failed to load: {usersError}</div>
-            ) : usersLoading ? (
-              <div className="flex items-center gap-2 text-sm text-zinc-400">
-                <Loader2 className="h-4 w-4 animate-spin" /> Loading users…
-              </div>
-            ) : users.length === 0 ? (
-              <div className="text-sm text-zinc-400">No users yet.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-xs uppercase text-zinc-500 border-b border-zinc-800">
-                      <th className="py-2 pr-4 font-medium">Name</th>
-                      <th className="py-2 pr-4 font-medium">Email</th>
-                      <th className="py-2 pr-4 font-medium">Role</th>
-                      <th className="py-2 pr-4 font-medium">Joined</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map((u) => (
-                      <tr key={u.user_id} className="border-b border-zinc-800/60 last:border-0">
-                        <td className="py-2.5 pr-4 font-medium">{u.full_name || "—"}</td>
-                        <td className="py-2.5 pr-4 text-zinc-400">{u.email}</td>
-                        <td className="py-2.5 pr-4">
-                          <Badge
-                            variant="outline"
-                            className={
-                              u.role === "Admin"
-                                ? "border-indigo-400/40 bg-indigo-500/10 text-indigo-300"
-                                : "border-zinc-700 bg-zinc-900 text-zinc-300"
-                            }
-                          >
-                            {u.role}
-                          </Badge>
-                        </td>
-                        <td className="py-2.5 pr-4 text-zinc-400">
-                          {formatDistanceToNow(new Date(u.created_at), { addSuffix: true })}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </AdminCard>
-        </TabsContent>
-
-        <TabsContent value="health" className="space-y-3">
-          {services.map((svc) => (
-            <Card key={svc.name} className="bg-zinc-900 border-zinc-800">
-              <CardContent className="p-4 flex items-center justify-between">
-                <div>
-                  <div className="font-medium text-zinc-100">{svc.name}</div>
-                  <div className="text-xs text-zinc-500">{API_BASE}{svc.url}</div>
-                </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="bg-zinc-900 border-zinc-800">
+          <CardHeader>
+            <CardTitle className="text-zinc-100">Quick service health</CardTitle>
+            <CardDescription className="text-zinc-500">Live gateway checks</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {services.map((svc) => (
+              <div key={svc.name} className="flex items-center justify-between border border-zinc-800 rounded-lg p-3 bg-zinc-950">
+                <div className="font-medium text-zinc-100">{svc.name}</div>
                 <Badge
                   variant="outline"
                   className={
@@ -210,122 +110,81 @@ export function AdminPage() {
                         : "border-zinc-700 bg-zinc-900 text-zinc-300"
                   }
                 >
-                  {svc.status === "checking" ? "checking…" : svc.status}
+                  {svc.status === "checking" ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Loader2 className="h-3 w-3 animate-spin" /> checking
+                    </span>
+                  ) : (
+                    svc.status
+                  )}
                 </Badge>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
+              </div>
+            ))}
+            <Separator className="bg-zinc-800" />
+            <Button asChild variant="ghost" className="text-indigo-300 hover:text-indigo-200 hover:bg-indigo-500/10 px-0">
+              <Link to="/admin/services">
+                Open full services view <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="services" className="space-y-3">
-          {domainServices.map((s) => (
-            <Card key={s.name} className="bg-zinc-900 border-zinc-800">
-              <CardContent className="p-4 grid grid-cols-[1fr_220px] items-center gap-4">
-                <div>
-                  <div className="font-medium text-zinc-100">{s.name}</div>
-                  <div className="text-xs text-zinc-500">domain-service · mocked</div>
+        <Card className="bg-zinc-900 border-zinc-800">
+          <CardHeader>
+            <CardTitle className="text-zinc-100">Recent users</CardTitle>
+            <CardDescription className="text-zinc-500">Last 5 sign-ups</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {usersLoading ? (
+              <div className="text-sm text-zinc-400 flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" /> Loading…
+              </div>
+            ) : users.length === 0 ? (
+              <div className="text-sm text-zinc-400">No users yet.</div>
+            ) : (
+              users.slice(0, 5).map((u) => (
+                <div key={u.user_id} className="flex items-center justify-between border border-zinc-800 rounded-lg p-3 bg-zinc-950">
+                  <div className="min-w-0">
+                    <div className="font-medium text-zinc-100 truncate">{u.full_name || u.email}</div>
+                    <div className="text-xs text-zinc-500 truncate">{u.email}</div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      u.role === "Admin"
+                        ? "border-indigo-400/40 bg-indigo-500/10 text-indigo-300"
+                        : "border-zinc-700 bg-zinc-900 text-zinc-300"
+                    }
+                  >
+                    {u.role}
+                  </Badge>
                 </div>
-                <div>
-                  <Progress value={s.load} />
-                  <div className="text-xs text-zinc-500 mt-1">{s.load}% load</div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
+              ))
+            )}
+            <Separator className="bg-zinc-800" />
+            <Button asChild variant="ghost" className="text-indigo-300 hover:text-indigo-200 hover:bg-indigo-500/10 px-0">
+              <Link to="/admin/users">
+                Open users <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
-        <TabsContent value="feeds" className="space-y-3">
-          {externalFeeds.map((f) => (
-            <Card key={f.name} className="bg-zinc-900 border-zinc-800">
-              <CardContent className="p-4 flex items-center justify-between">
-                <div className="font-medium text-zinc-100">{f.name}</div>
-                <Badge
-                  variant="outline"
-                  className={
-                    f.status === "ok"
-                      ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-300"
-                      : "border-amber-400/40 bg-amber-500/10 text-amber-300"
-                  }
-                >
-                  {f.status}
-                </Badge>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="memory" className="grid gap-4 md:grid-cols-2">
-          <Card className="bg-zinc-900 border-zinc-800">
-            <CardHeader>
-              <CardTitle className="text-zinc-100">Trip DB (PostgreSQL)</CardTitle>
-              <CardDescription className="text-zinc-500">Canonical timeline & node states.</CardDescription>
-            </CardHeader>
-            <CardContent className="text-sm space-y-2 text-zinc-300">
-              <Row k="Tables" v="trips, nodes, bookings, audits" />
-              <Row k="Rows" v="184,221" />
-              <Row k="Replication lag" v="48ms" />
-              <Separator className="bg-zinc-800" />
-              <Button size="sm" variant="outline" className="border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-100">
-                Open psql shell
-              </Button>
-            </CardContent>
-          </Card>
-          <Card className="bg-zinc-900 border-zinc-800">
-            <CardHeader>
-              <CardTitle className="text-zinc-100">Vector DB (RAG / embeddings)</CardTitle>
-              <CardDescription className="text-zinc-500">Preferences, past decisions, similar trips.</CardDescription>
-            </CardHeader>
-            <CardContent className="text-sm space-y-2 text-zinc-300">
-              <Row k="Collections" v="preferences, decisions, cultural-kb" />
-              <Row k="Vectors" v="2,124,902" />
-              <Row k="Index health" v={<Badge variant="outline" className="border-emerald-400/40 bg-emerald-500/10 text-emerald-300">green</Badge>} />
-              <Separator className="bg-zinc-800" />
-              <Button size="sm" variant="outline" className="border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-100">
-                Re-index cultural-kb
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="partners" className="space-y-3">
-          {partners.map((p) => (
-            <Card key={p.name} className="bg-zinc-900 border-zinc-800">
-              <CardContent className="p-4 grid grid-cols-[1fr_140px_140px_120px] items-center gap-4">
-                <div>
-                  <div className="font-medium text-zinc-100">{p.name}</div>
-                  <div className="text-xs text-zinc-500">{p.type}</div>
-                </div>
-                <div className="text-sm text-zinc-300">{p.bookings} bookings</div>
-                <Badge variant="outline" className="border-zinc-700 bg-zinc-900 text-zinc-300">active</Badge>
-                <div className="text-right">
-                  <Button size="sm" variant="ghost" className="text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800">Open</Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-      </Tabs>
+      <Card className="bg-zinc-900 border-zinc-800">
+        <CardHeader>
+          <CardTitle className="text-zinc-100">Architecture</CardTitle>
+          <CardDescription className="text-zinc-500">
+            Snapshot of the platform planes. Detail views live under Services.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-3">
+          <Tile icon={Server} title="API Gateway" body="Kong routes /api/users → user-service:8002 and /api/ai → ai-service:8000." />
+          <Tile icon={Database} title="Shared memory" body="Postgres (canonical trips) + Qdrant (RAG embeddings) + Neo4j (route graph)." />
+          <Tile icon={ShieldCheck} title="Admin allowlist" body="Roles enforced from the ADMIN_EMAILS env var. Reconciled on every user-service startup." />
+        </CardContent>
+      </Card>
     </div>
-  );
-}
-
-function AdminCard({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Card className="bg-zinc-900 border-zinc-800">
-      <CardHeader>
-        <CardTitle className="text-zinc-100">{title}</CardTitle>
-        {description && <CardDescription className="text-zinc-500">{description}</CardDescription>}
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
   );
 }
 
@@ -358,12 +217,22 @@ function Stat({
   );
 }
 
-function Row({ k, v }: { k: string; v: React.ReactNode }) {
+function Tile({
+  icon: Icon,
+  title,
+  body,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  body: string;
+}) {
   return (
-    <div className="flex justify-between border-b border-zinc-800 pb-1 last:border-0 last:pb-0">
-      <span className="text-zinc-500">{k}</span>
-      <span className="font-medium text-zinc-100">{v}</span>
+    <div className="border border-zinc-800 rounded-lg p-4 bg-zinc-950 space-y-2">
+      <div className="flex items-center gap-2">
+        <Icon className="h-4 w-4 text-indigo-300" />
+        <div className="font-medium text-zinc-100">{title}</div>
+      </div>
+      <div className="text-sm text-zinc-400">{body}</div>
     </div>
   );
 }
-

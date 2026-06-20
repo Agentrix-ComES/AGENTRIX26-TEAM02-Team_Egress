@@ -59,6 +59,82 @@ export async function listUsers(getToken: TokenGetter): Promise<CurrentUser[]> {
   return asJson<CurrentUser[]>(res);
 }
 
+export type PlaceCategory = "hotels" | "activities" | "transport";
+
+export interface Place {
+  id: string;
+  name: string | null;
+  category: string | null;
+  subtype: string | null;
+  city: string | null;
+  region: string | null;
+  address: string | null;
+  lat: number | null;
+  lon: number | null;
+  image_url: string | null;
+  website: string | null;
+  opening_hours: string | null;
+  description: string | null;
+  property_type: string | null;
+  star_rating: number | null;
+  price_tier: string | null;
+  activity_category: string | null;
+  indoor_outdoor: string | null;
+  fee: string | null;
+  mode: string | null;
+  operator: string | null;
+}
+
+export interface PlacesResponse {
+  category: PlaceCategory;
+  total_in_collection: number;
+  returned: number;
+  offset: number;
+  next_offset: string | null;
+  filters_applied: Record<string, unknown>;
+  items: Place[];
+}
+
+export interface FetchPlacesParams {
+  category: PlaceCategory;
+  city?: string;
+  subtype?: string;
+  has_image?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+export async function fetchPlaces(
+  getToken: TokenGetter,
+  params: FetchPlacesParams,
+): Promise<PlacesResponse> {
+  const qs = new URLSearchParams();
+  qs.set("category", params.category);
+  if (params.city) qs.set("city", params.city);
+  if (params.subtype) qs.set("subtype", params.subtype);
+  if (params.has_image !== undefined) qs.set("has_image", String(params.has_image));
+  qs.set("limit", String(params.limit ?? 24));
+  qs.set("offset", String(params.offset ?? 0));
+  const res = await authedFetch(`/ai/data/places?${qs.toString()}`, getToken);
+  return asJson<PlacesResponse>(res);
+}
+
+export interface IngestResponse {
+  [k: string]: unknown;
+}
+
+export async function runIngest(
+  getToken: TokenGetter,
+  category: PlaceCategory | "all" = "all",
+  limit = 200,
+): Promise<IngestResponse> {
+  const qs = new URLSearchParams({ category, limit: String(limit) });
+  const res = await authedFetch(`/ai/data/ingest?${qs.toString()}`, getToken, {
+    method: "POST",
+  });
+  return asJson<IngestResponse>(res);
+}
+
 export async function sendChat(
   getToken: TokenGetter,
   body: ChatRequest,
