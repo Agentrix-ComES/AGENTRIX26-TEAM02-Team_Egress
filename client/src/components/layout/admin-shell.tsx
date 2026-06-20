@@ -1,11 +1,12 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { UserButton } from "@clerk/clerk-react";
-import { Activity, Database, Package, ShieldCheck, Users } from "lucide-react";
+import { Activity, Database, MapPinned, Package, ShieldCheck, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
   { to: "/admin", icon: Activity, label: "Overview", end: true },
   { to: "/admin/users", icon: Users, label: "Users" },
+  { to: "/admin/destinations", icon: MapPinned, label: "Destinations" },
   { to: "/admin/products", icon: Package, label: "Products" },
   { to: "/admin/services", icon: Database, label: "Services" },
 ];
