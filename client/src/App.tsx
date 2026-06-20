@@ -4,9 +4,13 @@ import { CurrentUserProvider, useCurrentUser } from "@/hooks/use-current-user";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { AdminPage } from "@/pages/admin";
 import { AdminSignInPage } from "@/pages/admin-sign-in";
+import { AdminDestinationsPage } from "@/pages/admin/destinations";
 import { AdminProductsPage } from "@/pages/admin/products";
+import { AdminRegionDetailPage } from "@/pages/admin/region-detail";
 import { AdminServicesPage } from "@/pages/admin/services";
 import { AdminUsersPage } from "@/pages/admin/users";
+import { TripsPage } from "@/pages/trips";
+import { TripDetailPage } from "@/pages/trips/detail";
 import { AlertsPage } from "@/pages/alerts";
 import { BotPreviewPage } from "@/pages/bot-preview";
 import { LandingPage } from "@/pages/landing";
@@ -96,6 +100,8 @@ export default function App() {
               <Route path="/app" element={<OverviewPage />} />
               <Route path="/plan" element={<PlanTripPage />} />
               <Route path="/workspace" element={<WorkspacePage />} />
+              <Route path="/trips" element={<TripsPage />} />
+              <Route path="/trips/:tripId" element={<TripDetailPage />} />
               <Route
                 path="/chat"
                 element={<Navigate to="/workspace" replace />}
@@ -122,6 +128,8 @@ export default function App() {
               <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/admin/services" element={<AdminServicesPage />} />
               <Route path="/admin/products" element={<AdminProductsPage />} />
+              <Route path="/admin/destinations" element={<AdminDestinationsPage />} />
+              <Route path="/admin/destinations/:regionId" element={<AdminRegionDetailPage />} />
             </Route>
           </Routes>
         </CurrentUserProvider>

@@ -3,8 +3,7 @@ import { useLocation } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
-import { Loader2, MapPin, Send, Sparkles, Wand2 } from "lucide-react";
-import { mockChat, mockTrip } from "@/data/mock";
+import { CalendarRange, Loader2, MapPin, Send, Sparkles, Wand2 } from "lucide-react";
 import { sendChat, itineraryToTrip } from "@/lib/api";
 import type { ChatMessage, Trip, TripNode } from "@/types/trip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -26,12 +25,24 @@ const agentMeta: Record<string, { color: string; label: string }> = {
   culture: { color: "bg-amber-500/15 text-amber-600", label: "Culture" },
 };
 
+const emptyTrip: Trip = {
+  id: "draft",
+  title: "Untitled trip",
+  destination: "",
+  startDate: "",
+  endDate: "",
+  travelers: 1,
+  budget: 0,
+  currency: "USD",
+  preferences: [],
+  progress: 0,
+  nodes: [],
+};
+
 const quickPrompts = [
-  "There's traffic on the way to Kandy",
-  "Add a beach day before we fly home",
-  "Skip the temple visit",
-  "It's raining in Ella tomorrow",
-  "We're done with the train, what's next?",
+  "Skip the next activity",
+  "Add a rest day",
+  "It's raining tomorrow",
   "Replan the whole trip",
 ];
 
@@ -60,7 +71,7 @@ export function WorkspacePage() {
   const location = useLocation();
   const incoming = (location.state ?? {}) as WorkspaceLocationState;
 
-  const [trip, setTrip] = useState<Trip>(incoming.trip ?? mockTrip);
+  const [trip, setTrip] = useState<Trip>(incoming.trip ?? emptyTrip);
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     if (incoming.initialReply) {
       return [
@@ -73,7 +84,7 @@ export function WorkspacePage() {
         },
       ];
     }
-    return mockChat;
+    return [];
   });
   const [conversationId, setConversationId] = useState<string | undefined>(incoming.conversationId);
   const [input, setInput] = useState("");
@@ -199,6 +210,19 @@ export function WorkspacePage() {
         </CardHeader>
 
         <div ref={chatRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+          {messages.length === 0 && !busy && (
+            <div className="h-full grid place-items-center text-center px-6">
+              <div className="space-y-2 max-w-xs">
+                <div className="grid place-items-center h-10 w-10 mx-auto rounded-lg bg-primary/10 text-primary">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <div className="font-medium">Start a new conversation</div>
+                <p className="text-sm text-muted-foreground">
+                  Describe the trip you want — destination, dates, vibe — and the agents will draft a timeline.
+                </p>
+              </div>
+            </div>
+          )}
           <AnimatePresence initial={false}>
             {messages.map((m, idx) => (
               <Bubble key={m.id} m={m} isLatest={idx === messages.length - 1 && !busy} />
@@ -226,18 +250,20 @@ export function WorkspacePage() {
         </div>
 
         <div className="border-t p-3 space-y-2 bg-card">
-          <div className="flex flex-wrap gap-1.5">
-            {quickPrompts.map((q) => (
-              <button
-                key={q}
-                disabled={busy}
-                onClick={() => run(q)}
-                className="text-[11px] rounded-full border px-2.5 py-1 hover:bg-accent disabled:opacity-50 transition-colors"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
+          {trip.nodes.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {quickPrompts.map((q) => (
+                <button
+                  key={q}
+                  disabled={busy}
+                  onClick={() => run(q)}
+                  className="text-[11px] rounded-full border px-2.5 py-1 hover:bg-accent disabled:opacity-50 transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -266,12 +292,20 @@ export function WorkspacePage() {
               <CardTitle className="truncate">{trip.title}</CardTitle>
               <CardDescription className="flex items-center gap-1.5">
                 <MapPin className="h-3.5 w-3.5" />
-                {trip.destination} · {trip.startDate} → {trip.endDate}
+                {trip.destination || "No destination yet"}
+                {trip.startDate && trip.endDate && (
+                  <span>· {trip.startDate} → {trip.endDate}</span>
+                )}
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline">{trip.nodes.length} nodes</Badge>
-              <Button size="sm" variant="outline" disabled={busy} onClick={() => run("replan the whole trip")}>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy || trip.nodes.length === 0}
+                onClick={() => run("replan the whole trip")}
+              >
                 <Wand2 className="h-4 w-4" /> Re-optimize
               </Button>
             </div>
@@ -279,6 +313,19 @@ export function WorkspacePage() {
         </CardHeader>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          {trip.nodes.length === 0 ? (
+            <div className="h-full grid place-items-center text-center">
+              <div className="space-y-2 max-w-sm">
+                <div className="grid place-items-center h-10 w-10 mx-auto rounded-lg bg-muted text-muted-foreground">
+                  <CalendarRange className="h-5 w-5" />
+                </div>
+                <div className="font-medium">No timeline yet</div>
+                <p className="text-sm text-muted-foreground">
+                  Tell the orchestrator what you'd like to do and a timeline of nodes will appear here.
+                </p>
+              </div>
+            </div>
+          ) : null}
           <LayoutGroup>
             {days.map(([day, nodes]) => (
               <motion.section key={day} layout>
