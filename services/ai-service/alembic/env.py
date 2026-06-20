@@ -5,7 +5,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.core.config import settings
 from app.db.session import Base
@@ -14,7 +14,6 @@ from app.db.session import Base
 import app.models  # noqa: F401, E402
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.postgres_dsn)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -47,6 +46,7 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
+    # Ensure schema + extension exist before migration (idempotent).
     connection.exec_driver_sql(f"CREATE SCHEMA IF NOT EXISTS {VERSION_SCHEMA}")
     connection.exec_driver_sql("CREATE EXTENSION IF NOT EXISTS vector")
     context.configure(
@@ -56,15 +56,15 @@ def do_run_migrations(connection: Connection) -> None:
         version_table_schema=VERSION_SCHEMA,
         include_object=include_object,
         compare_type=True,
+        transaction_per_migration=True,
     )
-    with context.begin_transaction():
-        context.run_migrations()
+    context.run_migrations()
 
 
 async def run_migrations_online() -> None:
-    connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
+    # Build the async engine directly from settings to avoid ini-section URL issues.
+    connectable = create_async_engine(
+        settings.postgres_dsn,
         poolclass=pool.NullPool,
     )
     async with connectable.connect() as connection:
