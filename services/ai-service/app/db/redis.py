@@ -46,6 +46,35 @@ async def cache_get_json(key: str) -> Any | None:
         return None
 
 
+import pickle
+import base64
+
+async def cache_set_obj(key: str, obj: Any, ttl: int = 3600) -> None:
+    """Pickle an object, encode as base64 string, and store in Redis. Best-effort."""
+    try:
+        b64_str = base64.b64encode(pickle.dumps(obj)).decode('ascii')
+        await get_redis().set(key, b64_str, ex=ttl)
+    except Exception as exc:
+        logger.warning("Redis SET obj failed for %s: %s", key, exc)
+
+async def cache_get_obj(key: str) -> Any | None:
+    """Read a base64 string from Redis, decode, and unpickle, or ``None`` on miss/error."""
+    try:
+        b64_str = await get_redis().get(key)
+        if b64_str is not None:
+            return pickle.loads(base64.b64decode(b64_str))
+    except Exception as exc:
+        logger.warning("Redis GET obj failed for %s: %s", key, exc)
+    return None
+
+async def cache_delete(key: str) -> None:
+    """Delete a specific key from the cache."""
+    try:
+        await get_redis().delete(key)
+    except Exception as exc:
+        logger.warning("Redis DELETE failed for %s: %s", key, exc)
+
+
 async def cache_set_json(key: str, value: Any, ttl: int) -> None:
     """JSON-encode and store a value with a TTL (seconds). Best-effort."""
     try:
@@ -61,7 +90,6 @@ async def verify_redis() -> None:
         logger.info("Redis connection OK")
     except Exception as exc:  # noqa: BLE001 - degrade gracefully
         logger.warning("Redis unavailable, caching disabled: %s", exc)
-
 
 async def close_redis() -> None:
     global _client

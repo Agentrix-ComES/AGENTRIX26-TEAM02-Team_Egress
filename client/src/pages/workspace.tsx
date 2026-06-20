@@ -67,7 +67,7 @@ interface WorkspaceLocationState {
 }
 
 export function WorkspacePage() {
-  const { getToken } = useAuth();
+  const { getToken, userId } = useAuth();
   const location = useLocation();
   const incoming = (location.state ?? {}) as WorkspaceLocationState;
 
@@ -135,6 +135,7 @@ export function WorkspacePage() {
         const res = await sendChat(getToken, {
           message: t,
           conversation_id: conversationId,
+          user_id: userId || undefined,
           preferences: trip.preferences,
           destination: trip.destination || undefined,
           start_date: trip.startDate || undefined,
