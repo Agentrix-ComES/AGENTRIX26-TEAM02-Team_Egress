@@ -70,6 +70,27 @@ services:
     networks:
       - travel-net
 
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: travel-user-service
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-travel_platform}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - travel-net
+
   neo4j:
     image: neo4j:5-community
     container_name: travel-neo4j
@@ -99,7 +120,7 @@ services:
     container_name: travel-ai-service
     restart: unless-stopped
     env_file:
-      - .env
+      - .env.local
     environment:
       POSTGRES_HOST: postgres
       REDIS_HOST: redis
@@ -148,6 +169,8 @@ services:
     image: travel-platform/client:latest
     container_name: travel-client
     restart: unless-stopped
+    environment:
+      - VITE_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     ports:
       - "${CLIENT_PORT:-5173}:80"
     depends_on:
@@ -167,6 +190,8 @@ services:
     container_name: travel-client-dev
     profiles: ["dev"]
     working_dir: /app
+    environment:
+      - VITE_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
     ports:
       - "${CLIENT_DEV_PORT:-5173}:5173"
