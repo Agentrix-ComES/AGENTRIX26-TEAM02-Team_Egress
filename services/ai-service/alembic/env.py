@@ -67,7 +67,7 @@ async def run_migrations_online() -> None:
         settings.postgres_dsn,
         poolclass=pool.NullPool,
     )
-    async with connectable.connect() as connection:
+    async with connectable.begin() as connection:
         await connection.run_sync(do_run_migrations)
     await connectable.dispose()
 
