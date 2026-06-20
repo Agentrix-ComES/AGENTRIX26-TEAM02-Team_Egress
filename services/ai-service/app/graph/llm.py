@@ -8,7 +8,7 @@ from langchain_google_genai import (
 
 from app.core.config import settings
 
-ChatTier = Literal["primary", "secondary", "tertiary"]
+ChatTier = Literal["primary", "secondary", "tertiary", "reranking"]
 
 
 def _tier_model(tier: ChatTier) -> tuple[str, float]:
@@ -16,6 +16,7 @@ def _tier_model(tier: ChatTier) -> tuple[str, float]:
         "primary": (settings.primary_llm_model, settings.primary_temperature),
         "secondary": (settings.secondary_llm_model, settings.secondary_temperature),
         "tertiary": (settings.tertiary_llm_model, settings.tertiary_temperature),
+        "reranking": (settings.reranking_llm_model, settings.reranking_temperature),
     }
     return mapping.get(tier, (settings.default_llm_model, settings.default_temperature))
 

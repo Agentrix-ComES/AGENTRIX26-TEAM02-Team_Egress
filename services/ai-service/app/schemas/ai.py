@@ -61,6 +61,15 @@ class IntentDecision(BaseModel):
     )
 
 
+class RerankedIndices(BaseModel):
+    """Structured LLM output for reranking RAG context."""
+
+    top_5_indices: list[int] = Field(
+        ..., 
+        description="The indices (0 to N) of the most relevant items, ranked from most to least relevant.",
+    )
+
+
 class PlannerOutput(BaseModel):
     """Structured planner result: a natural-language reply plus the timeline."""
 
