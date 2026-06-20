@@ -193,15 +193,19 @@ TOURISM_API_KEY=
 
 ## API surface (draft)
 
-| Method | Path                       | Description                                      |
-| ------ | -------------------------- | ------------------------------------------------ |
-| POST   | `/ai/chat`                 | Conversational assistant turn.                   |
-| POST   | `/ai/trips/{trip_id}/plan` | Start a LangGraph planning run for a trip.       |
-| GET    | `/ai/runs/{run_id}`        | Fetch run status and result.                     |
-| POST   | `/ai/disruptions`          | Submit a disruption event to trigger replanning. |
-| POST   | `/ai/retrieval/search`     | Semantic search over Qdrant.                     |
-| GET    | `/ai/llm-config`           | Read current LLM configuration.                  |
-| PUT    | `/ai/llm-config`           | Update LLM configuration.                        |
+The chat endpoint is the single entry point. A trip idea in a message triggers
+planning; follow-up messages on the same `conversation_id` modify the existing
+itinerary. Retrieval, routing, and disruption handling run **inside** the graph,
+so they are not separate endpoints.
+
+| Method | Path                                            | Description                                                                                                                                           |
+| ------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/ai/chat`                                      | Main entry. Reply to a message; when it contains a trip idea/change, returns an updated itinerary. Carries `conversation_id` (LangGraph `thread_id`). |
+| GET    | `/ai/conversations/{conversation_id}`           | Conversation history plus current plan/itinerary state.                                                                                               |
+| GET    | `/ai/conversations/{conversation_id}/itinerary` | Latest itinerary (timeline) for the conversation.                                                                                                     |
+| GET    | `/ai/runs/{run_id}`                             | Status/result of an individual planning run.                                                                                                          |
+| GET    | `/ai/llm-config`                                | Read current LLM configuration.                                                                                                                       |
+| PUT    | `/ai/llm-config`                                | Update LLM configuration.                                                                                                                             |
 
 All endpoints sit behind the API Gateway, which forwards a verified Supabase JWT; the AI Service trusts the gateway-validated identity.[cite:168][cite:169]
 

@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     # Qdrant
     qdrant_host: str = Field(default="qdrant")
     qdrant_port: int = Field(default=6333)
+    qdrant_grpc_port: int = Field(default=6334)
+    qdrant_prefer_grpc: bool = Field(default=True)
+    qdrant_https: bool = Field(default=False)
     qdrant_collection_travel: str = Field(default="travel_items")
     qdrant_api_key: str | None = Field(default=None)
 
@@ -50,6 +53,17 @@ class Settings(BaseSettings):
     default_temperature: float = Field(default=0.2)
     embedding_model: str = Field(default="text-embedding-3-small")
     embedding_dim: int = Field(default=1536)
+
+    # LLM tiers — route each task to the right model.
+    #   primary:   hard intelligence (planning, complex reasoning, replanning)
+    #   secondary: medium tasks (conversation, disruption analysis)
+    #   tertiary:  low/cheap tasks (intent classification, data extraction)
+    primary_llm_model: str = Field(default="gpt-4o")
+    primary_temperature: float = Field(default=0.3)
+    secondary_llm_model: str = Field(default="gpt-4o-mini")
+    secondary_temperature: float = Field(default=0.4)
+    tertiary_llm_model: str = Field(default="gpt-4o-mini")
+    tertiary_temperature: float = Field(default=0.0)
 
     # External APIs
     maps_api_key: str | None = Field(default=None)
