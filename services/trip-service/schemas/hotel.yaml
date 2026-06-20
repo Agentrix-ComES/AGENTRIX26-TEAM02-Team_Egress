@@ -1,0 +1,168 @@
+HotelSubNodeResponse:
+  type: object
+  properties:
+    region_node_id:
+      type: string
+      format: uuid
+    booked_hotel:
+      $ref: '#/components/schemas/HotelBookingResponse'
+    check_in_date:
+      type: string
+      format: date
+    check_out_date:
+      type: string
+      format: date
+    nights:
+      type: integer
+    available_hotels_count:
+      type: integer
+
+HotelSearchRequest:
+  type: object
+  properties:
+    check_in_date:
+      type: string
+      format: date
+    check_out_date:
+      type: string
+      format: date
+    guests:
+      type: integer
+    rooms:
+      type: integer
+    max_price_per_night:
+      type: number
+      format: double
+    amenities:
+      type: array
+      items:
+        type: string
+        enum: [wifi, pool, gym, restaurant, parking, air_conditioning, laundry]
+    min_rating:
+      type: number
+      format: double
+      minimum: 0
+      maximum: 5
+
+HotelListing:
+  type: object
+  properties:
+    id:
+      type: string
+      description: Hotel ID in external system or internal DB
+    name:
+      type: string
+    description:
+      type: string
+    address:
+      type: string
+    latitude:
+      type: number
+      format: double
+    longitude:
+      type: number
+      format: double
+    rating:
+      type: number
+      format: double
+    review_count:
+      type: integer
+    price_per_night:
+      type: number
+      format: double
+    currency:
+      type: string
+    room_types:
+      type: array
+      items:
+        type: object
+        properties:
+          type:
+            type: string
+          available:
+            type: boolean
+          price:
+            type: number
+    amenities:
+      type: array
+      items:
+        type: string
+    check_in_time:
+      type: string
+    check_out_time:
+      type: string
+    cancellation_policy:
+      type: string
+    website:
+      type: string
+    phone:
+      type: string
+
+HotelBookingRequest:
+  type: object
+  properties:
+    hotel_id:
+      type: string
+    room_type:
+      type: string
+    check_in_date:
+      type: string
+      format: date
+    check_out_date:
+      type: string
+      format: date
+    guests:
+      type: integer
+    rooms:
+      type: integer
+    special_requests:
+      type: string
+  required:
+    - hotel_id
+    - room_type
+    - check_in_date
+    - check_out_date
+
+HotelBookingResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    hotel_name:
+      type: string
+    hotel_id:
+      type: string
+    room_type:
+      type: string
+    check_in_date:
+      type: string
+      format: date
+    check_out_date:
+      type: string
+      format: date
+    nights:
+      type: integer
+    guests:
+      type: integer
+    rooms:
+      type: integer
+    total_price:
+      type: number
+      format: double
+    currency:
+      type: string
+    booking_reference:
+      type: string
+    status:
+      type: string
+      enum: [pending, confirmed, cancelled]
+    confirmation_sent:
+      type: boolean
+    cancellation_policy:
+      type: string
+    special_requests:
+      type: string
+    booked_at:
+      type: string
+      format: date-time

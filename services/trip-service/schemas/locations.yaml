@@ -1,0 +1,167 @@
+VisitableLocationResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      description: Location ID
+    name:
+      type: string
+    description:
+      type: string
+    category:
+      type: string
+      enum: [cultural, historical, adventure, relaxation, food, nature, religious]
+    location:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        address:
+          type: string
+    rating:
+      type: number
+      format: double
+    review_count:
+      type: integer
+    entry_fee:
+      type: number
+      format: double
+    estimated_duration_minutes:
+      type: integer
+    opening_hours:
+      type: string
+    best_time_to_visit:
+      type: string
+    difficulty_level:
+      type: string
+      enum: [easy, moderate, difficult]
+    accessibility_info:
+      type: string
+    guided_tour_available:
+      type: boolean
+    images:
+      type: array
+      items:
+        type: string
+        format: uri
+    cultural_context_short:
+      type: string
+      description: Brief cultural/historical info
+
+SelectedLocationResponse:
+  allOf:
+    - $ref: '#/components/schemas/VisitableLocationResponse'
+    - type: object
+      properties:
+        selected_id:
+          type: string
+          format: uuid
+        visit_date:
+          type: string
+          format: date
+        visit_time:
+          type: string
+          description: Preferred visit time
+        added_at:
+          type: string
+          format: date-time
+        duration_scheduled:
+          type: integer
+          description: How many minutes scheduled for this visit
+        full_cultural_context:
+          $ref: '#/components/schemas/LocationCulturalContext'
+
+VisitableLocationCreateRequest:
+  type: object
+  properties:
+    name:
+      type: string
+      minLength: 3
+    description:
+      type: string
+    category:
+      type: string
+      enum: [cultural, historical, adventure, relaxation, food, nature, religious]
+    latitude:
+      type: number
+      format: double
+    longitude:
+      type: number
+      format: double
+    address:
+      type: string
+    entry_fee:
+      type: number
+      format: double
+    estimated_duration_minutes:
+      type: integer
+    opening_hours:
+      type: string
+    best_time_to_visit:
+      type: string
+    difficulty_level:
+      type: string
+      enum: [easy, moderate, difficult]
+    accessibility_info:
+      type: string
+    guided_tour_available:
+      type: boolean
+    images:
+      type: array
+      items:
+        type: string
+        format: uri
+    cultural_context_short:
+      type: string
+  required:
+    - name
+    - category
+    - latitude
+    - longitude
+    - address
+
+VisitableLocationUpdateRequest:
+  type: object
+  properties:
+    name:
+      type: string
+    description:
+      type: string
+    category:
+      type: string
+      enum: [cultural, historical, adventure, relaxation, food, nature, religious]
+    latitude:
+      type: number
+      format: double
+    longitude:
+      type: number
+      format: double
+    address:
+      type: string
+    entry_fee:
+      type: number
+      format: double
+    estimated_duration_minutes:
+      type: integer
+    opening_hours:
+      type: string
+    best_time_to_visit:
+      type: string
+    difficulty_level:
+      type: string
+      enum: [easy, moderate, difficult]
+    accessibility_info:
+      type: string
+    guided_tour_available:
+      type: boolean
+    images:
+      type: array
+      items:
+        type: string
+        format: uri
+    cultural_context_short:
+      type: string

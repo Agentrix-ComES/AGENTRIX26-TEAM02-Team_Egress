@@ -1,0 +1,223 @@
+CulturalContextResponse:
+  type: object
+  properties:
+    region_name:
+      type: string
+    general_context:
+      $ref: '#/components/schemas/GeneralCulturalContext'
+    selected_locations_context:
+      type: array
+      items:
+        $ref: '#/components/schemas/LocationCulturalContext'
+    regional_festivals_events:
+      type: array
+      items:
+        $ref: '#/components/schemas/FestivalInfo'
+    local_customs_summary:
+      type: string
+
+GeneralCulturalContext:
+  type: object
+  properties:
+    history:
+      type: string
+    religion_predominant:
+      type: string
+    language:
+      type: string
+    local_customs:
+      type: array
+      items:
+        type: string
+    dress_code_general:
+      type: string
+    photography_etiquette:
+      type: string
+    greetings_customs:
+      type: string
+    dining_etiquette:
+      type: string
+    tips_and_gratuity:
+      type: string
+    business_hours_note:
+      type: string
+
+GeneralCulturalContextUpdateRequest:
+  type: object
+  properties:
+    history:
+      type: string
+    religion_predominant:
+      type: string
+    language:
+      type: string
+    local_customs:
+      type: array
+      items:
+        type: string
+    dress_code_general:
+      type: string
+    photography_etiquette:
+      type: string
+    greetings_customs:
+      type: string
+    dining_etiquette:
+      type: string
+    tips_and_gratuity:
+      type: string
+    business_hours_note:
+      type: string
+
+LocationCulturalContext:
+  type: object
+  properties:
+    location_id:
+      type: string
+    location_name:
+      type: string
+    significance:
+      type: string
+      description: Religious, historical, cultural significance
+    dress_code:
+      type: string
+      description: Specific dress requirements if any (e.g., white for religious sites)
+    photography_allowed:
+      type: boolean
+    photography_restrictions:
+      type: string
+    behavioral_expectations:
+      type: array
+      items:
+        type: string
+    visiting_hours:
+      type: string
+    important_dates_restricted:
+      type: array
+      items:
+        type: object
+        properties:
+          date:
+            type: string
+            format: date
+          reason:
+            type: string
+          access_level:
+            type: string
+            enum: [restricted, limited, closed]
+    guides_available:
+      type: boolean
+    entry_rituals_if_any:
+      type: string
+    tips:
+      type: array
+      items:
+        type: string
+
+LocationCulturalContextCreateRequest:
+  type: object
+  properties:
+    location_id:
+      type: string
+    location_name:
+      type: string
+    significance:
+      type: string
+    dress_code:
+      type: string
+    photography_allowed:
+      type: boolean
+    photography_restrictions:
+      type: string
+    behavioral_expectations:
+      type: array
+      items:
+        type: string
+    visiting_hours:
+      type: string
+    important_dates_restricted:
+      type: array
+      items:
+        type: object
+        properties:
+          date:
+            type: string
+            format: date
+          reason:
+            type: string
+          access_level:
+            type: string
+            enum: [restricted, limited, closed]
+    guides_available:
+      type: boolean
+    entry_rituals_if_any:
+      type: string
+    tips:
+      type: array
+      items:
+        type: string
+  required:
+    - location_id
+    - location_name
+
+LocationCulturalContextUpdateRequest:
+  type: object
+  properties:
+    location_name:
+      type: string
+    significance:
+      type: string
+    dress_code:
+      type: string
+    photography_allowed:
+      type: boolean
+    photography_restrictions:
+      type: string
+    behavioral_expectations:
+      type: array
+      items:
+        type: string
+    visiting_hours:
+      type: string
+    important_dates_restricted:
+      type: array
+      items:
+        type: object
+        properties:
+          date:
+            type: string
+            format: date
+          reason:
+            type: string
+          access_level:
+            type: string
+            enum: [restricted, limited, closed]
+    guides_available:
+      type: boolean
+    entry_rituals_if_any:
+      type: string
+    tips:
+      type: array
+      items:
+        type: string
+
+FestivalInfo:
+  type: object
+  properties:
+    name:
+      type: string
+    date:
+      type: string
+      format: date
+    duration_days:
+      type: integer
+    description:
+      type: string
+    impact_on_travel:
+      type: string
+      enum: [low, medium, high]
+    accessibility:
+      type: string
+      description: Impact on attractions, transport, dining
+    crowds_expected:
+      type: string
+      enum: [low, medium, high]

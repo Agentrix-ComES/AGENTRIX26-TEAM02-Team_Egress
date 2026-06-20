@@ -1,0 +1,233 @@
+EmergencyServicesResponse:
+  type: object
+  properties:
+    region_name:
+      type: string
+    hospitals:
+      type: array
+      items:
+        $ref: '#/components/schemas/HospitalInfo'
+    clinics:
+      type: array
+      items:
+        $ref: '#/components/schemas/ClinicInfo'
+    emergency_contacts:
+      type: array
+      items:
+        $ref: '#/components/schemas/EmergencyContactInfo'
+    emergency_helpline:
+      type: string
+    police_station:
+      $ref: '#/components/schemas/PoliceStationInfo'
+    fire_service:
+      $ref: '#/components/schemas/FireServiceInfo'
+    nearest_embassy:
+      $ref: '#/components/schemas/EmbassyInfo'
+
+EmergencyServiceResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    service_type:
+      type: string
+      enum: [hospital, clinic, emergency_contact, police, fire, embassy]
+    name:
+      type: string
+    address:
+      type: string
+    latitude:
+      type: number
+      format: double
+    longitude:
+      type: number
+      format: double
+    phone:
+      type: string
+    emergency_phone:
+      type: string
+    website:
+      type: string
+    additional_info:
+      type: object
+      additionalProperties: true
+
+EmergencyServiceCreateRequest:
+  type: object
+  properties:
+    service_type:
+      type: string
+      enum: [hospital, clinic, emergency_contact, police, fire, embassy]
+    name:
+      type: string
+      minLength: 3
+    address:
+      type: string
+    latitude:
+      type: number
+      format: double
+    longitude:
+      type: number
+      format: double
+    phone:
+      type: string
+    emergency_phone:
+      type: string
+    website:
+      type: string
+    specialties:
+      type: array
+      items:
+        type: string
+    availability:
+      type: string
+      enum: [24_7, business_hours, limited]
+    additional_info:
+      type: object
+      additionalProperties: true
+  required:
+    - service_type
+    - name
+    - address
+    - phone
+
+EmergencyServiceUpdateRequest:
+  type: object
+  properties:
+    name:
+      type: string
+    address:
+      type: string
+    latitude:
+      type: number
+      format: double
+    longitude:
+      type: number
+      format: double
+    phone:
+      type: string
+    emergency_phone:
+      type: string
+    website:
+      type: string
+    specialties:
+      type: array
+      items:
+        type: string
+    availability:
+      type: string
+      enum: [24_7, business_hours, limited]
+    additional_info:
+      type: object
+      additionalProperties: true
+
+HospitalInfo:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    address:
+      type: string
+    latitude:
+      type: number
+      format: double
+    longitude:
+      type: number
+      format: double
+    phone:
+      type: string
+    emergency_phone:
+      type: string
+    website:
+      type: string
+    specialties:
+      type: array
+      items:
+        type: string
+    availability:
+      type: string
+      enum: [24_7, business_hours, limited]
+    accepted_insurance:
+      type: array
+      items:
+        type: string
+    average_wait_time:
+      type: integer
+      description: In minutes
+
+ClinicInfo:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    address:
+      type: string
+    phone:
+      type: string
+    specialties:
+      type: array
+      items:
+        type: string
+    operating_hours:
+      type: string
+    doctor_speaks_english:
+      type: boolean
+
+EmergencyContactInfo:
+  type: object
+  properties:
+    service_type:
+      type: string
+    name:
+      type: string
+    phone:
+      type: string
+    available_24_7:
+      type: boolean
+
+PoliceStationInfo:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    address:
+      type: string
+    phone:
+      type: string
+    emergency_phone:
+      type: string
+    latitude:
+      type: number
+      format: double
+    longitude:
+      type: number
+      format: double
+
+FireServiceInfo:
+  type: object
+  properties:
+    emergency_phone:
+      type: string
+    address:
+      type: string
+
+EmbassyInfo:
+  type: object
+  properties:
+    country:
+      type: string
+    address:
+      type: string
+    phone:
+      type: string
+    emergency_phone:
+      type: string
+    operating_hours:
+      type: string

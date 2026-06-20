@@ -1,0 +1,118 @@
+OfferResponse:
+  type: object
+  properties:
+    id:
+      type: string
+    title:
+      type: string
+    description:
+      type: string
+    category:
+      type: string
+      enum: [activity, dining, accommodation, transport, shopping, wellness]
+    discount_type:
+      type: string
+      enum: [percentage, fixed_amount, buy_one_get_one, voucher]
+    discount_value:
+      type: number
+      format: double
+    original_price:
+      type: number
+      format: double
+    discounted_price:
+      type: number
+      format: double
+    provider:
+      type: string
+    valid_from:
+      type: string
+      format: date
+    valid_until:
+      type: string
+      format: date
+    terms_and_conditions:
+      type: string
+    code:
+      type: string
+      description: Discount code if applicable
+    applicable_to_user:
+      type: boolean
+      description: Based on user profile/history
+
+OfferCreateRequest:
+  type: object
+  properties:
+    title:
+      type: string
+      minLength: 3
+    description:
+      type: string
+    category:
+      type: string
+      enum: [activity, dining, accommodation, transport, shopping, wellness]
+    discount_type:
+      type: string
+      enum: [percentage, fixed_amount, buy_one_get_one, voucher]
+    discount_value:
+      type: number
+      format: double
+    original_price:
+      type: number
+      format: double
+    discounted_price:
+      type: number
+      format: double
+    provider:
+      type: string
+    valid_from:
+      type: string
+      format: date
+    valid_until:
+      type: string
+      format: date
+    terms_and_conditions:
+      type: string
+    code:
+      type: string
+  required:
+    - title
+    - category
+    - discount_type
+    - discount_value
+    - valid_from
+    - valid_until
+
+OfferUpdateRequest:
+  type: object
+  properties:
+    title:
+      type: string
+    description:
+      type: string
+    category:
+      type: string
+      enum: [activity, dining, accommodation, transport, shopping, wellness]
+    discount_type:
+      type: string
+      enum: [percentage, fixed_amount, buy_one_get_one, voucher]
+    discount_value:
+      type: number
+      format: double
+    original_price:
+      type: number
+      format: double
+    discounted_price:
+      type: number
+      format: double
+    provider:
+      type: string
+    valid_from:
+      type: string
+      format: date
+    valid_until:
+      type: string
+      format: date
+    terms_and_conditions:
+      type: string
+    code:
+      type: string
