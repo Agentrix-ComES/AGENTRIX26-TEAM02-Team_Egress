@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(git pull *)",
-      "Bash(pdflatex -interaction=nonstopmode main.tex)"
+      "Bash(pdflatex -interaction=nonstopmode main.tex)",
+      "Bash(npm --version)",
+      "Bash(npx --version)",
+      "Bash(npm create *)",
+      "Bash(npm install *)"
     ]
   }
 }
