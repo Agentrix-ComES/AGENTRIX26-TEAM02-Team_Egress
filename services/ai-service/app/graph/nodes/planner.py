@@ -21,6 +21,12 @@ async def plan(state: GraphState) -> GraphState:
         f"Preferences: {', '.join(state.get('preferences', []))}",
         f"Context: {context}",
     ]
+    weather = state.get("weather")
+    if weather:
+        parts.append(
+            "Weather outlook (avoid scheduling weather-sensitive outdoor "
+            f"activities on wet/severe days): {json.dumps(weather, ensure_ascii=False)[:1500]}"
+        )
     if existing and intent in ("modify", "disruption"):
         parts.append(
             f"Existing itinerary to revise: {json.dumps(existing, ensure_ascii=False)[:3000]}"

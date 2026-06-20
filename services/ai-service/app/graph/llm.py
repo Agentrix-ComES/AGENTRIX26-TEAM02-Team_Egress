@@ -1,16 +1,10 @@
-"""Shared LLM and embeddings factory.
-
-Models are organized into capability tiers so each task uses an appropriately
-sized model:
-
-- ``primary``: hard intelligence (planning, complex reasoning, replanning).
-- ``secondary``: medium tasks (conversation, disruption analysis).
-- ``tertiary``: low/cheap tasks (intent classification, data extraction).
-"""
 from functools import lru_cache
 from typing import Literal
 
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_google_genai import (
+    ChatGoogleGenerativeAI,
+    GoogleGenerativeAIEmbeddings,
+)
 
 from app.core.config import settings
 
@@ -27,19 +21,20 @@ def _tier_model(tier: ChatTier) -> tuple[str, float]:
 
 
 @lru_cache
-def get_chat_model(tier: ChatTier = "primary") -> ChatOpenAI:
-    """Return a cached chat model for the given capability tier."""
+def get_chat_model(tier: ChatTier = "primary") -> ChatGoogleGenerativeAI:
+
     model, temperature = _tier_model(tier)
-    return ChatOpenAI(
+    return ChatGoogleGenerativeAI(
         model=model,
         temperature=temperature,
-        api_key=settings.openai_api_key,
+        google_api_key=settings.gemini_api_key,
     )
 
 
 @lru_cache
-def get_embeddings() -> OpenAIEmbeddings:
-    return OpenAIEmbeddings(
+def get_embeddings() -> GoogleGenerativeAIEmbeddings:
+    return GoogleGenerativeAIEmbeddings(
         model=settings.embedding_model,
-        api_key=settings.openai_api_key,
+        google_api_key=settings.gemini_api_key,
+        output_dimensionality=settings.embedding_dim,
     )
