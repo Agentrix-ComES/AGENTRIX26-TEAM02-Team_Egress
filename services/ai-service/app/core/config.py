@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     qdrant_score_threshold: float = Field(default=0.0)
     # Default number of hits to pull per collection during retrieval.
     qdrant_top_k: int = Field(default=5)
+    # The initial number of top hits to extract across all collections before reranking.
+    rag_initial_top_k: int = Field(default=10)
+    # The final number of reranked hits to pass to the planner.
+    rag_reranked_top_k: int = Field(default=5)
+
     # --- Accuracy / index tuning ---
     # HNSW graph: higher m = better recall, more memory; ef_construct = build quality.
     qdrant_hnsw_m: int = Field(default=32)
@@ -91,6 +96,8 @@ class Settings(BaseSettings):
     secondary_temperature: float = Field(default=0.4)
     tertiary_llm_model: str = Field(default="gemini-2.5-flash")
     tertiary_temperature: float = Field(default=0.0)
+    reranking_llm_model: str = Field(default="gemini-2.5-flash")
+    reranking_temperature: float = Field(default=0.0)
 
     # External APIs
     maps_api_key: str | None = Field(default=None)
