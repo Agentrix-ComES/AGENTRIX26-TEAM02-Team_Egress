@@ -14,6 +14,7 @@ import { BotPreviewPage } from "@/pages/bot-preview";
 import { AdminPage } from "@/pages/admin";
 import { AdminUsersPage } from "@/pages/admin/users";
 import { AdminServicesPage } from "@/pages/admin/services";
+import { AdminProductsPage } from "@/pages/admin/products";
 import { SettingsPage } from "@/pages/settings";
 import { SignInPage } from "@/pages/sign-in";
 import { SignUpPage } from "@/pages/sign-up";
@@ -104,6 +105,7 @@ export default function App() {
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/admin/services" element={<AdminServicesPage />} />
+              <Route path="/admin/products" element={<AdminProductsPage />} />
             </Route>
           </Routes>
         </CurrentUserProvider>

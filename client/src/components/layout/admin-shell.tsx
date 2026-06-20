@@ -1,19 +1,16 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { UserButton } from "@clerk/clerk-react";
-import { Activity, Database, ShieldCheck, Users } from "lucide-react";
-import { useTheme } from "@/hooks/use-theme";
-import { Button } from "@/components/ui/button";
-import { Moon, Sun } from "lucide-react";
+import { Activity, Database, Package, ShieldCheck, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
   { to: "/admin", icon: Activity, label: "Overview", end: true },
   { to: "/admin/users", icon: Users, label: "Users" },
+  { to: "/admin/products", icon: Package, label: "Products" },
   { to: "/admin/services", icon: Database, label: "Services" },
 ];
 
 export function AdminShell() {
-  const { theme, toggle } = useTheme();
   return (
     <div className="flex h-full min-h-screen bg-zinc-950 text-zinc-100">
       <aside className="hidden lg:flex w-60 shrink-0 border-r border-zinc-800 bg-zinc-900/60 backdrop-blur-sm flex-col">
@@ -56,12 +53,7 @@ export function AdminShell() {
             <div className="text-sm text-zinc-400">
               Logged in as administrator · all actions are audited
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={toggle} aria-label="Toggle theme" className="text-zinc-300 hover:text-zinc-100">
-                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
-              <UserButton afterSignOutUrl="/admin/sign-in" />
-            </div>
+            <UserButton afterSignOutUrl="/admin/sign-in" />
           </div>
         </header>
         <main className="flex-1 overflow-y-auto">
