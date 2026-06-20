@@ -10,7 +10,9 @@
       "Bash(npm run *)",
       "Bash(docker compose *)",
       "Bash(QDRANT_API_KEY=x REDIS_PASSWORD=x docker compose config --services)",
-      "Bash(QDRANT_API_KEY=x REDIS_PASSWORD=x COMPOSE_PROFILES=dev docker compose config --services)"
+      "Bash(QDRANT_API_KEY=x REDIS_PASSWORD=x COMPOSE_PROFILES=dev docker compose config --services)",
+      "Bash(docker volume *)",
+      "Bash(docker rm *)"
     ]
   }
 }
