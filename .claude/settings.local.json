@@ -6,7 +6,8 @@
       "Bash(npm --version)",
       "Bash(npx --version)",
       "Bash(npm create *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(npm run *)"
     ]
   }
 }
