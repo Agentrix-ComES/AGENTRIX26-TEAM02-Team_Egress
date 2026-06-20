@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Claude">
   <diagram id="trip-agentic-architecture" name="Trip Agentic Architecture">
-    <mxGraphModel dx="2357" dy="1387" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1200" math="0" shadow="0">
+    <mxGraphModel dx="5740" dy="2377" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1200" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -19,7 +19,7 @@
         <mxCell id="APIGW" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;fontStyle=1;shadow=0;" value="API Gateway / Backend Router" vertex="1">
           <mxGeometry height="60" width="420" x="640" y="220" as="geometry" />
         </mxCell>
-        <mxCell id="grpAgentic" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;fontSize=14;fontStyle=1;align=left;spacingLeft=15;spacingTop=8;" value="Agentic Backend" vertex="1">
+        <mxCell id="grpAgentic" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;fontSize=14;fontStyle=1;align=left;spacingLeft=15;spacingTop=8;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" value="Agentic Backend" vertex="1">
           <mxGeometry height="340" width="1460" x="120" y="390" as="geometry" />
         </mxCell>
         <mxCell id="Orchestrator" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;fontStyle=1;" value="Trip Orchestrator Agent" vertex="1">
@@ -41,49 +41,46 @@
           <mxGeometry height="90" width="190" x="740" y="580" as="geometry" />
         </mxCell>
         <mxCell id="grpState" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;fontSize=12;fontStyle=1;align=left;spacingLeft=10;spacingTop=5;dashed=1;" value="Memory &amp; State" vertex="1">
-          <mxGeometry height="180" width="560" x="990" y="520" as="geometry" />
+          <mxGeometry height="180" width="560" x="2266" y="520" as="geometry" />
         </mxCell>
         <mxCell id="TripDB" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" value="Trip DB&#xa;(Postgres)" vertex="1">
-          <mxGeometry height="90" width="170" x="1060" y="580" as="geometry" />
+          <mxGeometry height="90" width="170" x="2336" y="580" as="geometry" />
         </mxCell>
         <mxCell id="VecDB" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" value="Vector DB" vertex="1">
-          <mxGeometry height="90" width="170" x="1320" y="580" as="geometry" />
-        </mxCell>
-        <mxCell id="grpDomain" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;fontSize=14;fontStyle=1;align=left;spacingLeft=15;spacingTop=8;" value="Domain Services" vertex="1">
-          <mxGeometry height="340" width="1220" x="120" y="850" as="geometry" />
+          <mxGeometry height="90" width="170" x="2596" y="580" as="geometry" />
         </mxCell>
         <mxCell id="ItinSvc" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;fontStyle=1;" value="Itinerary&#xa;Optimizer Service" vertex="1">
-          <mxGeometry height="80" width="200" x="160" y="920" as="geometry" />
+          <mxGeometry height="80" width="200" x="-86" y="1350" as="geometry" />
         </mxCell>
         <mxCell id="RouteSvc" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;fontStyle=1;" value="Routing &amp;&#xa;Transport Service" vertex="1">
-          <mxGeometry height="80" width="200" x="390" y="920" as="geometry" />
+          <mxGeometry height="80" width="200" x="434" y="1340" as="geometry" />
         </mxCell>
         <mxCell id="ClimateSvc" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;fontStyle=1;" value="Climate &amp;&#xa;Seasonality Service" vertex="1">
-          <mxGeometry height="80" width="200" x="620" y="920" as="geometry" />
+          <mxGeometry height="80" width="200" x="729" y="1340" as="geometry" />
         </mxCell>
         <mxCell id="EventSvc" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;fontStyle=1;" value="Events &amp;&#xa;Festivals Service" vertex="1">
-          <mxGeometry height="80" width="200" x="850" y="920" as="geometry" />
+          <mxGeometry height="80" width="200" x="1224" y="1340" as="geometry" />
         </mxCell>
         <mxCell id="CultureSvc" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;fontStyle=1;" value="Cultural&#xa;Knowledge Service" vertex="1">
-          <mxGeometry height="80" width="200" x="1080" y="920" as="geometry" />
+          <mxGeometry height="80" width="200" x="1824" y="1340" as="geometry" />
         </mxCell>
         <mxCell id="GraphDB" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" value="Graph DB&#xa;(Routes)" vertex="1">
-          <mxGeometry height="90" width="180" x="560" y="1050" as="geometry" />
+          <mxGeometry height="90" width="180" x="242" y="1507" as="geometry" />
         </mxCell>
         <mxCell id="grpExternal" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;fontSize=14;fontStyle=1;align=left;spacingLeft=15;spacingTop=8;" value="External APIs &amp; Feeds" vertex="1">
-          <mxGeometry height="180" width="1460" x="120" y="1480" as="geometry" />
+          <mxGeometry height="180" width="1460" x="120" y="1900" as="geometry" />
         </mxCell>
         <mxCell id="WeatherAPI" parent="1" style="shape=mxgraph.networking.cloud;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;verticalLabelPosition=middle;verticalAlign=middle;" value="Weather &amp;&#xa;Advisories APIs" vertex="1">
-          <mxGeometry height="100" width="220" x="150" y="1540" as="geometry" />
+          <mxGeometry height="100" width="220" x="150" y="1960" as="geometry" />
         </mxCell>
         <mxCell id="MapsAPI" parent="1" style="shape=mxgraph.networking.cloud;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;verticalLabelPosition=middle;verticalAlign=middle;" value="Maps / Geocoding /&#xa;Routing APIs" vertex="1">
-          <mxGeometry height="100" width="220" x="490" y="1540" as="geometry" />
+          <mxGeometry height="100" width="220" x="490" y="1960" as="geometry" />
         </mxCell>
         <mxCell id="TransportAPI" parent="1" style="shape=mxgraph.networking.cloud;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;verticalLabelPosition=middle;verticalAlign=middle;" value="Train / Bus /&#xa;Park Status Feeds" vertex="1">
-          <mxGeometry height="100" width="220" x="800" y="1540" as="geometry" />
+          <mxGeometry height="100" width="220" x="800" y="1960" as="geometry" />
         </mxCell>
         <mxCell id="TourismAPI" parent="1" style="shape=mxgraph.networking.cloud;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;verticalLabelPosition=middle;verticalAlign=middle;" value="Official Tourism &amp;&#xa;Cultural Content" vertex="1">
-          <mxGeometry height="100" width="220" x="1110" y="1540" as="geometry" />
+          <mxGeometry height="100" width="220" x="1217" y="1960" as="geometry" />
         </mxCell>
         <mxCell id="e1" edge="1" parent="1" source="UWeb" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1.5;" target="APIGW">
           <mxGeometry relative="1" as="geometry" />
@@ -130,8 +127,15 @@
         <mxCell id="e15" edge="1" parent="1" source="LogisticsA" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;" target="ItinSvc">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e16" edge="1" parent="1" source="DisruptionA" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;" target="ItinSvc">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="e16" edge="1" parent="1" source="DisruptionA" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="ItinSvc">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="635" y="820" />
+              <mxPoint x="260" y="820" />
+              <mxPoint x="260" y="1128" />
+              <mxPoint x="14" y="1128" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e17" edge="1" parent="1" source="DisruptionA" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=1.5;" target="ClimateSvc">
           <mxGeometry relative="1" as="geometry" />
@@ -151,13 +155,17 @@
         <mxCell id="e22" edge="1" parent="1" source="ClimateSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;" target="WeatherAPI">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="710" y="1370" />
-              <mxPoint x="260" y="1370" />
+              <mxPoint x="710" y="1790" />
+              <mxPoint x="260" y="1790" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="e23" edge="1" parent="1" source="ItinSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;" target="WeatherAPI">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="e23" edge="1" parent="1" source="ItinSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="WeatherAPI">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="14" y="2010" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e24" edge="1" parent="1" source="RouteSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;" target="MapsAPI">
           <mxGeometry relative="1" as="geometry" />
@@ -166,34 +174,70 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e26" edge="1" parent="1" source="EventSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;" target="TransportAPI">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1116" y="1380" />
+              <mxPoint x="1116" y="2010" />
+            </Array>
+          </mxGeometry>
         </mxCell>
-        <mxCell id="e27" edge="1" parent="1" source="EventSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;" target="TourismAPI">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="e27" edge="1" parent="1" source="EventSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="TourismAPI">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1324" y="1800" />
+              <mxPoint x="1327" y="1800" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e28" edge="1" parent="1" source="CultureSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=1.5;" target="TourismAPI">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1929" y="2010" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e29" edge="1" parent="1" source="ItinSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="TripDB">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e30" edge="1" parent="1" source="RouteSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="TripDB">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="631" y="1340" />
+              <mxPoint x="631" y="1163" />
+              <mxPoint x="633" y="1163" />
+              <mxPoint x="633" y="1120" />
+              <mxPoint x="2421" y="1120" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e31" edge="1" parent="1" source="ClimateSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="TripDB">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e32" edge="1" parent="1" source="EventSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="TripDB">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="950" y="1190" />
+              <mxPoint x="1145" y="1190" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e33" edge="1" parent="1" source="CultureSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="TripDB">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e34" edge="1" parent="1" source="ItinSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#9673a6;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="VecDB">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="14" y="1060" />
+              <mxPoint x="1405" y="1060" />
+            </Array>
+          </mxGeometry>
         </mxCell>
-        <mxCell id="e35" edge="1" parent="1" source="CultureSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#9673a6;strokeWidth=1;dashed=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="VecDB">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="e35" edge="1" parent="1" source="CultureSvc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#9673a6;strokeWidth=1;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="VecDB">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1405" y="1380" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="legend" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;verticalAlign=top;fontSize=11;fontStyle=1;align=left;spacingLeft=8;spacingTop=4;" value="Legend" vertex="1">
           <mxGeometry height="160" width="80" x="1610" y="40" as="geometry" />
