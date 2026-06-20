@@ -1,9 +1,7 @@
 name: travel-platform
 
 services:
-  # ---------------------------------------------------------------------------
-  # Databases & infrastructure
-  # ---------------------------------------------------------------------------
+
   postgres:
     image: pgvector/pgvector:pg16
     container_name: travel-postgres
@@ -58,6 +56,7 @@ services:
     restart: unless-stopped
     environment:
       QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY:?QDRANT_API_KEY required}
+      QDRANT__SERVICE__GRPC_PORT: "6334"
     ports:
       - "${QDRANT_PORT:-6333}:6333"
       - "6334:6334"
@@ -113,9 +112,7 @@ services:
     networks:
       - travel-net
 
-  # ---------------------------------------------------------------------------
-  # Application services
-  # ---------------------------------------------------------------------------
+
   ai-service:
     build:
       context: ./services/ai-service
@@ -188,8 +185,6 @@ services:
     networks:
       - travel-net
 
-  # Dev variant — Vite dev server with HMR.
-  # Enable with:  docker compose --profile dev up client-dev
   client-dev:
     image: node:22-alpine
     container_name: travel-client-dev

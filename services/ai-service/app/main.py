@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.api.router import api_router
 from app.core.config import settings
 from app.core.langsmith import configure_langsmith
 from app.db.neo4j import close_neo4j, verify_neo4j
@@ -13,6 +14,13 @@ from app.graph.checkpointer import close_checkpointer, init_checkpointer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(settings.service_name)
+
+TAGS_METADATA = [
+    {"name": "chat", "description": "Plan, modify, and converse about trips in one endpoint."},
+    {"name": "conversations", "description": "Read conversation history and the current itinerary."},
+    {"name": "llm-config", "description": "Manage LLM provider/model parameters."},
+    {"name": "health", "description": "Service liveness checks."},
+]
 
 
 @asynccontextmanager
@@ -36,11 +44,26 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="AI Service",
-    description="LangGraph orchestration, retrieval, and routing for the travel platform.",
+    description=(
+        "LangGraph orchestration, retrieval, and routing for the travel platform.\n\n"
+        "The chat endpoint is the single entry point: a trip idea generates a "
+        "location-based timeline (hotels, activities, transport) from the user's "
+        "preferences, follow-up messages modify the plan, and disruptions trigger a replan.\n\n"
+        "- **Swagger UI**: `/docs`\n"
+        "- **ReDoc**: `/redoc`\n"
+        "- **OpenAPI schema**: `/openapi.json`"
+    ),
     version="0.1.0",
     lifespan=lifespan,
+    openapi_tags=TAGS_METADATA,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    contact={"name": "Team Egress"},
 )
 
-@app.get("/health", tags=["health"])
+app.include_router(api_router)
+
+
+@app.get("/health", tags=["health"], summary="Liveness check")
 async def health() -> dict[str, str]:
     return {"status": "ok", "service": settings.service_name}

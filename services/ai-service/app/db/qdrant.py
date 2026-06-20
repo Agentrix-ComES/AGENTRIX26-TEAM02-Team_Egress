@@ -18,7 +18,10 @@ def get_qdrant() -> AsyncQdrantClient:
         _client = AsyncQdrantClient(
             host=settings.qdrant_host,
             port=settings.qdrant_port,
+            grpc_port=settings.qdrant_grpc_port,
+            prefer_grpc=settings.qdrant_prefer_grpc,
             api_key=settings.qdrant_api_key,
+            https=settings.qdrant_https,
         )
     return _client
 

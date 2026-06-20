@@ -36,8 +36,8 @@ export function OverviewPage() {
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline">
-            <Link to="/chat">
-              <Sparkles className="h-4 w-4" /> Ask the assistant
+            <Link to="/workspace">
+              <Sparkles className="h-4 w-4" /> Open workspace
             </Link>
           </Button>
           <Button asChild>

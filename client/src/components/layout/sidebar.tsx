@@ -1,9 +1,8 @@
 import { NavLink } from "react-router-dom";
 import {
-  Calendar,
   Compass,
   LayoutDashboard,
-  MessageSquare,
+  MessagesSquare,
   Settings,
   ShieldAlert,
   Smartphone,
@@ -13,10 +12,9 @@ import {
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { to: "/", icon: LayoutDashboard, label: "Overview", end: true },
+  { to: "/app", icon: LayoutDashboard, label: "Overview", end: true },
   { to: "/plan", icon: Sparkles, label: "Plan a Trip" },
-  { to: "/timeline", icon: Calendar, label: "Timeline" },
-  { to: "/chat", icon: MessageSquare, label: "Assistant" },
+  { to: "/workspace", icon: MessagesSquare, label: "Workspace" },
   { to: "/alerts", icon: ShieldAlert, label: "Alerts" },
   { to: "/bot", icon: Smartphone, label: "Bot Preview" },
   { to: "/admin", icon: UserCog, label: "Admin / Partner" },

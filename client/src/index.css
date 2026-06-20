@@ -73,3 +73,28 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+.qwigley-font {
+  font-family: "Qwigley", cursive;
+}
+
+.prompt-font {
+  font-family: "Prompt", system-ui, sans-serif;
+}
+
+@keyframes landingFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0.45; }
+}
+@keyframes landingFadeIn {
+  from { opacity: 0.45; }
+  to { opacity: 1; }
+}
+.landing-fade-out { animation: landingFadeOut 2s forwards; }
+.landing-fade-in { animation: landingFadeIn 2s forwards; }
+
+@keyframes landingFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.landing-float { animation: landingFloat 6s ease-in-out infinite; }
