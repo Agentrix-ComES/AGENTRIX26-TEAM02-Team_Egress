@@ -2,22 +2,22 @@ import { NavLink } from "react-router-dom";
 import {
   Compass,
   LayoutDashboard,
+  Luggage,
   MessagesSquare,
   Settings,
   ShieldAlert,
   Smartphone,
   Sparkles,
-  UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
   { to: "/app", icon: LayoutDashboard, label: "Overview", end: true },
   { to: "/plan", icon: Sparkles, label: "Plan a Trip" },
+  { to: "/trips", icon: Luggage, label: "My Trips" },
   { to: "/workspace", icon: MessagesSquare, label: "Workspace" },
   { to: "/alerts", icon: ShieldAlert, label: "Alerts" },
   { to: "/bot", icon: Smartphone, label: "Bot Preview" },
-  { to: "/admin", icon: UserCog, label: "Admin / Partner" },
   { to: "/settings", icon: Settings, label: "Settings" },
 ];
 
