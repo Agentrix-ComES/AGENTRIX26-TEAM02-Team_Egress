@@ -1,46 +1,97 @@
 """Schemas for AI orchestration endpoints."""
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
 
+class ItineraryItem(BaseModel):
+    """A single timeline entry within a day (hotel, activity, or transport)."""
+
+    type: Literal["hotel", "activity", "transport", "meal"] = "activity"
+    time: str | None = None  # e.g. "09:30" or "morning"
+    title: str
+    location: str | None = None
+    notes: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ItineraryDay(BaseModel):
+    date: str | None = None
+    location: str | None = None
+    items: list[ItineraryItem] = Field(default_factory=list)
+
+
+class Itinerary(BaseModel):
+    destination: str | None = None
+    start_date: str | None = None
+    end_date: str | None = None
+    days: list[ItineraryDay] = Field(default_factory=list)
+
+
+class IntentDecision(BaseModel):
+    """Structured intent classification result (LLM structured output)."""
+
+    intent: Literal["plan", "modify", "disruption", "chat"]
+
+
+class PlannerOutput(BaseModel):
+    """Structured planner result: a natural-language reply plus the timeline."""
+
+    reply: str = Field(..., description="Short natural-language summary for the user.")
+    itinerary: Itinerary
+
+
 class ChatRequest(BaseModel):
-    message: str = Field(..., min_length=1)
-    trip_id: str | None = None
-    user_id: str | None = None
+    message: str = Field(..., min_length=1, description="The user's chat message.")
+    conversation_id: uuid.UUID | None = Field(
+        default=None,
+        description="LangGraph thread id; omit to start a new conversation.",
+    )
+    user_id: str | None = Field(default=None, description="Caller's user id (from the gateway).")
+    preferences: list[str] = Field(
+        default_factory=list,
+        description="Traveller preferences used to bias the plan (e.g. 'budget', 'food').",
+    )
+    destination: str | None = Field(default=None, description="Optional explicit destination.")
+    start_date: str | None = Field(default=None, description="Optional trip start date (ISO).")
+    end_date: str | None = Field(default=None, description="Optional trip end date (ISO).")
+    disruption: dict[str, Any] | None = Field(
+        default=None,
+        description="System-detected disruption event; forces a replan of the current trip.",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "message": "Plan me 3 relaxed days in Kandy with tea tours and good food.",
+                    "preferences": ["nature", "food", "relaxed"],
+                }
+            ]
+        }
+    }
 
 
 class ChatResponse(BaseModel):
-    run_id: uuid.UUID
-    reply: str
+    conversation_id: uuid.UUID = Field(..., description="Use this on the next turn to continue.")
+    run_id: uuid.UUID = Field(..., description="Persisted orchestration run id.")
+    reply: str = Field(..., description="Assistant's natural-language reply.")
+    plan_changed: bool = Field(default=False, description="True if the itinerary was created or changed.")
+    itinerary: Itinerary | None = Field(default=None, description="Latest itinerary timeline, if any.")
 
 
-class PlanRequest(BaseModel):
-    destination: str
-    start_date: str | None = None
-    end_date: str | None = None
-    preferences: list[str] = Field(default_factory=list)
-    user_id: str | None = None
+class ConversationMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+    created_at: datetime | None = None
 
 
-class DisruptionRequest(BaseModel):
-    trip_id: str
-    event_type: str  # weather | transport | closure
-    description: str
-    user_id: str | None = None
-
-
-class RetrievalRequest(BaseModel):
-    query: str = Field(..., min_length=1)
-    limit: int = Field(default=5, ge=1, le=50)
-
-
-class RetrievalResult(BaseModel):
-    id: str
-    score: float
-    payload: dict[str, Any] = Field(default_factory=dict)
+class ConversationState(BaseModel):
+    conversation_id: uuid.UUID
+    messages: list[ConversationMessage] = Field(default_factory=list)
+    itinerary: Itinerary | None = None
 
 
 class RunResponse(BaseModel):
