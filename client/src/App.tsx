@@ -9,16 +9,32 @@ import { AlertsPage } from "@/pages/alerts";
 import { BotPreviewPage } from "@/pages/bot-preview";
 import { AdminPage } from "@/pages/admin";
 import { SettingsPage } from "@/pages/settings";
+import { SignInPage } from "@/pages/sign-in";
+import { SignUpPage } from "@/pages/sign-up";
+import { AuthSync } from "@/components/auth/AuthSync";
+import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <SignedIn>{children}</SignedIn>
+      <SignedOut><RedirectToSignIn /></SignedOut>
+    </>
+  );
+}
 
 export default function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
+        <AuthSync />
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/welcome" element={<Navigate to="/" replace />} />
-          <Route element={<AppShell />}>
-            <Route path="/app" element={<OverviewPage />} />
+          <Route path="/welcome" element={<LandingPage />} />
+          <Route path="/sign-in/*" element={<SignInPage />} />
+          <Route path="/sign-up/*" element={<SignUpPage />} />
+          
+          <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
+            <Route path="/" element={<OverviewPage />} />
             <Route path="/plan" element={<PlanTripPage />} />
             <Route path="/workspace" element={<WorkspacePage />} />
             <Route path="/chat" element={<Navigate to="/workspace" replace />} />
