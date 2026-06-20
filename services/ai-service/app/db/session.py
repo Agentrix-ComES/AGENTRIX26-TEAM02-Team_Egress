@@ -47,21 +47,33 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 async def init_db() -> None:
     """Ensure the AI-domain schema, pgvector extension, and all ORM tables exist.
 
-    Uses SQLAlchemy ``create_all`` to create tables that don't exist yet.
-    This is idempotent (checkfirst=True) and runs on every startup.
-    Alembic migrations are still used for schema *changes* after initial creation.
+    Idempotent across restarts: we explicitly inspect the target schema and only
+    create tables that are missing. ``create_all(checkfirst=True)`` alone misses
+    pre-existing tables when ``Base.metadata`` is bound to a non-default schema,
+    which then raises DuplicateTableError on subsequent boots.
     """
     import app.models  # noqa: F401 — register all ORM models on Base.metadata
 
-    from sqlalchemy import text
+    from sqlalchemy import inspect, text
 
     async with engine.begin() as conn:
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.execute(
             text(f"CREATE SCHEMA IF NOT EXISTS {settings.postgres_schema}")
         )
-        # Create all tables declared on Base that don't yet exist.
-        await conn.run_sync(Base.metadata.create_all, checkfirst=True)
+
+        def _create_missing(sync_conn) -> None:
+            inspector = inspect(sync_conn)
+            existing = set(inspector.get_table_names(schema=settings.postgres_schema))
+            missing = [
+                table
+                for name, table in Base.metadata.tables.items()
+                if name.rsplit(".", 1)[-1] not in existing
+            ]
+            if missing:
+                Base.metadata.create_all(bind=sync_conn, tables=missing, checkfirst=False)
+
+        await conn.run_sync(_create_missing)
 
 
 async def close_db() -> None:

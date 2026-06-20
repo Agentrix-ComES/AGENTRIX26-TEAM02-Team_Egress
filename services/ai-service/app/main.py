@@ -71,5 +71,6 @@ app.include_router(api_router)
 
 
 @app.get("/health", tags=["health"], summary="Liveness check")
+@app.get(f"{settings.api_prefix}/health", tags=["health"], summary="Liveness check (gateway path)", include_in_schema=False)
 async def health() -> dict[str, str]:
     return {"status": "ok", "service": settings.service_name}
