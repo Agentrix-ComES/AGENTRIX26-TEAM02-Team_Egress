@@ -1,0 +1,18 @@
+_format_version: "3.0"
+
+services:
+  - name: ai-service
+    url: http://travel-ai-service:8000
+    routes:
+      - name: ai-routes
+        paths:
+          - /api/ai
+        strip_path: false
+
+# Example of how you would configure the Kong JWT plugin later to verify Clerk tokens
+# plugins:
+#   - name: jwt
+#     service: ai-service
+#     config:
+#       claims_to_verify:
+#         - exp

@@ -122,6 +122,28 @@ services:
     networks:
       - travel-net
 
+  kong:
+    image: kong:3.6
+    container_name: travel-kong
+    restart: unless-stopped
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: "/usr/local/kong/declarative/kong.yml"
+      KONG_PROXY_ACCESS_LOG: "/dev/stdout"
+      KONG_ADMIN_ACCESS_LOG: "/dev/stdout"
+      KONG_PROXY_ERROR_LOG: "/dev/stderr"
+      KONG_ADMIN_ERROR_LOG: "/dev/stderr"
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001, 0.0.0.0:8444 ssl"
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+    volumes:
+      - ./infra/gateway/kong.yml:/usr/local/kong/declarative/kong.yml:ro
+    depends_on:
+      - ai-service
+    networks:
+      - travel-net
+
 networks:
   travel-net:
     driver: bridge
