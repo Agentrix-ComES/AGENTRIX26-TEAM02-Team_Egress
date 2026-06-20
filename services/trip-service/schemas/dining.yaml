@@ -1,0 +1,213 @@
+DiningOptionResponse:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    type:
+      type: string
+      enum: [restaurant, cafe, food_shop, street_food, bakery]
+    cuisine:
+      type: string
+    location:
+      type: object
+      properties:
+        address:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+    rating:
+      type: number
+      format: double
+    review_count:
+      type: integer
+    average_cost_per_person:
+      type: number
+      format: double
+    operating_hours:
+      type: string
+    dietary_accommodations:
+      type: array
+      items:
+        type: string
+        enum: [vegetarian, vegan, halal, kosher, gluten_free]
+    specialties:
+      type: array
+      items:
+        type: string
+    reservation_required:
+      type: boolean
+    parking_available:
+      type: boolean
+    phone:
+      type: string
+    website:
+      type: string
+    images:
+      type: array
+      items:
+        type: string
+        format: uri
+
+DiningReservationRequest:
+  type: object
+  properties:
+    dining_option_id:
+      type: string
+    date:
+      type: string
+      format: date
+    time:
+      type: string
+      description: Time in HH:MM format
+    party_size:
+      type: integer
+    special_requests:
+      type: string
+    name:
+      type: string
+    phone:
+      type: string
+  required:
+    - dining_option_id
+    - date
+    - time
+    - party_size
+
+DiningReservationResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    dining_option_name:
+      type: string
+    date:
+      type: string
+      format: date
+    time:
+      type: string
+    party_size:
+      type: integer
+    reservation_reference:
+      type: string
+    status:
+      type: string
+      enum: [pending, confirmed, cancelled]
+    estimated_wait_time:
+      type: integer
+      description: In minutes
+    contact_number:
+      type: string
+    created_at:
+      type: string
+      format: date-time
+
+DiningOptionCreateRequest:
+  type: object
+  properties:
+    name:
+      type: string
+      minLength: 3
+    type:
+      type: string
+      enum: [restaurant, cafe, food_shop, street_food, bakery]
+    cuisine:
+      type: string
+    address:
+      type: string
+    latitude:
+      type: number
+      format: double
+    longitude:
+      type: number
+      format: double
+    rating:
+      type: number
+      format: double
+      minimum: 0
+      maximum: 5
+    average_cost_per_person:
+      type: number
+      format: double
+    operating_hours:
+      type: string
+    dietary_accommodations:
+      type: array
+      items:
+        type: string
+        enum: [vegetarian, vegan, halal, kosher, gluten_free]
+    specialties:
+      type: array
+      items:
+        type: string
+    reservation_required:
+      type: boolean
+    parking_available:
+      type: boolean
+    phone:
+      type: string
+    website:
+      type: string
+    images:
+      type: array
+      items:
+        type: string
+        format: uri
+  required:
+    - name
+    - type
+    - address
+
+DiningOptionUpdateRequest:
+  type: object
+  properties:
+    name:
+      type: string
+    type:
+      type: string
+      enum: [restaurant, cafe, food_shop, street_food, bakery]
+    cuisine:
+      type: string
+    address:
+      type: string
+    latitude:
+      type: number
+      format: double
+    longitude:
+      type: number
+      format: double
+    rating:
+      type: number
+      format: double
+    average_cost_per_person:
+      type: number
+      format: double
+    operating_hours:
+      type: string
+    dietary_accommodations:
+      type: array
+      items:
+        type: string
+    specialties:
+      type: array
+      items:
+        type: string
+    reservation_required:
+      type: boolean
+    parking_available:
+      type: boolean
+    phone:
+      type: string
+    website:
+      type: string
+    images:
+      type: array
+      items:
+        type: string
+        format: uri

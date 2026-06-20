@@ -1,0 +1,147 @@
+ActivityResponse:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    description:
+      type: string
+    category:
+      type: string
+    difficulty_level:
+      type: string
+      enum: [easy, moderate, difficult]
+    duration_hours:
+      type: number
+    estimated_cost:
+      type: number
+      format: double
+    age_requirements:
+      type: object
+      properties:
+        minimum_age:
+          type: integer
+        maximum_age:
+          type: integer
+    physical_requirements:
+      type: string
+    location:
+      type: string
+    operating_hours:
+      type: string
+    best_season:
+      type: string
+    required_equipment:
+      type: array
+      items:
+        type: string
+    instructor_available:
+      type: boolean
+    group_size_limit:
+      type: integer
+    reviews:
+      type: number
+      format: double
+    images:
+      type: array
+      items:
+        type: string
+        format: uri
+    provider:
+      type: string
+
+ActivityCreateRequest:
+  type: object
+  properties:
+    name:
+      type: string
+      minLength: 3
+    description:
+      type: string
+    category:
+      type: string
+    difficulty_level:
+      type: string
+      enum: [easy, moderate, difficult]
+    duration_hours:
+      type: number
+    estimated_cost:
+      type: number
+      format: double
+    age_requirements:
+      type: object
+      properties:
+        minimum_age:
+          type: integer
+        maximum_age:
+          type: integer
+    physical_requirements:
+      type: string
+    location:
+      type: string
+    operating_hours:
+      type: string
+    best_season:
+      type: string
+    required_equipment:
+      type: array
+      items:
+        type: string
+    instructor_available:
+      type: boolean
+    group_size_limit:
+      type: integer
+    images:
+      type: array
+      items:
+        type: string
+        format: uri
+    provider:
+      type: string
+  required:
+    - name
+    - category
+    - difficulty_level
+
+ActivityUpdateRequest:
+  type: object
+  properties:
+    name:
+      type: string
+    description:
+      type: string
+    category:
+      type: string
+    difficulty_level:
+      type: string
+    duration_hours:
+      type: number
+    estimated_cost:
+      type: number
+      format: double
+    age_requirements:
+      type: object
+    physical_requirements:
+      type: string
+    location:
+      type: string
+    operating_hours:
+      type: string
+    best_season:
+      type: string
+    required_equipment:
+      type: array
+      items:
+        type: string
+    instructor_available:
+      type: boolean
+    group_size_limit:
+      type: integer
+    images:
+      type: array
+      items:
+        type: string
+        format: uri
+    provider:
+      type: string

@@ -1,0 +1,160 @@
+/trips:
+  post:
+    tags:
+      - Trips
+    summary: Create a new trip
+    operationId: create_trip
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TripCreateRequest'
+    responses:
+      '201':
+        description: Trip created successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripResponse'
+      '400':
+        description: Invalid request
+
+  get:
+    tags:
+      - Trips
+    summary: List all trips for the authenticated user
+    operationId: list_trips
+    parameters:
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum: [planning, active, completed, cancelled]
+      - name: skip
+        in: query
+        schema:
+          type: integer
+          default: 0
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 20
+    responses:
+      '200':
+        description: List of trips
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TripResponse'
+                total:
+                  type: integer
+
+/trips/{trip_id}:
+  get:
+    tags:
+      - Trips
+    summary: Retrieve a trip by ID
+    operationId: get_trip
+    parameters:
+      - name: trip_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Trip details with timeline summary
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripDetailResponse'
+      '404':
+        description: Trip not found
+
+  patch:
+    tags:
+      - Trips
+    summary: Update trip metadata
+    operationId: update_trip
+    parameters:
+      - name: trip_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TripUpdateRequest'
+    responses:
+      '200':
+        description: Trip updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripResponse'
+
+  delete:
+    tags:
+      - Trips
+    summary: Cancel a trip
+    operationId: delete_trip
+    parameters:
+      - name: trip_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '204':
+        description: Trip deleted
+
+/trips/{trip_id}/timeline:
+  get:
+    tags:
+      - Region Nodes
+    summary: Get the complete timeline (all region nodes ordered chronologically)
+    operationId: get_timeline
+    parameters:
+      - name: trip_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Timeline with all region nodes
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trip_id:
+                  type: string
+                  format: uuid
+                regions:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RegionNodeResponse'
+                summary:
+                  type: object
+                  properties:
+                    total_regions:
+                      type: integer
+                    duration_days:
+                      type: integer
+                    total_budget:
+                      type: number
