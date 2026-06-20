@@ -1,0 +1,63 @@
+---
+config:
+  layout: fixed
+---
+flowchart BT
+ subgraph Channels["User Channels"]
+        UWeb["Web / Mobile App"]
+        UChat["WhatsApp / Telegram Bot"]
+        UAdmin["Admin / Partner Console"]
+  end
+ subgraph Agents["Specialized Agents"]
+        PlannerA["Planner Agent"]
+        LogisticsA["Logistics Agent"]
+        DisruptionA["Disruption Agent"]
+        CultureA["Culture & Etiquette Agent"]
+  end
+ subgraph State["Memory & State"]
+        TripDB[("Trip DB: Postgres")]
+        VecDB[("Vector DB")]
+  end
+ subgraph AgenticBackend["Agentic Backend"]
+        Orchestrator["Trip Orchestrator Agent"]
+        Agents
+        State
+  end
+ subgraph Domain["Domain Services"]
+        ItinSvc["Itinerary Optimizer Service"]
+        RouteSvc["Routing & Transport Service"]
+        ClimateSvc["Climate & Seasonality Service"]
+        EventSvc["Events & Festivals Service"]
+        CultureSvc["Cultural Knowledge Service"]
+        AlertsScrappingSvc["Alerts Scrapping Service"]
+        NotificationSvc["Notification Service"]
+        GraphDB[("Graph DB: Routes")]
+  end
+ subgraph External["External APIs & Feeds"]
+        WeatherAPI["Weather & Advisories APIs"]
+        MapsAPI["Maps / Geocoding / Routing APIs"]
+        TransportAPI["Train / Bus / Park Status Feeds"]
+        TourismAPI["Official Tourism & Cultural Content"]
+        News&Alerts["News and Alerts (Scrapping)"]
+  end
+    Channels --> APIGW["API Gateway / Backend Router"]
+    APIGW --> Orchestrator
+    Orchestrator --> PlannerA & LogisticsA & DisruptionA & CultureA
+    Orchestrator <--> TripDB & VecDB
+    PlannerA --> ItinSvc & ClimateSvc & EventSvc
+    LogisticsA --> RouteSvc & ItinSvc
+    DisruptionA --> ItinSvc & ClimateSvc & EventSvc
+    CultureA --> CultureSvc & EventSvc
+    RouteSvc --> GraphDB & MapsAPI & TransportAPI & TripDB
+    ClimateSvc --> WeatherAPI & TripDB
+    ItinSvc --> WeatherAPI & TripDB & VecDB
+    EventSvc --> TransportAPI & TourismAPI & TripDB
+    CultureSvc --> TourismAPI & TripDB & VecDB
+    AlertsScrappingSvc --> News&Alerts & NotificationSvc
+    NotificationSvc --> GraphDB & DisruptionA
+    n1["n1"]
+
+    n1@{ shape: rect}
+    style AgenticBackend fill:#FFF9C4
+    style Domain fill:#C8E6C9
+    style External stroke:transparent,fill:#E1BEE7
