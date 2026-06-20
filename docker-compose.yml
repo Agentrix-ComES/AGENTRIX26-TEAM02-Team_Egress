@@ -172,6 +172,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}}
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api}
     image: travel-platform/client:latest
     container_name: travel-client
     restart: unless-stopped
