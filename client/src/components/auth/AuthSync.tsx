@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "sonner";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8001/api";
 
 export function AuthSync() {
   const { getToken, isSignedIn } = useAuth();
