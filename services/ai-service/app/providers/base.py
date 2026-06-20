@@ -15,7 +15,7 @@ from typing import Any
 import httpx
 from tenacity import (
     retry,
-    retry_if_exception_type,
+    retry_if_exception,
     stop_after_attempt,
     wait_exponential,
 )
@@ -27,8 +27,21 @@ logger = logging.getLogger(__name__)
 
 _client: httpx.AsyncClient | None = None
 
-# Transient errors worth retrying.
-_RETRYABLE = (httpx.TransportError, httpx.HTTPStatusError)
+
+def _is_retryable(exc: BaseException) -> bool:
+    """Retry only transient failures.
+
+    Network/transport errors are always worth a retry. For HTTP status errors,
+    only ``429`` (rate limit) and ``5xx`` (server) are transient; permanent
+    ``4xx`` responses (e.g. Overpass ``406``/``400``) fail fast so callers can
+    immediately fall back to an alternative mirror/provider.
+    """
+    if isinstance(exc, httpx.TransportError):
+        return True
+    if isinstance(exc, httpx.HTTPStatusError):
+        code = exc.response.status_code
+        return code == 429 or code >= 500
+    return False
 
 
 def get_http_client() -> httpx.AsyncClient:
@@ -61,7 +74,7 @@ def cache_key(namespace: str, payload: Any) -> str:
     reraise=True,
     stop=stop_after_attempt(settings.http_max_retries),
     wait=wait_exponential(multiplier=0.5, min=0.5, max=8),
-    retry=retry_if_exception_type(_RETRYABLE),
+    retry=retry_if_exception(_is_retryable),
 )
 async def _request(method: str, url: str, **kwargs: Any) -> httpx.Response:
     resp = await get_http_client().request(method, url, **kwargs)

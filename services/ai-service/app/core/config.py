@@ -96,7 +96,16 @@ class Settings(BaseSettings):
         default="https://geocoding-api.open-meteo.com/v1/search"
     )
     # OSM Overpass: keyless POIs (hotels, activities, transport).
+    # Primary endpoint + fallback mirrors (tried in order if one 4xx/5xx fails).
     overpass_url: str = Field(default="https://overpass-api.de/api/interpreter")
+    overpass_mirrors: list[str] = Field(
+        default=[
+            "https://overpass-api.de/api/interpreter",
+            "https://overpass.kumi.systems/api/interpreter",
+            "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+            "https://overpass.openstreetmap.ru/api/interpreter",
+        ]
+    )
     # OpenTripMap: attractions w/ ratings + descriptions (instant free key, optional).
     opentripmap_url: str = Field(default="https://api.opentripmap.com/0.1/en/places")
     opentripmap_api_key: str | None = Field(default=None)
@@ -113,7 +122,9 @@ class Settings(BaseSettings):
     # HTTP client behaviour for provider calls.
     http_timeout_seconds: float = Field(default=30.0)
     http_max_retries: int = Field(default=3)
-    http_user_agent: str = Field(default="travel-platform-ai/0.1 (+https://example.com)")
+    http_user_agent: str = Field(
+        default="TravelPlatformAI/0.1 (Sri Lanka trip planner; contact@travelplatform.lk)"
+    )
 
     # Cache TTLs (seconds). Volatile data is cached short; content longer.
     cache_ttl_weather: int = Field(default=1800)       # 30 min
