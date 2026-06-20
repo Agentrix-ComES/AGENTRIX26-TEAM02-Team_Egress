@@ -7,10 +7,15 @@ Sri Lanka content. Queries are scoped to the configured SL bounding box.
 """
 from __future__ import annotations
 
+import logging
 from typing import Any, Literal
+
+import httpx
 
 from app.core.config import settings
 from app.providers.base import fetch_json
+
+logger = logging.getLogger(__name__)
 
 Category = Literal["hotels", "activities", "transport"]
 
@@ -198,16 +203,54 @@ def _normalize(element: dict[str, Any], category: Category) -> dict[str, Any] | 
 
 
 async def fetch_pois(category: Category, *, limit: int = 200) -> list[dict[str, Any]]:
-    """Fetch and normalize POIs of a category across Sri Lanka."""
+    """Fetch and normalize POIs of a category across Sri Lanka.
+
+    Tries each configured Overpass mirror in order; a 4xx/5xx (e.g. the public
+    mirror returning ``406`` under load) falls through to the next mirror.
+    """
     query = _build_query(category, limit)
-    data = await fetch_json(
-        "POST",
-        settings.overpass_url,
-        data={"data": query},
-        cache_namespace="overpass",
-        cache_ttl=settings.cache_ttl_places,
-        cache_payload={"category": category, "limit": limit, "bbox": _bbox()},
-    )
+    cache_payload = {"category": category, "limit": limit, "bbox": _bbox()}
+    # Overpass mirrors can be strict about content negotiation; ask for JSON
+    # explicitly and identify ourselves with a descriptive User-Agent.
+    headers = {
+        "Accept": "application/json",
+        "User-Agent": settings.http_user_agent,
+    }
+
+    mirrors = settings.overpass_mirrors or [settings.overpass_url]
+    data: Any | None = None
+    last_error: Exception | None = None
+    for url in mirrors:
+        try:
+            data = await fetch_json(
+                "POST",
+                url,
+                data={"data": query},
+                headers=headers,
+                cache_namespace="overpass",
+                cache_ttl=settings.cache_ttl_places,
+                cache_payload=cache_payload,
+            )
+            break
+        except httpx.HTTPStatusError as exc:
+            last_error = exc
+            logger.warning(
+                "Overpass mirror failed (%s) for %s: %s",
+                url,
+                category,
+                exc.response.status_code,
+            )
+            continue
+        except httpx.TransportError as exc:
+            last_error = exc
+            logger.warning("Overpass mirror unreachable (%s) for %s: %s", url, category, exc)
+            continue
+
+    if data is None:
+        if last_error is not None:
+            raise last_error
+        return []
+
     elements = (data or {}).get("elements") or []
     pois = (_normalize(el, category) for el in elements)
     return [p for p in pois if p is not None]
