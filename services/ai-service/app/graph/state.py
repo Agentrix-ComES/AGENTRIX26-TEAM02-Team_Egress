@@ -9,6 +9,7 @@ class GraphState(TypedDict, total=False):
 
 
     messages: Annotated[list, add_messages]
+    is_safe: bool
     intent: Intent
     destination: str
     start_date: str | None

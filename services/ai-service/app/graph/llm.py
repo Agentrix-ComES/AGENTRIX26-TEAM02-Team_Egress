@@ -4,6 +4,8 @@ from typing import Literal
 from langchain_google_genai import (
     ChatGoogleGenerativeAI,
     GoogleGenerativeAIEmbeddings,
+    HarmBlockThreshold,
+    HarmCategory,
 )
 
 from app.core.config import settings
@@ -24,11 +26,21 @@ def _tier_model(tier: ChatTier) -> tuple[str, float]:
 @lru_cache
 def get_chat_model(tier: ChatTier = "primary") -> ChatGoogleGenerativeAI:
 
+
     model, temperature = _tier_model(tier)
+    
+    safety_settings = {
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+    }
+    
     return ChatGoogleGenerativeAI(
         model=model,
         temperature=temperature,
         google_api_key=settings.gemini_api_key,
+        safety_settings=safety_settings,
     )
 
 
