@@ -66,6 +66,7 @@ async def run_chat(session: AsyncSession, request: ChatRequest) -> ChatResponse:
 
     try:
         config = _thread_config(conversation_id)
+        config["run_name"] = "TravelAgentOrchestrator"
         logger.info(f"Starting chat run for user {request.user_id} (Thread: {conversation_id})")
         logger.debug(f"Invoking graph with input state: {input_state}")
         
