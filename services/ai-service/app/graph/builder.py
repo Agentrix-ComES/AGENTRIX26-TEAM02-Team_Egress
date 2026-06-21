@@ -8,8 +8,10 @@ from app.graph.nodes.alerts import fetch_alerts
 from app.graph.nodes.chat import chat
 from app.graph.nodes.climate import climate
 from app.graph.nodes.disruption import handle_disruption
+from app.graph.nodes.guardrail import guardrail
 from app.graph.nodes.intent import classify_intent
 from app.graph.nodes.logistics import logistics
+from app.graph.nodes.output_guardrail import output_guardrail
 from app.graph.nodes.planner import plan
 from app.graph.nodes.retrieve import retrieve
 from app.graph.state import GraphState
@@ -39,6 +41,13 @@ def _retry_kwargs() -> dict:
     return {}
 
 
+def _route_on_guardrail(state: GraphState) -> str:
+    """If the guardrail flags input as unsafe, abort immediately."""
+    if not state.get("is_safe", True):
+        return END
+    return "intent"
+
+
 def _route_on_intent(state: GraphState) -> str:
     intent = state.get("intent", "chat")
     if intent == "disruption":
@@ -52,6 +61,8 @@ def build_graph(checkpointer: "BaseCheckpointSaver | None" = None):
     graph = StateGraph(GraphState)
     retry = _retry_kwargs()
 
+    # I/O-bound nodes (LLM / Qdrant / Neo4j / external APIs) get bounded retries.
+    graph.add_node("guardrail", guardrail, **retry)
     graph.add_node("intent", classify_intent, **retry)
     graph.add_node("chat", chat, **retry)
     graph.add_node("disruption", handle_disruption, **retry)
@@ -60,8 +71,16 @@ def build_graph(checkpointer: "BaseCheckpointSaver | None" = None):
     graph.add_node("alerts", fetch_alerts, **retry)
     graph.add_node("planner", plan, **retry)
     graph.add_node("logistics", logistics, **retry)
+    graph.add_node("output_guardrail", output_guardrail, **retry)
 
-    graph.add_edge(START, "intent")
+    # First stop is the guardrail to prevent injection and abuse.
+    graph.add_edge(START, "guardrail")
+    graph.add_conditional_edges(
+        "guardrail",
+        _route_on_guardrail,
+        {"intent": "intent", END: END},
+    )
+
     graph.add_conditional_edges(
         "intent",
         _route_on_intent,
@@ -79,8 +98,9 @@ def build_graph(checkpointer: "BaseCheckpointSaver | None" = None):
     graph.add_edge("alerts", "planner")
 
     graph.add_edge("planner", "logistics")
-    graph.add_edge("logistics", END)
-    graph.add_edge("chat", END)
+    graph.add_edge("logistics", "output_guardrail")
+    graph.add_edge("chat", "output_guardrail")
+    graph.add_edge("output_guardrail", END)
 
     return graph.compile(checkpointer=checkpointer)
 
