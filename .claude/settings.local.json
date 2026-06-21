@@ -23,7 +23,12 @@
       "PowerShell(docker run *)",
       "Bash(curl -s http://localhost:8001/api/v1/regions)",
       "Bash(curl -s http://localhost:8001/api/v1/trips)",
-      "Bash(curl -s http://localhost:8001/api/v1/transport-bookings?trip_id=00000000-0000-0000-0000-000000000000)"
+      "Bash(curl -s http://localhost:8001/api/v1/transport-bookings?trip_id=00000000-0000-0000-0000-000000000000)",
+      "Bash(grep -nE \"includegraphics|\\\\\\\\\\\\\\\\graphicspath|usepackage\\\\{graphicx\\\\}|erd\" docs/latex2/REPORT.tex)",
+      "Bash(grep -nE \"tableofcontents|setcounter\\\\{tocdepth\\\\}|titlecontents|\\\\\\\\\\\\\\\\toc\" docs/latex2/REPORT.tex)",
+      "Bash(grep -cE \"^\\\\\\\\\\\\\\\\section|^\\\\\\\\\\\\\\\\subsection|^\\\\\\\\\\\\\\\\subsubsection|^\\\\\\\\\\\\\\\\paragraph\" docs/latex2/REPORT.tex)",
+      "Bash(grep -E \"^\\\\\\\\\\\\\\\\section|^\\\\\\\\\\\\\\\\subsection|^\\\\\\\\\\\\\\\\subsubsection\" docs/latex2/REPORT.tex)",
+      "Bash(grep -nE \"^\\\\\\\\\\\\\\\\\\(section|subsection|subsubsection|paragraph\\)\" docs/latex2/REPORT.tex)"
     ]
   }
 }

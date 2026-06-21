@@ -1,4 +1,6 @@
 \documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage[margin=0.9in]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{enumitem}
@@ -13,7 +15,34 @@
 \usepackage{tikz}
 \usepackage{listings}
 
-\usetikzlibrary{shapes,arrows,positioning,calc,shadows,decorations.pathrounding}
+\usetikzlibrary{shapes,arrows,positioning,calc,shadows}
+
+% fancyhdr requires more vertical room for the running header
+\setlength{\headheight}{14pt}
+\setlength{\headsep}{16pt}
+
+% Map common Unicode characters used in the source so pdfLaTeX accepts them
+\DeclareUnicodeCharacter{2014}{---}    % em dash
+\DeclareUnicodeCharacter{2013}{--}     % en dash
+\DeclareUnicodeCharacter{2713}{\checkmark} % check mark
+\DeclareUnicodeCharacter{2192}{$\rightarrow$}
+\DeclareUnicodeCharacter{2018}{`}
+\DeclareUnicodeCharacter{2019}{'}
+\DeclareUnicodeCharacter{201C}{``}
+\DeclareUnicodeCharacter{201D}{''}
+
+% Look for figures in the current dir and in the sibling latex/ folder
+\graphicspath{{./}{../latex/}}
+
+% Safe include: if the image file is missing, draw a placeholder box instead
+% so the document still compiles. Usage: \safeincludegraphics[opts]{file}
+\newcommand{\safeincludegraphics}[2][width=0.95\textwidth]{%
+  \IfFileExists{#2}{\includegraphics[#1]{#2}}{%
+    \fbox{\parbox{0.9\textwidth}{\centering\ttfamily\small
+      [missing image: #2]\\[2pt]
+      Place the file in \texttt{docs/latex2/} (or \texttt{docs/latex/}) and recompile.}}%
+  }%
+}
 
 % Header/Footer
 \pagestyle{fancy}
@@ -64,7 +93,13 @@
 This report documents a complete 12-hour sprint delivering an AI-powered travel planning platform that models trips as dynamic, adaptive timelines with intelligent multi-agent orchestration. The system integrates real-time disruption handling, personalized recommendations, and cultural awareness for Sri Lankan travel. Six microservices, a modern web UI, Docker deployment, and end-to-end architecture are production-ready.
 \end{abstract}
 
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
+\begingroup
+\setlength{\parskip}{0pt}
+\hypersetup{linkcolor=black}
 \tableofcontents
+\endgroup
 \newpage
 
 % ============= SECTION 1: EXECUTIVE SUMMARY =============
@@ -245,7 +280,7 @@ Example workflow: \textit{``I'm 45 minutes late to Kandy. Will I miss my 6 PM te
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{architecture-diagram.png}
-\caption{Layered system architecture with strict separation of concerns: End-user channels $\rightarrow$ API Gateway $\rightarrow$ Agentic Backend (Trip Orchestrator + 4 specialized agents) $\rightarrow$ Domain Services (Itinerary Optimizer, Routing \& Transport, Climate \& Seasonality, Events \& Festivals, Cultural Knowledge, Alerts Scraper, Notification Service) $\rightarrow$ Shared Memory (PostgreSQL, Qdrant, Neo4j, Redis) $\rightarrow$ External APIs (Weather, Maps, Transport, Tourism, News).}
+\caption{Layered system architecture: end-user channels $\rightarrow$ API gateway $\rightarrow$ agentic backend $\rightarrow$ domain services $\rightarrow$ shared memory $\rightarrow$ external APIs.}
 \label{fig:arch}
 \end{figure}
 
@@ -486,8 +521,8 @@ Diagrams & 3 \\
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{usecase-diagram.png}
-\caption{System use cases for 5 stakeholders: Traveler (10 UCs: create trip, view timeline, preview details, report disruption, ask cultural questions, update preferences, book accommodation, dining, activities, receive notifications); Hotel Owner (7 UCs: register, create availability, manage bookings, view details, update pricing, handle cancellations, view reports); Restaurant Owner (7 UCs: register, create slots, manage reservations, view details, update menu, handle cancellations, view reports); Activity Owner (7 UCs: register, create slots, manage bookings, view participant details, update pricing, handle cancellations, view reports); Admin (7 UCs: manage users, monitor health, manage providers, review analytics, configure settings, handle disputes, view logs).}
+\safeincludegraphics[width=0.95\textwidth]{usecase-diagram.png}
+\caption{Use cases across five actors: Traveler, Hotel Owner, Restaurant Owner, Activity Owner, and Admin.}
 \label{fig:usecase}
 \end{figure}
 
@@ -569,8 +604,8 @@ Diagrams & 3 \\
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{trip_planning_erd.png}
-\caption{Database entity-relationship model: User (id, email, phone, preferences) $\rightarrow$ 1:many $\rightarrow$ Trip (id, dates, destination, status); Trip $\rightarrow$ 1:many $\rightarrow$ Timeline Node (id, type, times, location, state, details, cultural context, risk indicators); Timeline Node $\rightarrow$ 1:many $\rightarrow$ Booking (id, provider, confirmation, status); Trip $\rightarrow$ 1:many $\rightarrow$ Alert (id, type, severity, timestamps); Trip $\rightarrow$ 1:many $\rightarrow$ Agent Run (id, agent, input/output, trace).}
+\safeincludegraphics[width=0.95\textwidth]{trip_planning_erd.png}
+\caption{Entity-relationship model: User $\rightarrow$ Trip $\rightarrow$ Timeline Node $\rightarrow$ Booking, with Alerts and Agent Runs attached to each Trip.}
 \label{fig:erd}
 \end{figure}
 
@@ -730,21 +765,21 @@ docker-compose up -d
 
 \subsection{Project Structure}
 
-\begin{lstlisting}[caption=Repository Layout]
+\begin{lstlisting}[language=,caption=Repository Layout]
 AGENTRIX26-TEAM02-Team_Egress/
-├── services/              # 6 microservices
-│   ├── ai-service/
-│   ├── trip-service/
-│   ├── user-service/
-│   ├── booking-service/
-│   ├── destination-service/
-│   └── ...
-├── client/               # React web UI
-├── gateway/              # Kong API Gateway
-├── infra/               # Docker, monitoring
-├── docs/                # Architecture, API specs
-├── diagram/             # ER diagram
-└── docker-compose.yml   # Infrastructure as Code
+|-- services/              # 6 microservices
+|   |-- ai-service/
+|   |-- trip-service/
+|   |-- user-service/
+|   |-- booking-service/
+|   |-- destination-service/
+|   `-- ...
+|-- client/                # React web UI
+|-- gateway/               # Kong API Gateway
+|-- infra/                 # Docker, monitoring
+|-- docs/                  # Architecture, API specs
+|-- diagram/               # ER diagram
+`-- docker-compose.yml     # Infrastructure as Code
 \end{lstlisting}
 
 \subsection{API Gateway Routes}
@@ -786,26 +821,5 @@ The focus on Sri Lanka grounds the work in real constraints (weather, transport,
     \item ✓ Docker Compose for reproducible deployment
     \item ✓ Documentation and diagrams for next team
 \end{itemize}
-
-\subsection{Next Team Priorities}
-
-\begin{enumerate}
-    \item Finish LangGraph agent implementations
-    \item Test delay propagation with real data
-    \item Connect to external APIs
-    \item User acceptance testing
-    \item Performance optimization
-\end{enumerate}
-
-\vspace{1cm}
-
-\noindent
-\begin{tabular}{ll}
-\textbf{Team:} & Egress (AGENTRIX26-TEAM02) \\
-\textbf{Repository:} & d:\textbackslash LLM\textbackslash AGENTRIX26-TEAM02-Team\_Egress \\
-\textbf{Deployment:} & \texttt{docker-compose up -d} \\
-\textbf{Documentation:} & \texttt{docs/} folder \\
-\textbf{Date:} & June 21, 2026 \\
-\end{tabular}
 
 \end{document}
