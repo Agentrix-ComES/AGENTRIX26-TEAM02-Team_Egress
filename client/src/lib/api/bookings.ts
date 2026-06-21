@@ -46,7 +46,7 @@ export async function listTransportBookings(
   getToken: TokenGetter,
   params: { trip_id: string; region_node_id?: string; booking_status?: string },
 ): Promise<TransportBookingResponse[]> {
-  const res = await authedFetch(`/api/v1/transport-bookings${qs(params)}`, getToken);
+  const res = await authedFetch(`/v1/transport-bookings${qs(params)}`, getToken);
   return asJson<TransportBookingResponse[]>(res);
 }
 
@@ -54,7 +54,7 @@ export async function createTransportBooking(
   getToken: TokenGetter,
   body: TransportBookingCreateRequest,
 ): Promise<TransportBookingResponse> {
-  const res = await authedFetch("/api/v1/transport-bookings", getToken, {
+  const res = await authedFetch("/v1/transport-bookings", getToken, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -65,7 +65,7 @@ export async function deleteTransportBooking(
   getToken: TokenGetter,
   bookingId: string,
 ): Promise<void> {
-  const res = await authedFetch(`/api/v1/transport-bookings/${bookingId}`, getToken, {
+  const res = await authedFetch(`/v1/transport-bookings/${bookingId}`, getToken, {
     method: "DELETE",
   });
   await asJson<void>(res);
@@ -110,7 +110,7 @@ export async function searchHotels(
   getToken: TokenGetter,
   body: HotelSearchRequest,
 ): Promise<HotelSearchResponse> {
-  const res = await authedFetch("/api/v1/hotels/search", getToken, {
+  const res = await authedFetch("/v1/hotels/search", getToken, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -153,7 +153,7 @@ export async function listHotelBookings(
   getToken: TokenGetter,
   params: { trip_id: string; region_node_id?: string; status?: string },
 ): Promise<HotelBookingResponse[]> {
-  const res = await authedFetch(`/api/v1/hotel-bookings${qs(params)}`, getToken);
+  const res = await authedFetch(`/v1/hotel-bookings${qs(params)}`, getToken);
   return asJson<HotelBookingResponse[]>(res);
 }
 
@@ -161,7 +161,7 @@ export async function createHotelBooking(
   getToken: TokenGetter,
   body: HotelBookingRequest,
 ): Promise<HotelBookingResponse> {
-  const res = await authedFetch("/api/v1/hotel-bookings", getToken, {
+  const res = await authedFetch("/v1/hotel-bookings", getToken, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -172,7 +172,7 @@ export async function deleteHotelBooking(
   getToken: TokenGetter,
   bookingId: string,
 ): Promise<void> {
-  const res = await authedFetch(`/api/v1/hotel-bookings/${bookingId}`, getToken, {
+  const res = await authedFetch(`/v1/hotel-bookings/${bookingId}`, getToken, {
     method: "DELETE",
   });
   await asJson<void>(res);
@@ -212,7 +212,7 @@ export async function listDiningReservations(
   getToken: TokenGetter,
   params: { trip_id: string; region_node_id?: string; status?: string },
 ): Promise<DiningReservationResponse[]> {
-  const res = await authedFetch(`/api/v1/dining-reservations${qs(params)}`, getToken);
+  const res = await authedFetch(`/v1/dining-reservations${qs(params)}`, getToken);
   return asJson<DiningReservationResponse[]>(res);
 }
 
@@ -220,7 +220,7 @@ export async function createDiningReservation(
   getToken: TokenGetter,
   body: DiningReservationRequest,
 ): Promise<DiningReservationResponse> {
-  const res = await authedFetch("/api/v1/dining-reservations", getToken, {
+  const res = await authedFetch("/v1/dining-reservations", getToken, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -231,7 +231,7 @@ export async function deleteDiningReservation(
   getToken: TokenGetter,
   reservationId: string,
 ): Promise<void> {
-  const res = await authedFetch(`/api/v1/dining-reservations/${reservationId}`, getToken, {
+  const res = await authedFetch(`/v1/dining-reservations/${reservationId}`, getToken, {
     method: "DELETE",
   });
   await asJson<void>(res);

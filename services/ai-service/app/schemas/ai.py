@@ -1,4 +1,3 @@
-"""Schemas for AI orchestration endpoints."""
 import uuid
 from datetime import datetime
 from typing import Any, Literal
@@ -7,7 +6,7 @@ from pydantic import BaseModel, Field
 
 
 class ItineraryItem(BaseModel):
-    """A single timeline entry within a day (hotel, activity, or transport)."""
+
 
     type: Literal["hotel", "activity", "transport", "meal"] = "activity"
     time: str | None = None  # e.g. "09:30" or "morning"
@@ -39,12 +38,7 @@ class Itinerary(BaseModel):
 
 
 class IntentDecision(BaseModel):
-    """Structured intent classification result (LLM structured output).
 
-    The LLM classifies intent and, when it can be inferred from the message,
-    also extracts destination, start_date, and end_date so downstream nodes
-    (retrieve, climate, planner) have the context they need.
-    """
 
     intent: Literal["plan", "modify", "disruption", "chat"]
     destination: str | None = Field(
@@ -161,7 +155,7 @@ class RunResponse(BaseModel):
 
 
 class ManualUpsertItem(BaseModel):
-    """A single record to manually upsert into a Qdrant collection."""
+
 
     content: str = Field(
         ...,
@@ -190,7 +184,7 @@ class ManualUpsertItem(BaseModel):
 
 
 class ManualUpsertRequest(BaseModel):
-    """Batch request to manually upsert records into the Qdrant knowledge base."""
+
 
     items: list[ManualUpsertItem] = Field(..., min_length=1, max_length=500)
 

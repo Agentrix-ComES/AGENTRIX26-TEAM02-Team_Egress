@@ -244,65 +244,8 @@ Example workflow: \textit{``I'm 45 minutes late to Kandy. Will I miss my 6 PM te
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[
-  node distance=1.2cm,
-  box/.style={rectangle, draw=black!70, fill=cyan!20, rounded corners, minimum width=2.8cm, minimum height=0.5cm, font=\small\bfseries, inner sep=0.3cm},
-  service/.style={rectangle, draw=black!70, fill=green!20, rounded corners, minimum width=2.5cm, minimum height=0.5cm, font=\small, inner sep=0.3cm},
-  external/.style={rectangle, draw=black!70, fill=purple!15, rounded corners, minimum width=2.5cm, minimum height=0.5cm, font=\small, inner sep=0.3cm},
-  data/.style={rectangle, draw=black!70, fill=blue!20, rounded corners, minimum width=2.5cm, minimum height=0.5cm, font=\small\bfseries, inner sep=0.3cm},
-  arrow/.style={->, thick, black!60}
-]
-
-% Layer 1: Users
-\node[box] (web) at (0, 6) {Web/Mobile};
-\node[box] (chat) at (3, 6) {Chat Bot};
-\node[box] (admin) at (6, 6) {Admin Console};
-
-% Layer 2: Gateway
-\node[box, fill=yellow!30] (gw) at (3, 4.5) {API Gateway (Kong)};
-
-% Layer 3: Agents
-\node[box, fill=yellow!30] (orch) at (3, 3) {Trip Orchestrator};
-\node[service] (planner) at (0.5, 1.5) {Planner};
-\node[service] (logistics) at (2, 1.5) {Logistics};
-\node[service] (disrupt) at (3.5, 1.5) {Disruption};
-\node[service] (culture) at (5, 1.5) {Culture};
-
-% Layer 4: Domain Services
-\node[service] (itin) at (0.5, 0) {Itinerary};
-\node[service] (route) at (2, 0) {Routing};
-\node[service] (clim) at (3.5, 0) {Climate};
-\node[service] (events) at (5, 0) {Events};
-
-% Layer 5: Data
-\node[data] (pdb) at (1, -1.3) {Trip DB};
-\node[data] (vdb) at (3, -1.3) {Vector DB};
-\node[data] (gdb) at (5, -1.3) {Graph DB};
-
-% Layer 6: External
-\node[external] (ext) at (3, -2.6) {External APIs};
-
-% Arrows
-\draw[arrow] (web) -- (gw);
-\draw[arrow] (chat) -- (gw);
-\draw[arrow] (admin) -- (gw);
-\draw[arrow] (gw) -- (orch);
-\draw[arrow] (orch) -- (planner);
-\draw[arrow] (orch) -- (logistics);
-\draw[arrow] (orch) -- (disrupt);
-\draw[arrow] (orch) -- (culture);
-\draw[arrow] (planner) -- (itin);
-\draw[arrow] (logistics) -- (route);
-\draw[arrow] (disrupt) -- (clim);
-\draw[arrow] (culture) -- (events);
-\draw[arrow] (itin) -- (pdb);
-\draw[arrow] (route) -- (gdb);
-\draw[arrow] (orch) -- (vdb);
-\draw[arrow] (route) -- (ext);
-\draw[arrow] (clim) -- (ext);
-
-\end{tikzpicture}
-\caption{Layered system architecture with strict separation of concerns.}
+\includegraphics[width=0.95\textwidth]{architecture-diagram.png}
+\caption{Layered system architecture with strict separation of concerns: End-user channels $\rightarrow$ API Gateway $\rightarrow$ Agentic Backend (Trip Orchestrator + 4 specialized agents) $\rightarrow$ Domain Services (Itinerary Optimizer, Routing \& Transport, Climate \& Seasonality, Events \& Festivals, Cultural Knowledge, Alerts Scraper, Notification Service) $\rightarrow$ Shared Memory (PostgreSQL, Qdrant, Neo4j, Redis) $\rightarrow$ External APIs (Weather, Maps, Transport, Tourism, News).}
 \label{fig:arch}
 \end{figure}
 
@@ -532,9 +475,21 @@ Diagrams & 3 \\
 
 \begin{itemize}
     \item \textbf{Traveler:} Plans trips, views timeline, reports disruptions, asks questions
+    \item \textbf{Hotel Owner:} Manages accommodation inventory and bookings
+    \item \textbf{Restaurant Owner:} Manages dining reservations and offerings
+    \item \textbf{Activity Owner:} Manages activity inventory and participant slots
     \item \textbf{System:} Monitors external feeds, detects disruptions proactively
-    \item \textbf{Admin:} Operates services, manages configuration, reviews metrics
+    \item \textbf{Admin:} Operates services, manages configuration, reviews metrics and disputes
 \end{itemize}
+
+\subsection{Use-Case Diagram}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{usecase-diagram.png}
+\caption{System use cases for 5 stakeholders: Traveler (10 UCs: create trip, view timeline, preview details, report disruption, ask cultural questions, update preferences, book accommodation, dining, activities, receive notifications); Hotel Owner (7 UCs: register, create availability, manage bookings, view details, update pricing, handle cancellations, view reports); Restaurant Owner (7 UCs: register, create slots, manage reservations, view details, update menu, handle cancellations, view reports); Activity Owner (7 UCs: register, create slots, manage bookings, view participant details, update pricing, handle cancellations, view reports); Admin (7 UCs: manage users, monitor health, manage providers, review analytics, configure settings, handle disputes, view logs).}
+\label{fig:usecase}
+\end{figure}
 
 \subsection{Core Flows}
 
@@ -609,6 +564,15 @@ Diagrams & 3 \\
 
 % ============= SECTION 7: DATABASE MODEL =============
 \section{Entity-Relationship Model}
+
+\subsection{ER Diagram}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{trip_planning_erd.png}
+\caption{Database entity-relationship model: User (id, email, phone, preferences) $\rightarrow$ 1:many $\rightarrow$ Trip (id, dates, destination, status); Trip $\rightarrow$ 1:many $\rightarrow$ Timeline Node (id, type, times, location, state, details, cultural context, risk indicators); Timeline Node $\rightarrow$ 1:many $\rightarrow$ Booking (id, provider, confirmation, status); Trip $\rightarrow$ 1:many $\rightarrow$ Alert (id, type, severity, timestamps); Trip $\rightarrow$ 1:many $\rightarrow$ Agent Run (id, agent, input/output, trace).}
+\label{fig:erd}
+\end{figure}
 
 \subsection{Entities}
 

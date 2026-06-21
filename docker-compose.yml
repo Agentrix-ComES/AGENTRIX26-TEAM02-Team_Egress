@@ -169,6 +169,25 @@ services:
     networks:
       - travel-net
 
+  neo4j-seed:
+    image: neo4j:5-community
+    container_name: travel-neo4j-seed
+    restart: "no"
+    entrypoint: >
+      sh -c "
+        cypher-shell -a bolt://neo4j:7687
+                     -u ${NEO4J_USER:-neo4j}
+                     -p ${NEO4J_PASSWORD:-neo4jpassword}
+                     -f /seed/seed.cypher
+        && echo 'Neo4j seed complete'
+      "
+    volumes:
+      - ./infra/neo4j:/seed:ro
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    networks:
+      - travel-net
 
   ai-service:
     build:
@@ -244,7 +263,7 @@ services:
       ai-service:
         condition: service_started
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
       interval: 30s
       timeout: 3s
       retries: 3

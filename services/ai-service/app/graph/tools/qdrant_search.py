@@ -1,9 +1,3 @@
-"""Advanced semantic search over the multi-collection Qdrant knowledge base.
-
-The flow embeds a query *once* and fans it out across the relevant collections
-concurrently, applying optional payload filters (city, price tier, dietary, ...)
-and a score threshold before returning ranked, source-tagged hits.
-"""
 from __future__ import annotations
 
 import asyncio
@@ -16,13 +10,13 @@ from app.db.qdrant import get_qdrant
 from app.db.qdrant_collections import collection_name
 from app.graph.llm import get_embeddings
 
-# A filter value may be a single scalar (exact match) or a list (match-any).
+
 FilterValue = str | int | float | bool | Sequence[str | int | float]
 Filters = Mapping[str, FilterValue]
 
 
 def build_filter(filters: Filters | None) -> qmodels.Filter | None:
-    """Translate a simple ``{field: value | [values]}`` mapping to a Qdrant filter."""
+
     if not filters:
         return None
     conditions: list[qmodels.FieldCondition] = []
@@ -42,14 +36,13 @@ async def _embed(query: str) -> list[float]:
 
 
 def _search_params() -> qmodels.SearchParams | None:
-    """Query-time HNSW breadth — higher ``ef`` trades latency for accuracy."""
+
     ef = settings.qdrant_hnsw_ef_search
     return qmodels.SearchParams(hnsw_ef=ef) if ef else None
 
 
 def _cosine(a: list[float], b: list[float]) -> float:
-    """Cosine similarity for two equal-length vectors (vectors are L2-normalized
-    by the embedding model, but we normalize defensively)."""
+
     dot = sum(x * y for x, y in zip(a, b))
     na = sum(x * x for x in a) ** 0.5
     nb = sum(y * y for y in b) ** 0.5
@@ -63,11 +56,7 @@ def mmr_rerank(
     top_k: int,
     lambda_mult: float,
 ) -> list[dict[str, Any]]:
-    """Maximal Marginal Relevance: re-rank candidates to balance relevance with
-    diversity, removing near-duplicate results that hurt answer quality.
 
-    Requires each hit to carry its ``vector``; falls back to score order if not.
-    """
     candidates = [h for h in hits if h.get("vector")]
     if not candidates:
         return sorted(hits, key=lambda h: h["score"], reverse=True)[:top_k]
@@ -84,9 +73,9 @@ def mmr_rerank(
             mmr = lambda_mult * relevance - (1 - lambda_mult) * redundancy
             if mmr > best_score:
                 best, best_score = cand, mmr
-        selected.append(best)  # type: ignore[arg-type]
-        remaining.remove(best)  # type: ignore[arg-type]
-    # Drop the heavy vectors before returning to the graph state.
+        selected.append(best)
+        remaining.remove(best)
+
     for h in selected:
         h.pop("vector", None)
     return selected
@@ -133,10 +122,7 @@ async def search_collection(
     score_threshold: float | None = None,
     rerank: bool = True,
 ) -> list[dict[str, Any]]:
-    """Semantic search within a single collection.
 
-    Over-fetches candidates, then applies MMR reranking for relevance + diversity.
-    """
     vector = await _embed(query)
     top_k = limit or settings.qdrant_top_k
     threshold = (
@@ -164,14 +150,17 @@ async def multi_search(
     *,
     limit: int | None = None,
     filters: Filters | None = None,
+    per_collection_filters: dict[str, Filters | None] | None = None,
     score_threshold: float | None = None,
     rerank: bool = True,
 ) -> dict[str, list[dict[str, Any]]]:
-    """Fan a single embedded query out across several collections concurrently.
+    """Search multiple Qdrant collections in parallel, sharing one embedding call.
 
-    Returns a mapping ``{collection_key: [hits]}``. The query is embedded once
-    and reused for every collection (they share the same embedding model/dim).
-    Each collection's candidates are over-fetched and MMR-reranked for accuracy.
+    Args:
+        per_collection_filters: Optional per-key filter overrides. When a key is
+            present its value replaces the global ``filters`` for that collection
+            (pass ``None`` as the value to search a collection without any filter).
+            Collections not listed fall back to ``filters``.
     """
     vector = await _embed(query)
     top_k = limit or settings.qdrant_top_k
@@ -180,13 +169,18 @@ async def multi_search(
     )
     fetch = top_k * settings.qdrant_overfetch_factor if rerank else top_k
 
+    def _filter_for(key: str) -> Filters | None:
+        if per_collection_filters and key in per_collection_filters:
+            return per_collection_filters[key]
+        return filters
+
     raw = await asyncio.gather(
         *(
             _search_with_vector(
                 key,
                 vector,
                 limit=fetch,
-                filters=filters,
+                filters=_filter_for(key),
                 score_threshold=threshold,
                 with_vectors=rerank,
             )
@@ -204,7 +198,7 @@ async def multi_search(
 
 
 async def qdrant_search(query: str, limit: int = 5) -> list[dict[str, Any]]:
-    """Backward-compatible flat search across the default activity/hotel content."""
+
     grouped = await multi_search(
         query,
         collections=("activities", "hotels"),
