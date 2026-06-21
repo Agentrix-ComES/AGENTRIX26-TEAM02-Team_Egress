@@ -1,4 +1,3 @@
-"""Schemas for LLM configuration."""
 import uuid
 from datetime import datetime
 from typing import Literal
@@ -6,13 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 LLMTier = Literal["primary", "secondary", "tertiary", "embedding"]
-"""Role a model plays:
 
-- ``primary``: hard intelligence (planning, complex reasoning, replanning).
-- ``secondary``: medium tasks (conversation, disruption analysis).
-- ``tertiary``: low/cheap tasks (intent classification, data extraction).
-- ``embedding``: vector embeddings for retrieval.
-"""
 
 
 class LLMConfigBase(BaseModel):

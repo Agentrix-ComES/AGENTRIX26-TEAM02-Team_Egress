@@ -1,10 +1,3 @@
-"""LangGraph Postgres checkpointer.
-
-Uses ``AsyncPostgresSaver`` backed by a psycopg async connection pool. The
-checkpoint tables (``checkpoints``, ``checkpoint_blobs``, ``checkpoint_writes``,
-``checkpoint_migrations``) are created automatically by ``saver.setup()`` on
-startup, so they are intentionally **not** managed by Alembic.
-"""
 from __future__ import annotations
 
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
@@ -20,10 +13,7 @@ _checkpointer: AsyncPostgresSaver | None = None
 from app.graph.cached_checkpointer import RedisCachedPostgresSaver
 
 async def init_checkpointer() -> AsyncPostgresSaver:
-    """Open the connection pool and auto-create checkpoint tables.
 
-    Call once on application startup.
-    """
     global _pool, _checkpointer
 
     if _checkpointer is not None:
@@ -44,7 +34,7 @@ async def init_checkpointer() -> AsyncPostgresSaver:
 
 
 def get_checkpointer() -> AsyncPostgresSaver:
-    """Return the initialized checkpointer (raises if not yet initialized)."""
+
     if _checkpointer is None:
         raise RuntimeError(
             "Checkpointer not initialized. Call init_checkpointer() on startup."
@@ -53,7 +43,7 @@ def get_checkpointer() -> AsyncPostgresSaver:
 
 
 async def close_checkpointer() -> None:
-    """Close the connection pool on application shutdown."""
+
     global _pool, _checkpointer
     if _pool is not None:
         await _pool.close()

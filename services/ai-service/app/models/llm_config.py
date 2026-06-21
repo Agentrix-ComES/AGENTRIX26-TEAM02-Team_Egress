@@ -1,4 +1,3 @@
-"""LLM configuration records (provider/model/params)."""
 import uuid
 
 from sqlalchemy import Boolean, Float, Integer, String
@@ -15,7 +14,7 @@ class LLMConfig(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     tier: Mapped[str] = mapped_column(
         String(20), default="primary", index=True
-    )  # primary | secondary | tertiary | embedding
+    ) 
     provider: Mapped[str] = mapped_column(String(50), default="gemini")
     model: Mapped[str] = mapped_column(String(100))
     temperature: Mapped[float] = mapped_column(Float, default=0.2)

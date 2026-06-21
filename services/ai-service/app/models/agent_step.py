@@ -1,4 +1,4 @@
-"""Per-node step records linked to an agent run."""
+
 import uuid
 
 from sqlalchemy import JSON, ForeignKey, Integer, String
