@@ -1,4 +1,4 @@
-"""Shared column types and mixins for ORM models."""
+
 import uuid
 from datetime import datetime
 

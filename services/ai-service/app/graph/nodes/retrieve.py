@@ -2,19 +2,19 @@
 
 This is the advanced RAG step. Based on the conversation intent we fan a single
 embedded query out across the relevant Qdrant collections (hotels, activities,
-transport, dining, culture, events), optionally filtering by destination city.
-We retrieve a larger initial set, then use an LLM to rerank them against the
-user's specific preferences, and flatten the top source-tagged hits into 
-``state['retrieved']`` for the planner.
-"""
-import json
-import logging
-from typing import Any
+transport, dining, culture, events), optionally filtering by destination city,
+then flatten the source-tagged hits into ``state['retrieved']`` for the planner.
 
-from app.core.config import settings
+Also fetches Neo4j Place nodes for the destination so the planner can prefer
+locations that have verified transport routes in the graph.
+"""
+import asyncio
+import logging
+
 from app.db.qdrant_collections import (
     ACTIVITIES,
     CULTURE,
+    DESTINATIONS,
     DINING,
     EVENTS,
     HOTELS,
@@ -22,19 +22,27 @@ from app.db.qdrant_collections import (
 )
 from app.graph.llm import get_chat_model
 from app.graph.state import GraphState
+from app.graph.tools.neo4j_routes import find_places
 from app.graph.tools.qdrant_search import Filters, multi_search
 from app.schemas.ai import RerankedIndices
 
 logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
+
 # Which collections matter for each intent.
 _COLLECTIONS_BY_INTENT: dict[str, tuple[str, ...]] = {
-    "plan": (HOTELS, ACTIVITIES, TRANSPORT, DINING, CULTURE, EVENTS),
+    "plan": (HOTELS, ACTIVITIES, TRANSPORT, DINING, CULTURE, EVENTS, DESTINATIONS),
     "modify": (HOTELS, ACTIVITIES, TRANSPORT, DINING, CULTURE),
     "disruption": (TRANSPORT, ACTIVITIES, EVENTS),
-    "chat": (ACTIVITIES, CULTURE),
+    "chat": (ACTIVITIES, CULTURE, DESTINATIONS),
 }
-_DEFAULT_COLLECTIONS = (HOTELS, ACTIVITIES, TRANSPORT, DINING, CULTURE)
+_DEFAULT_COLLECTIONS = (HOTELS, ACTIVITIES, TRANSPORT, DINING, CULTURE, DESTINATIONS)
+
+# Collections whose payload has a ``city`` keyword index for exact-match filtering.
+# Transport uses origin/destination; culture uses region; destinations uses region.
+# Applying a city filter to these would exclude all their documents.
+_CITY_FILTERABLE: frozenset[str] = frozenset({HOTELS, ACTIVITIES, DINING, EVENTS})
 
 # Payload fields kept in the compact RAG record handed to the planner. The
 # embedded ``content`` gives the LLM meaning; the rest is actionable metadata
@@ -129,34 +137,26 @@ async def retrieve(state: GraphState) -> GraphState:
     intent = state.get("intent", "plan")
     collections = _COLLECTIONS_BY_INTENT.get(intent, _DEFAULT_COLLECTIONS)
 
-    logger.info(f"RAG Query string: '{query}' | Intent: {intent}")
+    # Apply city filter only to collections that index a ``city`` payload field.
+    # Transport uses origin/destination; culture/destinations use region — passing
+    # a city filter to those collections returns zero results.
+    city_filter: Filters | None = {"city": destination} if destination else None
+    per_col: dict[str, Filters | None] = {
+        c: (city_filter if c in _CITY_FILTERABLE else None) for c in collections
+    }
 
-    # We previously filtered strictly by `{"city": destination}` but OSM ingest 
-    # data often lacks the `city` payload key, causing 0 hits. We now rely on 
-    # vector similarity and the LLM reranking stage to ensure relevance.
-    filters = None
+    # Run Qdrant search and Neo4j place lookup concurrently.
+    qdrant_task = multi_search(query, collections=collections, per_collection_filters=per_col)
+    neo4j_task = find_places(destination)
+    grouped, neo4j_places = await asyncio.gather(qdrant_task, neo4j_task, return_exceptions=True)
 
-    grouped = await multi_search(query, collections=collections, filters=filters)
+    if isinstance(grouped, Exception):
+        logger.warning("Qdrant search failed: %s", grouped)
+        grouped = {}
+    if isinstance(neo4j_places, Exception):
+        logger.warning("Neo4j place lookup failed: %s", neo4j_places)
+        neo4j_places = []
 
-    # Flatten and sort by Qdrant raw score
     flat = [_compact_hit(hit) for hits in grouped.values() for hit in hits]
     flat.sort(key=lambda h: h["score"], reverse=True)
-    
-    # 1. Take Top K initial hits
-    initial_k = settings.rag_initial_top_k
-    top_initial = flat[:initial_k]
-    
-    logger.info("="*40)
-    logger.info(f"RAG Stage 1: Initial Top {initial_k} Results from Vector DB")
-    logger.info(json.dumps([{"name": h.get("name"), "score": h.get("score")} for h in top_initial], indent=2))
-    
-    # 2. Rerank with LLM
-    reranked_k = settings.rag_reranked_top_k
-    top_reranked = await _rerank_with_llm(query, top_initial, reranked_k)
-    
-    logger.info("-" * 40)
-    logger.info(f"RAG Stage 2: Final Top {reranked_k} Reranked Results (passed to Planner)")
-    logger.info(json.dumps([{"name": h.get("name"), "score": h.get("score")} for h in top_reranked], indent=2))
-    logger.info("=" * 40)
-
-    return {"retrieved": top_reranked}
+    return {"retrieved": flat, "neo4j_places": neo4j_places}

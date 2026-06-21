@@ -1,7 +1,6 @@
 
 from __future__ import annotations
 
-import json
 import logging
 import uuid
 
@@ -20,6 +19,8 @@ from app.schemas.ai import (
     Itinerary,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def _thread_config(conversation_id: str) -> dict:
     return {"configurable": {"thread_id": conversation_id}}
@@ -30,9 +31,9 @@ def _to_itinerary(value: dict | None) -> Itinerary | None:
         return None
     try:
         return Itinerary.model_validate(value)
-    except Exception:
-
-        return Itinerary(days=[]) if not isinstance(value, dict) else None
+    except Exception as exc:
+        logger.warning("Itinerary validation failed (%s); returning empty itinerary", exc)
+        return Itinerary(days=[])
 
 
 async def run_chat(session: AsyncSession, request: ChatRequest) -> ChatResponse:

@@ -1,16 +1,3 @@
-"""Build and compile the LangGraph planning workflow.
-
-Flow (chat-centric):
-
-    START → intent
-        ├─ plan / modify → retrieve → [climate, alerts] → planner → logistics → END
-        ├─ disruption    → [disruption, alerts] → retrieve → [climate, alerts] → planner → logistics → END
-        └─ chat          → chat → END
-
-climate and alerts run in parallel after retrieval (both are I/O-bound and
-independent). The planner and disruption nodes consume both results so all
-decisions reflect current weather AND live travel alerts/advisories.
-"""
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
@@ -32,17 +19,12 @@ if TYPE_CHECKING:
 
 
 def _retry_kwargs() -> dict:
-    """Build a version-safe retry kwarg for ``add_node``.
 
-    LangGraph exposes a ``RetryPolicy`` but the ``add_node`` keyword changed
-    between releases (``retry`` -> ``retry_policy``). Detect it at runtime so the
-    graph compiles across versions and simply skips retries if unavailable.
-    """
     import inspect
 
     try:
         from langgraph.types import RetryPolicy
-    except Exception:  # pragma: no cover - optional across versions
+    except Exception: 
         try:
             from langgraph.pregel import RetryPolicy  # type: ignore
         except Exception:
@@ -70,7 +52,6 @@ def build_graph(checkpointer: "BaseCheckpointSaver | None" = None):
     graph = StateGraph(GraphState)
     retry = _retry_kwargs()
 
-    # I/O-bound nodes (LLM / Qdrant / Neo4j / external APIs) get bounded retries.
     graph.add_node("intent", classify_intent, **retry)
     graph.add_node("chat", chat, **retry)
     graph.add_node("disruption", handle_disruption, **retry)
@@ -90,8 +71,6 @@ def build_graph(checkpointer: "BaseCheckpointSaver | None" = None):
     # Disruption is analyzed first, then flows into retrieval for replanning.
     graph.add_edge("disruption", "retrieve")
 
-    # After retrieval, climate and alerts run in parallel (both I/O-bound,
-    # fully independent). LangGraph fans out automatically on list edges.
     graph.add_edge("retrieve", "climate")
     graph.add_edge("retrieve", "alerts")
 
@@ -108,8 +87,5 @@ def build_graph(checkpointer: "BaseCheckpointSaver | None" = None):
 
 @lru_cache
 def get_compiled_graph():
-    """Return the compiled graph backed by the Postgres checkpointer.
 
-    Requires ``init_checkpointer()`` to have run on startup.
-    """
     return build_graph(checkpointer=get_checkpointer())

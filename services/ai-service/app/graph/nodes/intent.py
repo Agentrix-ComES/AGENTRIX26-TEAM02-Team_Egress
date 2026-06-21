@@ -32,15 +32,41 @@ async def classify_intent(state: GraphState) -> GraphState:
     if intent in ("modify", "disruption") and not state.get("itinerary"):
         intent = "plan"
 
-    # Propagate extracted context only when not already set by the caller.
-    # This lets the API caller override with explicit fields while still
-    # falling back to NL extraction for conversational use.
     updates: GraphState = {"intent": intent}
-    if decision.destination and not state.get("destination"):
-        updates["destination"] = decision.destination
-    if decision.start_date and not state.get("start_date"):
-        updates["start_date"] = decision.start_date
-    if decision.end_date and not state.get("end_date"):
-        updates["end_date"] = decision.end_date
+
+    if intent == "plan":
+        # Fresh plan: always override destination/dates from the NL extraction so
+        # a new request for a different destination is not silently ignored by
+        # stale checkpointed state.  Also clear artefacts from the previous plan
+        # so the planner starts from a clean slate and the next classify_intent
+        # call cannot drift toward "modify" based on a ghost itinerary.
+        if decision.destination:
+            updates["destination"] = decision.destination
+        if decision.start_date:
+            updates["start_date"] = decision.start_date
+        if decision.end_date:
+            updates["end_date"] = decision.end_date
+        # Wipe all artefacts from the previous plan so downstream nodes start
+        # clean.  retrieve/climate/alerts will repopulate their fields, but if
+        # any of them fail gracefully the old data must not silently persist.
+        updates["itinerary"] = None
+        updates["disruption"] = None
+        updates["disruption_analysis"] = ""
+        updates["plan_changed"] = False
+        updates["retrieved"] = []
+        updates["neo4j_places"] = []
+        updates["routes"] = []
+        updates["weather"] = None
+        updates["live_alerts"] = None
+    else:
+        # For modify/chat/disruption: only fill in context not already provided
+        # by the API caller or a prior run in this conversation.
+        if decision.destination and not state.get("destination"):
+            updates["destination"] = decision.destination
+        if decision.start_date and not state.get("start_date"):
+            updates["start_date"] = decision.start_date
+        if decision.end_date and not state.get("end_date"):
+            updates["end_date"] = decision.end_date
+
     return updates
 

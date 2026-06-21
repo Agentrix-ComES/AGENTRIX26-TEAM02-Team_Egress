@@ -9,6 +9,25 @@ from app.graph.state import GraphState
 from app.schemas.ai import PlannerOutput
 
 
+def _conversation_summary(state: GraphState, max_turns: int = 4) -> str:
+    """Serialize the last N human+assistant turns for planner context."""
+    msgs = state.get("messages") or []
+    lines: list[str] = []
+    turns_seen = 0
+    for msg in reversed(msgs):
+        if turns_seen >= max_turns * 2:
+            break
+        content = str(getattr(msg, "content", ""))[:300].replace("\n", " ")
+        if isinstance(msg, HumanMessage):
+            lines.append(f"User: {content}")
+            turns_seen += 1
+        elif isinstance(msg, AIMessage):
+            lines.append(f"Assistant: {content}")
+            turns_seen += 1
+    lines.reverse()
+    return "\n".join(lines)
+
+
 async def plan(state: GraphState) -> GraphState:
     model = get_chat_model("primary").with_structured_output(PlannerOutput)
 
@@ -25,12 +44,28 @@ async def plan(state: GraphState) -> GraphState:
     existing = state.get("itinerary")
     intent = state.get("intent", "plan")
 
+    neo4j_places = state.get("neo4j_places") or []
+    if neo4j_places:
+        places_summary = ", ".join(
+            f"{p['name']} ({p.get('type', 'place')}, {p.get('region', '')})"
+            for p in neo4j_places
+        )
+    else:
+        places_summary = "none"
+
     parts = [
         f"Destination: {state.get('destination')}",
         f"Dates: {state.get('start_date')} - {state.get('end_date')}",
         f"Preferences: {', '.join(state.get('preferences', []))}",
+        f"Verified locations with transport routes in graph DB: {places_summary}",
         f"Context (grouped by collection): {context}",
     ]
+
+    # Inject conversation history so the planner can avoid repeating suggestions
+    # from previous turns and produce a genuinely different itinerary when asked.
+    conv = _conversation_summary(state)
+    if conv:
+        parts.append(f"Conversation history (most recent turns):\n{conv}")
     weather = state.get("weather")
     if weather:
         parts.append(
@@ -62,8 +97,20 @@ async def plan(state: GraphState) -> GraphState:
         parts.append(
             f"Existing itinerary to revise: {json.dumps(existing, ensure_ascii=False)[:3000]}"
         )
+    elif intent == "plan" and conv:
+        # Fresh plan but conversation has prior turns — explicitly tell the planner
+        # to produce something meaningfully different from what it suggested before.
+        parts.append(
+            "IMPORTANT: This is a fresh plan request. You MUST produce a genuinely "
+            "different itinerary from any previously discussed in this conversation — "
+            "vary the specific hotels, restaurants, activities, their ordering, and "
+            "day structure. Do not reuse the same suggestions."
+        )
     if state.get("disruption"):
-        parts.append(f"Disruption to resolve: {json.dumps(state['disruption'], ensure_ascii=False)}")
+        parts.append(
+            "Disruption to resolve: "
+            + json.dumps(state["disruption"], ensure_ascii=False)
+        )
     if state.get("disruption_analysis"):
         parts.append(f"Disruption analysis: {state['disruption_analysis']}")
 
