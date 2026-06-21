@@ -7,6 +7,8 @@ import uuid
 from langchain_core.messages import AIMessage, HumanMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 
+logger = logging.getLogger(__name__)
+
 from app.graph.builder import get_compiled_graph
 from app.models.agent_run import AgentRun
 from app.schemas.ai import (
@@ -20,8 +22,8 @@ from app.schemas.ai import (
 logger = logging.getLogger(__name__)
 
 
-def _thread_config(conversation_id: uuid.UUID) -> dict:
-    return {"configurable": {"thread_id": str(conversation_id)}}
+def _thread_config(conversation_id: str) -> dict:
+    return {"configurable": {"thread_id": conversation_id}}
 
 
 def _to_itinerary(value: dict | None) -> Itinerary | None:
@@ -36,7 +38,11 @@ def _to_itinerary(value: dict | None) -> Itinerary | None:
 
 async def run_chat(session: AsyncSession, request: ChatRequest) -> ChatResponse:
 
-    conversation_id = request.conversation_id or uuid.uuid4()
+    # conversation_id is the LangGraph thread id. It must be a UUID so the
+    # /conversations/{id} route (which validates UUID) can read history later.
+    # Falling back to the caller's user_id here would tie the whole thread to
+    # the user and return non-UUID ids to the FE.
+    conversation_id = str(request.conversation_id) if request.conversation_id else str(uuid.uuid4())
     run_type = "disruption" if request.disruption else "chat"
 
     run = AgentRun(
@@ -64,8 +70,36 @@ async def run_chat(session: AsyncSession, request: ChatRequest) -> ChatResponse:
         input_state["disruption"] = request.disruption
 
     try:
-        result = await graph.ainvoke(input_state, config=_thread_config(conversation_id))
+        config = _thread_config(conversation_id)
+        logger.info(f"Starting chat run for user {request.user_id} (Thread: {conversation_id})")
+        logger.debug(f"Invoking graph with input state: {input_state}")
+        
+        # Helper to handle non-serializable objects (like AIMessage)
+        def _fallback_serializer(obj):
+            return str(obj)
+
+        async for event in graph.astream(input_state, config=config, stream_mode="updates"):
+            for node_name, node_output in event.items():
+                try:
+                    output_str = json.dumps(node_output, default=_fallback_serializer, indent=2)
+                except Exception:
+                    output_str = str(node_output)
+                
+                # Truncate extremely long outputs
+                if len(output_str) > 1500:
+                    output_str = output_str[:1500] + "\n... [truncated]"
+                    
+                logger.info(f"Node Executed: {node_name}")
+                logger.info(f"Output from {node_name}:\n{output_str}")
+
+        logger.info(f"Graph execution completed successfully for conversation {conversation_id}")
+        
+        # Fetch the fully merged state after execution finishes
+        state_snapshot = await graph.aget_state(config)
+        result = state_snapshot.values
+        
     except Exception as exc:  # persist failure, then surface it
+        logger.error(f"Graph execution failed for conversation {conversation_id}: {exc}", exc_info=True)
         run.status = "failed"
         run.error = str(exc)
         await session.flush()
@@ -92,7 +126,7 @@ async def run_chat(session: AsyncSession, request: ChatRequest) -> ChatResponse:
     )
 
 
-async def get_conversation(conversation_id: uuid.UUID) -> ConversationState | None:
+async def get_conversation(conversation_id: str) -> ConversationState | None:
     """Read the persisted conversation history + current itinerary."""
     graph = get_compiled_graph()
     snapshot = await graph.aget_state(_thread_config(conversation_id))
@@ -117,7 +151,7 @@ async def get_conversation(conversation_id: uuid.UUID) -> ConversationState | No
     )
 
 
-async def get_itinerary(conversation_id: uuid.UUID) -> Itinerary | None:
+async def get_itinerary(conversation_id: str) -> Itinerary | None:
     """Read just the latest itinerary for a conversation."""
     state = await get_conversation(conversation_id)
     return state.itinerary if state else None

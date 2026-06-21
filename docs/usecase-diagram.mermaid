@@ -1,0 +1,53 @@
+---
+config:
+  layout: elk
+---
+graph TB
+    subgraph Actors["Actors"]
+        Traveler["👤 Traveler"]
+        System["🤖 System / Alerts"]
+        Admin["👨‍💼 Admin"]
+    end
+
+    subgraph UseCases["Core Use Cases"]
+        UC1["Create Trip Itinerary"]
+        UC2["View Timeline"]
+        UC3["Preview Node"]
+        UC4["Report Disruption"]
+        UC5["Auto-Propagate Delay"]
+        UC6["Detect Conflicts"]
+        UC7["Get Recovery Options"]
+        UC8["Cultural Guidance"]
+        UC9["Receive Alert"]
+        UC10["Manage Preferences"]
+        UC11["Update Node"]
+        UC12["Admin Panel"]
+    end
+
+    Traveler -->|"Plan travel"| UC1
+    Traveler -->|"Browse trip"| UC2
+    Traveler -->|"Inspect activity"| UC3
+    Traveler -->|"Report: traffic/weather/closure"| UC4
+    Traveler -->|"Ask about temple rules"| UC8
+    Traveler -->|"Edit preferences"| UC10
+    Traveler -->|"Edit schedule"| UC11
+
+    System -->|"News alerts, weather changes"| UC9
+    System -->|"Impact analysis"| UC5
+    System -->|"Dependency check"| UC6
+
+    UC4 -->|"triggers"| UC5
+    UC5 -->|"validates"| UC6
+    UC6 -->|"proposes"| UC7
+    UC7 -->|"user accepts"| UC11
+
+    UC9 -->|"triggers"| UC5
+    UC1 -->|"uses"| UC8
+    UC8 -->|"powered by"| UC10
+
+    Admin -->|"Manage services"| UC12
+
+    style Traveler fill:#E3F2FD
+    style System fill:#FFF9C4
+    style Admin fill:#F3E5F5
+    style UseCases fill:#F1F8E9

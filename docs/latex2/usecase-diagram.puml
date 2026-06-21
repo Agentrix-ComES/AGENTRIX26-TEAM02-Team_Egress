@@ -1,0 +1,159 @@
+@startuml Timeline_Travel_Platform_UseCase
+!define DIRECTION top to bottom
+skinparam direction DIRECTION
+skinparam actorBackgroundColor #E3F2FD
+skinparam usecaseBackgroundColor #C8E6C9
+skinparam linetype ortho
+
+' Actors
+actor "User\n(Traveler)" as User #E3F2FD
+actor "Hotel Owner" as HotelOwner #FFE0B2
+actor "Restaurant Owner" as RestaurantOwner #F8BBD0
+actor "Activity Owner" as ActivityOwner #C8E6C9
+actor "Admin" as Admin #F3E5F5
+
+' Traveler Use Cases
+package "Traveler Use Cases" #BBDEFB {
+    usecase "Create Trip\nItinerary" as UC1
+    usecase "View Timeline" as UC2
+    usecase "Preview Node\nDetails" as UC3
+    usecase "Report\nDisruption" as UC4
+    usecase "Ask Cultural\nQuestion" as UC5
+    usecase "Update\nPreferences" as UC6
+    usecase "Book\nAccommodation" as UC7
+    usecase "Book\nDining" as UC8
+    usecase "Book\nActivity" as UC9
+    usecase "Receive\nNotifications" as UC10
+}
+
+' Hotel Owner Use Cases
+package "Hotel Owner Use Cases" #FFE0B2 {
+    usecase "Register\nHotel" as HC1
+    usecase "Create\nAvailability" as HC2
+    usecase "Manage\nBookings" as HC3
+    usecase "View Booking\nDetails" as HC4
+    usecase "Update\nPricing" as HC5
+    usecase "Handle\nCancellations" as HC6
+    usecase "View Revenue\nReports" as HC7
+}
+
+' Restaurant Owner Use Cases
+package "Restaurant Owner Use Cases" #F8BBD0 {
+    usecase "Register\nRestaurant" as RC1
+    usecase "Create Dining\nSlots" as RC2
+    usecase "Manage\nReservations" as RC3
+    usecase "View Reservation\nDetails" as RC4
+    usecase "Update Menu &\nPricing" as RC5
+    usecase "Handle\nCancellations" as RC6
+    usecase "View Revenue\nReports" as RC7
+}
+
+' Activity Owner Use Cases
+package "Activity Owner Use Cases" #C8E6C9 {
+    usecase "Register\nActivity" as AC1
+    usecase "Create Time\nSlots" as AC2
+    usecase "Manage\nBookings" as AC3
+    usecase "View Participant\nDetails" as AC4
+    usecase "Update Pricing &\nAvailability" as AC5
+    usecase "Handle\nCancellations" as AC6
+    usecase "View Revenue\nReports" as AC7
+}
+
+' Admin Use Cases
+package "Admin Use Cases" #F3E5F5 {
+    usecase "Manage\nUsers" as AD1
+    usecase "Monitor\nSystem Health" as AD2
+    usecase "Manage\nProviders" as AD3
+    usecase "Review Reports &\nAnalytics" as AD4
+    usecase "Configure\nSettings" as AD5
+    usecase "Handle\nDisputes" as AD6
+    usecase "View\nLogs" as AD7
+}
+
+' Traveler Relations
+User --> UC1 : with preferences & dates
+User --> UC2 : browse trip
+User --> UC3 : inspect details
+User --> UC4 : delay/closure/weather
+User --> UC5 : temple etiquette?\ndress code?
+User --> UC6 : budget, diet,\npreferences
+User --> UC7 : select & confirm
+User --> UC8 : select & confirm
+User --> UC9 : select & confirm
+User --> UC10 : receive updates
+
+' Hotel Owner Relations
+HotelOwner --> HC1 : add property
+HotelOwner --> HC2 : set room availability
+HotelOwner --> HC3 : confirm/reject
+HotelOwner --> HC4 : view reservation
+HotelOwner --> HC5 : adjust rates
+HotelOwner --> HC6 : process cancellations
+HotelOwner --> HC7 : analyze bookings
+
+' Restaurant Owner Relations
+RestaurantOwner --> RC1 : add restaurant
+RestaurantOwner --> RC2 : set table slots
+RestaurantOwner --> RC3 : confirm/reject
+RestaurantOwner --> RC4 : view reservation
+RestaurantOwner --> RC5 : update offerings
+RestaurantOwner --> RC6 : process cancellations
+RestaurantOwner --> RC7 : analyze reservations
+
+' Activity Owner Relations
+ActivityOwner --> AC1 : add activity
+ActivityOwner --> AC2 : set time slots
+ActivityOwner --> AC3 : confirm/reject
+ActivityOwner --> AC4 : view participants
+ActivityOwner --> AC5 : adjust availability
+ActivityOwner --> AC6 : process cancellations
+ActivityOwner --> AC7 : analyze bookings
+
+' Admin Relations
+Admin --> AD1 : create, update,\ndelete users
+Admin --> AD2 : uptime, errors,\nperformance
+Admin --> AD3 : approve, disable\nproviders
+Admin --> AD4 : disputes, revenue,\ntrends
+Admin --> AD5 : system parameters
+Admin --> AD6 : mediate conflicts
+Admin --> AD7 : monitor activity
+
+' Internal Connections
+UC1 ..> UC7 : adds booking requests
+UC1 ..> UC8 : adds booking requests
+UC1 ..> UC9 : adds booking requests
+UC7 --> HC3 : sends to
+UC8 --> RC3 : sends to
+UC9 --> AC3 : sends to
+HC3 --> UC10 : notifies
+RC3 --> UC10 : notifies
+AC3 --> UC10 : notifies
+UC4 --> AD6 : escalates
+UC5 --> AD4 : verified by
+
+note right of User
+  Primary system users who plan
+  and manage their travel
+end note
+
+note right of HotelOwner
+  Accommodation providers who
+  manage inventory and bookings
+end note
+
+note right of RestaurantOwner
+  Dining providers who manage
+  reservations and offerings
+end note
+
+note right of ActivityOwner
+  Activity providers who manage
+  experiences and slots
+end note
+
+note right of Admin
+  System operators who monitor
+  and manage all aspects
+end note
+
+@enduml

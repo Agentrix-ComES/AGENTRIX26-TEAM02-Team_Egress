@@ -55,6 +55,15 @@ class IntentDecision(BaseModel):
     )
 
 
+class RerankedIndices(BaseModel):
+    """Structured LLM output for reranking RAG context."""
+
+    top_5_indices: list[int] = Field(
+        ..., 
+        description="The indices (0 to N) of the most relevant items, ranked from most to least relevant.",
+    )
+
+
 class PlannerOutput(BaseModel):
     """Structured planner result: a natural-language reply plus the timeline."""
 
@@ -64,7 +73,7 @@ class PlannerOutput(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, description="The user's chat message.")
-    conversation_id: uuid.UUID | None = Field(
+    conversation_id: str | None = Field(
         default=None,
         description="LangGraph thread id; omit to start a new conversation.",
     )
@@ -94,7 +103,7 @@ class ChatRequest(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    conversation_id: uuid.UUID = Field(..., description="Use this on the next turn to continue.")
+    conversation_id: str = Field(..., description="Use this on the next turn to continue.")
     run_id: uuid.UUID = Field(..., description="Persisted orchestration run id.")
     reply: str = Field(..., description="Assistant's natural-language reply.")
     plan_changed: bool = Field(default=False, description="True if the itinerary was created or changed.")
@@ -108,7 +117,7 @@ class ConversationMessage(BaseModel):
 
 
 class ConversationState(BaseModel):
-    conversation_id: uuid.UUID
+    conversation_id: str
     messages: list[ConversationMessage] = Field(default_factory=list)
     itinerary: Itinerary | None = None
 

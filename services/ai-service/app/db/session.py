@@ -1,13 +1,16 @@
 """Async SQLAlchemy engine and session for PostgreSQL (with pgvector)."""
 from collections.abc import AsyncGenerator
 
+# pyrefly: ignore [missing-import]
 from sqlalchemy import MetaData
+# pyrefly: ignore [missing-import]
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
+# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
@@ -61,6 +64,9 @@ async def init_db() -> None:
         await conn.execute(
             text(f"CREATE SCHEMA IF NOT EXISTS {settings.postgres_schema}")
         )
+        # Tables are created and managed by Alembic migrations during startup.
+        # We do not use Base.metadata.create_all() here to avoid duplicate table
+        # errors with the asyncpg dialect.
 
         def _create_missing(sync_conn) -> None:
             inspector = inspect(sync_conn)

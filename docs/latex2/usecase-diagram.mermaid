@@ -1,0 +1,141 @@
+---
+config:
+  layout: elk
+  theme: default
+---
+graph TB
+    subgraph Actors["Stakeholders"]
+        User["👤 User<br/>(Traveler)"]
+        HotelOwner["🏨 Hotel Owner"]
+        RestaurantOwner["🍽️ Restaurant Owner"]
+        ActivityOwner["🎯 Activity Owner"]
+        Admin["👨‍💼 Admin"]
+    end
+
+    subgraph TravelerUC["Traveler Use Cases"]
+        UC1["Create Trip<br/>Itinerary"]
+        UC2["View Timeline"]
+        UC3["Preview Node<br/>Details"]
+        UC4["Report<br/>Disruption"]
+        UC5["Ask Cultural<br/>Question"]
+        UC6["Update<br/>Preferences"]
+        UC7["Book<br/>Accommodation"]
+        UC8["Book<br/>Dining"]
+        UC9["Book<br/>Activity"]
+        UC10["Receive<br/>Notifications"]
+    end
+
+    subgraph HotelUC["Hotel Owner Use Cases"]
+        HC1["Register<br/>Hotel"]
+        HC2["Create<br/>Availability"]
+        HC3["Manage<br/>Bookings"]
+        HC4["View Booking<br/>Details"]
+        HC5["Update<br/>Pricing"]
+        HC6["Handle<br/>Cancellations"]
+        HC7["View Revenue<br/>Reports"]
+    end
+
+    subgraph RestaurantUC["Restaurant Owner Use Cases"]
+        RC1["Register<br/>Restaurant"]
+        RC2["Create Dining<br/>Slots"]
+        RC3["Manage<br/>Reservations"]
+        RC4["View Reservation<br/>Details"]
+        RC5["Update Menu &<br/>Pricing"]
+        RC6["Handle<br/>Cancellations"]
+        RC7["View Revenue<br/>Reports"]
+    end
+
+    subgraph ActivityUC["Activity Owner Use Cases"]
+        AC1["Register<br/>Activity"]
+        AC2["Create Time<br/>Slots"]
+        AC3["Manage<br/>Bookings"]
+        AC4["View Participant<br/>Details"]
+        AC5["Update Pricing &<br/>Availability"]
+        AC6["Handle<br/>Cancellations"]
+        AC7["View Revenue<br/>Reports"]
+    end
+
+    subgraph AdminUC["Admin Use Cases"]
+        AD1["Manage<br/>Users"]
+        AD2["Monitor<br/>System Health"]
+        AD3["Manage<br/>Providers"]
+        AD4["Review Reports &<br/>Analytics"]
+        AD5["Configure<br/>Settings"]
+        AD6["Handle<br/>Disputes"]
+        AD7["View<br/>Logs"]
+    end
+
+    % User Relations
+    User -->|"with preferences<br/>& dates"| UC1
+    User -->|"browse trip"| UC2
+    User -->|"inspect details"| UC3
+    User -->|"delay/closure/weather"| UC4
+    User -->|"temple etiquette?<br/>dress code?"| UC5
+    User -->|"budget, diet,<br/>preferences"| UC6
+    User -->|"select & confirm"| UC7
+    User -->|"select & confirm"| UC8
+    User -->|"select & confirm"| UC9
+    User -->|"receive updates"| UC10
+
+    % Hotel Owner Relations
+    HotelOwner -->|"add property"| HC1
+    HotelOwner -->|"set room availability"| HC2
+    HotelOwner -->|"confirm/reject"| HC3
+    HotelOwner -->|"view reservation"| HC4
+    HotelOwner -->|"adjust rates"| HC5
+    HotelOwner -->|"process cancellations"| HC6
+    HotelOwner -->|"analyze bookings"| HC7
+
+    % Restaurant Owner Relations
+    RestaurantOwner -->|"add restaurant"| RC1
+    RestaurantOwner -->|"set table slots"| RC2
+    RestaurantOwner -->|"confirm/reject"| RC3
+    RestaurantOwner -->|"view reservation"| RC4
+    RestaurantOwner -->|"update offerings"| RC5
+    RestaurantOwner -->|"process cancellations"| RC6
+    RestaurantOwner -->|"analyze reservations"| RC7
+
+    % Activity Owner Relations
+    ActivityOwner -->|"add activity"| AC1
+    ActivityOwner -->|"set time slots"| AC2
+    ActivityOwner -->|"confirm/reject"| AC3
+    ActivityOwner -->|"view participants"| AC4
+    ActivityOwner -->|"adjust availability"| AC5
+    ActivityOwner -->|"process cancellations"| AC6
+    ActivityOwner -->|"analyze bookings"| AC7
+
+    % Admin Relations
+    Admin -->|"create, update,<br/>delete users"| AD1
+    Admin -->|"uptime, errors,<br/>performance"| AD2
+    Admin -->|"approve, disable<br/>providers"| AD3
+    Admin -->|"disputes, revenue,<br/>trends"| AD4
+    Admin -->|"system parameters"| AD5
+    Admin -->|"mediate conflicts"| AD6
+    Admin -->|"monitor activity"| AD7
+
+    % Internal Connections
+    UC1 -->|"adds booking<br/>requests"| UC7
+    UC1 -->|"adds booking<br/>requests"| UC8
+    UC1 -->|"adds booking<br/>requests"| UC9
+    UC7 -->|"sends to"| HC3
+    UC8 -->|"sends to"| RC3
+    UC9 -->|"sends to"| AC3
+    HC3 -->|"notifies"| UC10
+    RC3 -->|"notifies"| UC10
+    AC3 -->|"notifies"| UC10
+    UC4 -->|"escalates"| AD6
+    UC5 -->|"verified by"| AD4
+
+    % Styling
+    style User fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    style HotelOwner fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+    style RestaurantOwner fill:#F8BBD0,stroke:#C2185B,stroke-width:2px
+    style ActivityOwner fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style Admin fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
+    
+    style TravelerUC fill:#BBDEFB,stroke:#1976D2
+    style HotelUC fill:#FFE0B2,stroke:#E65100
+    style RestaurantUC fill:#F8BBD0,stroke:#C2185B
+    style ActivityUC fill:#C8E6C9,stroke:#388E3C
+    style AdminUC fill:#F3E5F5,stroke:#7B1FA2
+    style Monitoring fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px       

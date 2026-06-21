@@ -1,0 +1,114 @@
+---
+config:
+  layout: elk
+  theme: default
+---
+graph TB
+    subgraph Users["End-User Channels"]
+        UWeb["🌐 Web / Mobile App"]
+        UChat["💬 WhatsApp / Telegram Bot"]
+        UAdmin["👨‍💼 Admin Console"]
+    end
+
+    subgraph Gateway["API Gateway Layer"]
+        APIGW["Kong API Gateway<br/>JWT Auth, Rate Limiting, Routing"]
+    end
+
+    subgraph AgentLayer["Agentic Backend"]
+        Orchestrator["🎯 Trip Orchestrator Agent<br/>Context → Decision → Action"]
+        subgraph Agents["Specialized Agents"]
+            PlannerA["📋 Planner Agent<br/>Itinerary optimization<br/>Recommendations"]
+            LogisticsA["🚗 Logistics Agent<br/>Routes, Transfer<br/>Feasibility check"]
+            DisruptionA["⚠️ Disruption Agent<br/>Delays, Closures<br/>Conflict detection"]
+            CultureA["🙏 Culture & Etiquette Agent<br/>Temple rules, Dress codes<br/>Customs, Festivals"]
+        end
+    end
+
+    subgraph DomainServices["Domain Services Layer"]
+        ItinSvc["Itinerary Optimizer<br/>Activity sequencing<br/>Time & location constraints"]
+        RouteSvc["Routing & Transport<br/>Routes, Travel time<br/>Transfer dependencies"]
+        ClimateSvc["Climate & Seasonality<br/>Weather forecast<br/>Risk assessment"]
+        EventSvc["Events & Festivals<br/>Event calendar<br/>Closures, impacts"]
+        CultureSvc["Cultural Knowledge<br/>Temple etiquette<br/>Local customs"]
+        AlertsSvc["Alerts Scraper<br/>News, disruptions<br/>Proactive detection"]
+        NotifSvc["Notification Service<br/>Push, SMS, Email<br/>WhatsApp"]
+    end
+
+    subgraph SharedState["Shared Memory & State"]
+        TripDB[("Trip DB<br/>PostgreSQL<br/>Users, Trips, Nodes<br/>Bookings, Alerts")]
+        VecDB[("Vector DB<br/>Qdrant<br/>Preferences<br/>Embeddings")]
+        GraphDB[("Graph DB<br/>Neo4j<br/>Routes<br/>Connectivity")]
+        Cache[("Cache<br/>Redis<br/>Sessions<br/>Queues")]
+    end
+
+    subgraph External["External APIs & Feeds"]
+        WeatherAPI["🌤️ Weather APIs"]
+        MapsAPI["🗺️ Maps / Routing APIs"]
+        TransportAPI["🚂 Transport Feeds"]
+        TourismAPI["🏛️ Tourism Content"]
+        NewsAlerts["📰 News / Alerts"]
+    end
+
+    subgraph Monitoring["Monitoring & Observability"]
+        LangSmith["LangSmith<br/>Agent tracing"]
+        Grafana["Grafana<br/>Metrics"]
+        Loki["Loki<br/>Logs"]
+    end
+
+    % Main Flows
+    UWeb --> APIGW
+    UChat --> APIGW
+    UAdmin --> APIGW
+    
+    APIGW <--> Orchestrator
+    
+    Orchestrator <--> PlannerA
+    Orchestrator <--> LogisticsA
+    Orchestrator <--> DisruptionA
+    Orchestrator <--> CultureA
+    
+    PlannerA --> ItinSvc
+    PlannerA --> EventSvc
+    LogisticsA --> RouteSvc
+    LogisticsA --> ItinSvc
+    DisruptionA --> ClimateSvc
+    DisruptionA --> ItinSvc
+    DisruptionA --> EventSvc
+    CultureA --> CultureSvc
+    CultureA --> EventSvc
+    
+    RouteSvc --> GraphDB
+    RouteSvc --> MapsAPI
+    RouteSvc --> TransportAPI
+    ClimateSvc --> WeatherAPI
+    ItinSvc --> EventSvc
+    EventSvc --> TourismAPI
+    EventSvc --> TransportAPI
+    CultureSvc --> TourismAPI
+    
+    AlertsSvc --> NewsAlerts
+    AlertsSvc --> DisruptionA
+    DisruptionA --> NotifSvc
+    NotifSvc --> APIGW
+    
+    Orchestrator <--> TripDB
+    Orchestrator <--> VecDB
+    ItinSvc --> TripDB
+    RouteSvc --> TripDB
+    
+    PlannerA --> LangSmith
+    LogisticsA --> LangSmith
+    DisruptionA --> LangSmith
+    CultureA --> LangSmith
+    
+    APIGW --> Grafana
+    APIGW --> Loki
+
+    style Users fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    style Gateway fill:#FFF9C4,stroke:#F57F17,stroke-width:2px
+    style AgentLayer fill:#FFFDE7,stroke:#F57F17,stroke-width:2px
+    style Agents fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style DomainServices fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style SharedState fill:#BBDEFB,stroke:#1976D2,stroke-width:2px
+    style External fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px
+    style Monitoring fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px

@@ -1,11 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
+import { toast } from "sonner";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
-import { Loader2, MapPin, Send, Sparkles, Wand2 } from "lucide-react";
-import { mockChat, mockTrip } from "@/data/mock";
-import { sendChat, itineraryToTrip } from "@/lib/api";
+import { CalendarRange, ExternalLink, Loader2, MapPin, Send, Sparkles, Wand2 } from "lucide-react";
+import {
+  createTrip,
+  getConversation,
+  itineraryToTrip,
+  sendChat,
+  type ConversationMessage,
+} from "@/lib/api";
 import type { ChatMessage, Trip, TripNode } from "@/types/trip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -26,12 +32,24 @@ const agentMeta: Record<string, { color: string; label: string }> = {
   culture: { color: "bg-amber-500/15 text-amber-600", label: "Culture" },
 };
 
+const emptyTrip: Trip = {
+  id: "draft",
+  title: "Untitled trip",
+  destination: "",
+  startDate: "",
+  endDate: "",
+  travelers: 1,
+  budget: 0,
+  currency: "USD",
+  preferences: [],
+  progress: 0,
+  nodes: [],
+};
+
 const quickPrompts = [
-  "There's traffic on the way to Kandy",
-  "Add a beach day before we fly home",
-  "Skip the temple visit",
-  "It's raining in Ella tomorrow",
-  "We're done with the train, what's next?",
+  "Skip the next activity",
+  "Add a rest day",
+  "It's raining tomorrow",
   "Replan the whole trip",
 ];
 
@@ -53,14 +71,33 @@ interface WorkspaceLocationState {
   conversationId?: string;
   trip?: Trip;
   initialReply?: string;
+  tripId?: string;
+}
+
+const LS_CONVERSATION = "workspace:conversationId";
+const LS_TRIP_ID = "workspace:tripId";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function readUuidFromStorage(key: string): string | undefined {
+  const v = localStorage.getItem(key);
+  if (v && UUID_RE.test(v)) return v;
+  if (v) localStorage.removeItem(key);
+  return undefined;
+}
+
+function toIsoDateTime(s: string | undefined): string | null {
+  if (!s) return null;
+  const d = s.length === 10 ? new Date(`${s}T00:00:00Z`) : new Date(s);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
 export function WorkspacePage() {
-  const { getToken } = useAuth();
+  const { getToken, userId } = useAuth();
   const location = useLocation();
   const incoming = (location.state ?? {}) as WorkspaceLocationState;
 
-  const [trip, setTrip] = useState<Trip>(incoming.trip ?? mockTrip);
+  const [trip, setTrip] = useState<Trip>(incoming.trip ?? emptyTrip);
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     if (incoming.initialReply) {
       return [
@@ -73,9 +110,17 @@ export function WorkspacePage() {
         },
       ];
     }
-    return mockChat;
+    return [];
   });
-  const [conversationId, setConversationId] = useState<string | undefined>(incoming.conversationId);
+  const [conversationId, setConversationId] = useState<string | undefined>(
+    (incoming.conversationId && UUID_RE.test(incoming.conversationId)
+      ? incoming.conversationId
+      : undefined) ?? readUuidFromStorage(LS_CONVERSATION),
+  );
+  const [tripId, setTripId] = useState<string | undefined>(
+    (incoming.tripId && UUID_RE.test(incoming.tripId) ? incoming.tripId : undefined) ??
+      readUuidFromStorage(LS_TRIP_ID),
+  );
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [touched, setTouched] = useState<Set<string>>(new Set());
@@ -88,6 +133,42 @@ export function WorkspacePage() {
   useEffect(() => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, busy]);
+
+  // Restore previous conversation on mount (LangGraph keeps history server-side).
+  // Skip if we already have messages from router state or just-loaded incoming trip.
+  useEffect(() => {
+    let cancelled = false;
+    if (!conversationId || messages.length > 0) return;
+    (async () => {
+      try {
+        const state = await getConversation(getToken, conversationId);
+        if (cancelled) return;
+        const restored: ChatMessage[] = state.messages.map((m: ConversationMessage, i: number) => ({
+          id: `r${i}`,
+          role: m.role,
+          agent: m.role === "assistant" ? "orchestrator" : undefined,
+          content: m.content,
+          timestamp: m.created_at ?? new Date().toISOString(),
+        }));
+        if (restored.length > 0) setMessages(restored);
+        if (state.itinerary && trip.nodes.length === 0) {
+          setTrip((prev) =>
+            itineraryToTrip(state.itinerary!, {
+              id: prev.id,
+              title: prev.title,
+              preferences: prev.preferences,
+            }),
+          );
+        }
+      } catch (err) {
+        console.warn("Couldn't restore conversation", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId]);
 
   const flashTouched = useCallback((ids: string[]) => {
     if (!ids.length) return;
@@ -124,12 +205,14 @@ export function WorkspacePage() {
         const res = await sendChat(getToken, {
           message: t,
           conversation_id: conversationId,
+          user_id: userId || undefined,
           preferences: trip.preferences,
           destination: trip.destination || undefined,
           start_date: trip.startDate || undefined,
           end_date: trip.endDate || undefined,
         });
         setConversationId(res.conversation_id);
+        localStorage.setItem(LS_CONVERSATION, res.conversation_id);
 
         setMessages((arr) => [
           ...arr,
@@ -143,9 +226,10 @@ export function WorkspacePage() {
         ]);
 
         if (res.itinerary) {
+          const itin = res.itinerary;
           setTrip((prev) => {
             const before = snapshotMap(prev);
-            const next = itineraryToTrip(res.itinerary!, {
+            const next = itineraryToTrip(itin, {
               id: prev.id,
               title: prev.title,
               preferences: prev.preferences,
@@ -157,6 +241,31 @@ export function WorkspacePage() {
             flashTouched(changed);
             return next;
           });
+
+          // First time we get a real itinerary, materialise a Trip row in
+          // trip-service so it shows up under /trips.
+          if (!tripId) {
+            const start = toIsoDateTime(itin.start_date ?? undefined);
+            const end = toIsoDateTime(itin.end_date ?? undefined);
+            if (start && end && itin.destination) {
+              try {
+                const saved = await createTrip(getToken, {
+                  title: `${itin.destination} trip`,
+                  destination: itin.destination,
+                  start_date: start,
+                  end_date: end,
+                  budget: trip.budget || 0,
+                  currency: trip.currency || "USD",
+                  preferences: { conversation_id: res.conversation_id },
+                });
+                setTripId(saved.id);
+                localStorage.setItem(LS_TRIP_ID, saved.id);
+                toast.success("Trip saved");
+              } catch (err) {
+                console.warn("Failed to persist trip", err);
+              }
+            }
+          }
         }
       } catch (err) {
         console.error("Chat call failed", err);
@@ -174,7 +283,7 @@ export function WorkspacePage() {
         setBusy(false);
       }
     },
-    [busy, conversationId, flashTouched, getToken, trip.destination, trip.endDate, trip.preferences, trip.startDate],
+    [busy, conversationId, flashTouched, getToken, trip.budget, trip.currency, trip.destination, trip.endDate, trip.preferences, trip.startDate, tripId, userId],
   );
 
   return (
@@ -192,13 +301,36 @@ export function WorkspacePage() {
                 Chat to plan and reshape your timeline — agents will animate the changes.
               </CardDescription>
             </div>
-            <Badge variant={busy ? "warning" : "success"}>
-              {busy ? "Agents working…" : "4 agents online"}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {tripId && (
+                <Link
+                  to={`/trips/${tripId}`}
+                  className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                >
+                  Saved trip <ExternalLink className="h-3 w-3" />
+                </Link>
+              )}
+              <Badge variant={busy ? "warning" : "success"}>
+                {busy ? "Agents working…" : "4 agents online"}
+              </Badge>
+            </div>
           </div>
         </CardHeader>
 
         <div ref={chatRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+          {messages.length === 0 && !busy && (
+            <div className="h-full grid place-items-center text-center px-6">
+              <div className="space-y-2 max-w-xs">
+                <div className="grid place-items-center h-10 w-10 mx-auto rounded-lg bg-primary/10 text-primary">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <div className="font-medium">Start a new conversation</div>
+                <p className="text-sm text-muted-foreground">
+                  Describe the trip you want — destination, dates, vibe — and the agents will draft a timeline.
+                </p>
+              </div>
+            </div>
+          )}
           <AnimatePresence initial={false}>
             {messages.map((m, idx) => (
               <Bubble key={m.id} m={m} isLatest={idx === messages.length - 1 && !busy} />
@@ -226,18 +358,20 @@ export function WorkspacePage() {
         </div>
 
         <div className="border-t p-3 space-y-2 bg-card">
-          <div className="flex flex-wrap gap-1.5">
-            {quickPrompts.map((q) => (
-              <button
-                key={q}
-                disabled={busy}
-                onClick={() => run(q)}
-                className="text-[11px] rounded-full border px-2.5 py-1 hover:bg-accent disabled:opacity-50 transition-colors"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
+          {trip.nodes.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {quickPrompts.map((q) => (
+                <button
+                  key={q}
+                  disabled={busy}
+                  onClick={() => run(q)}
+                  className="text-[11px] rounded-full border px-2.5 py-1 hover:bg-accent disabled:opacity-50 transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -266,12 +400,20 @@ export function WorkspacePage() {
               <CardTitle className="truncate">{trip.title}</CardTitle>
               <CardDescription className="flex items-center gap-1.5">
                 <MapPin className="h-3.5 w-3.5" />
-                {trip.destination} · {trip.startDate} → {trip.endDate}
+                {trip.destination || "No destination yet"}
+                {trip.startDate && trip.endDate && (
+                  <span>· {trip.startDate} → {trip.endDate}</span>
+                )}
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline">{trip.nodes.length} nodes</Badge>
-              <Button size="sm" variant="outline" disabled={busy} onClick={() => run("replan the whole trip")}>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy || trip.nodes.length === 0}
+                onClick={() => run("replan the whole trip")}
+              >
                 <Wand2 className="h-4 w-4" /> Re-optimize
               </Button>
             </div>
@@ -279,6 +421,19 @@ export function WorkspacePage() {
         </CardHeader>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          {trip.nodes.length === 0 ? (
+            <div className="h-full grid place-items-center text-center">
+              <div className="space-y-2 max-w-sm">
+                <div className="grid place-items-center h-10 w-10 mx-auto rounded-lg bg-muted text-muted-foreground">
+                  <CalendarRange className="h-5 w-5" />
+                </div>
+                <div className="font-medium">No timeline yet</div>
+                <p className="text-sm text-muted-foreground">
+                  Tell the orchestrator what you'd like to do and a timeline of nodes will appear here.
+                </p>
+              </div>
+            </div>
+          ) : null}
           <LayoutGroup>
             {days.map(([day, nodes]) => (
               <motion.section key={day} layout>

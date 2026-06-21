@@ -20,9 +20,13 @@ from app.db.qdrant_collections import (
     HOTELS,
     TRANSPORT,
 )
+from app.graph.llm import get_chat_model
 from app.graph.state import GraphState
 from app.graph.tools.neo4j_routes import find_places
 from app.graph.tools.qdrant_search import Filters, multi_search
+from app.schemas.ai import RerankedIndices
+
+logger = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +74,59 @@ def _compact_hit(hit: dict) -> dict:
     record["source"] = hit.get("source")
     record["score"] = round(hit.get("score", 0.0), 4)
     return record
+
+
+async def _rerank_with_llm(query: str, hits: list[dict[str, Any]], top_k: int) -> list[dict[str, Any]]:
+    """Use an LLM to rerank the top raw hits against the specific user query."""
+    if not hits:
+        return []
+    
+    if len(hits) <= top_k:
+        return hits
+        
+    # Prepare the context dump for the LLM
+    context_dump = []
+    for idx, hit in enumerate(hits):
+        context_dump.append(f"--- Item {idx} ---\nName: {hit.get('name', 'Unknown')}\nSource: {hit.get('source', 'Unknown')}\nContent: {hit.get('content', '')}")
+        
+    context_str = "\n\n".join(context_dump)
+    
+    prompt = (
+        f"You are a ranking assistant. Rank the following retrieved context items "
+        f"based on their relevance to the user's travel preferences and query: '{query}'.\n\n"
+        f"Items:\n{context_str}\n\n"
+        f"Select the top {top_k} most relevant items and return their indices in order of relevance."
+    )
+    
+    llm = get_chat_model("reranking").with_structured_output(RerankedIndices)
+    
+    try:
+        result = await llm.ainvoke(prompt)
+        indices = result.top_5_indices
+        
+        # Defensively filter bounds and deduplicate
+        seen = set()
+        valid_indices = []
+        for idx in indices:
+            if 0 <= idx < len(hits) and idx not in seen:
+                valid_indices.append(idx)
+                seen.add(idx)
+                
+        # Fill the remainder if the LLM returned too few
+        for idx in range(len(hits)):
+            if len(valid_indices) >= top_k:
+                break
+            if idx not in seen:
+                valid_indices.append(idx)
+                seen.add(idx)
+                
+        # Slice to the requested top_k
+        final_indices = valid_indices[:top_k]
+        return [hits[idx] for idx in final_indices]
+        
+    except Exception as e:
+        logger.error(f"LLM Reranking failed: {e}. Falling back to default Qdrant scoring.", exc_info=True)
+        return hits[:top_k]
 
 
 async def retrieve(state: GraphState) -> GraphState:

@@ -20,7 +20,10 @@
       "Bash(curl -s http://localhost:8001/api/ai/health)",
       "Bash(docker exec *)",
       "Bash(docker run *)",
-      "PowerShell(docker run *)"
+      "PowerShell(docker run *)",
+      "Bash(curl -s http://localhost:8001/api/v1/regions)",
+      "Bash(curl -s http://localhost:8001/api/v1/trips)",
+      "Bash(curl -s http://localhost:8001/api/v1/transport-bookings?trip_id=00000000-0000-0000-0000-000000000000)"
     ]
   }
 }
