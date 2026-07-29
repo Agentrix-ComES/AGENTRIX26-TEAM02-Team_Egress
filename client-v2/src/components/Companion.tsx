@@ -1,11 +1,14 @@
+import { useNavigate } from 'react-router-dom'
+
 import { Icon } from '@/components/ui/Icon'
 import { Section, SectionAside, SectionHead } from '@/components/ui/Section'
-import { AGENT_JOBS, CHANNEL_DETAIL, FEED } from '@/data/content'
+import { AGENT_JOBS, FEED } from '@/data/content'
 import { c } from '@/lib/theme'
 import { useApp } from '@/state/store'
 
 export function Companion() {
   const app = useApp()
+  const navigate = useNavigate()
 
   // Alerts fall back to Email when their preferred channel is switched off.
   const feed = FEED.filter((f) => !app.dismissed.includes(f.id)).map((f) => ({
@@ -15,7 +18,7 @@ export function Companion() {
   }))
 
   return (
-    <Section id="companion" background={c.dark}>
+    <Section id="companion" background={c.darkTeal}>
       <SectionHead
         dark
         eyebrow="Live trip companion"
@@ -23,10 +26,37 @@ export function Companion() {
         titleMaxWidth={640}
         marginBottom={36}
         aside={
-          <SectionAside dark maxWidth={360}>
-            Once a plan is booked it stops being a document. The companion follows it day by day
-            and reaches you on the channel you choose.
-          </SectionAside>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 16 }}>
+            <button
+              type="button"
+              onClick={() => navigate('/search')}
+              data-hover="primary"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                height: 42,
+                padding: '0 18px',
+                border: 'none',
+                borderRadius: 999,
+                background: `linear-gradient(90deg,${c.cyan},${c.purple},${c.primary},${c.yellow},${c.cyan})`,
+                backgroundSize: '200% 100%',
+                animation: 'csShimmer 9s linear infinite',
+                color: '#fff',
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Icon name="AutoAwesome" size={17} />
+              Plan with AI
+            </button>
+            <SectionAside dark maxWidth={360}>
+              Once a plan is booked it stops being a document. The companion follows it day by day
+              and reaches you on the channel you choose.
+            </SectionAside>
+          </div>
         }
       />
 
@@ -82,38 +112,13 @@ export function Companion() {
             <span style={{ fontSize: 13, color: 'rgba(255,255,255,.5)' }}>
               Watching 6 bookings, 5 stops, 2 coasts
             </span>
-
-            <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {app.channelNames.map((name) => {
-                const on = app.channels[name]
-                return (
-                  <button
-                    key={name}
-                    type="button"
-                    onClick={() => app.toggleChannel(name)}
-                    aria-pressed={on}
-                    style={{
-                      padding: '6px 13px',
-                      borderRadius: 999,
-                      border: `1px solid ${on ? c.green : 'rgba(255,255,255,.2)'}`,
-                      background: on ? 'rgba(0,197,128,.16)' : 'transparent',
-                      color: on ? c.green : 'rgba(255,255,255,.6)',
-                      fontSize: 12.5,
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {name}
-                  </button>
-                )
-              })}
-            </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {feed.map((f) => (
               <div
                 key={f.id}
+                data-companion-row
                 style={{
                   display: 'flex',
                   gap: 16,
@@ -122,6 +127,7 @@ export function Companion() {
                 }}
               >
                 <div
+                  data-companion-gutter
                   style={{
                     flex: 'none',
                     display: 'flex',
@@ -146,11 +152,9 @@ export function Companion() {
                       borderRadius: 9,
                       background: f.iconBg,
                       color: f.iconColor,
-                      fontSize: 13,
-                      fontWeight: 700,
                     }}
                   >
-                    {f.mark}
+                    <Icon name={f.icon} size={16} />
                   </span>
                 </div>
 
@@ -199,7 +203,7 @@ export function Companion() {
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
                       <button
                         type="button"
-                        onClick={() => app.acceptAlert(f.id)}
+                        onClick={() => app.respondToAlert(f, true)}
                         data-hover="primary"
                         style={{
                           padding: '7px 14px',
@@ -216,7 +220,7 @@ export function Companion() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => app.dismissAlert(f.id)}
+                        onClick={() => app.respondToAlert(f, false)}
                         data-hover="light-strong"
                         style={{
                           padding: '7px 14px',
@@ -347,86 +351,6 @@ export function Companion() {
                 </div>
               ))}
             </div>
-          </div>
-
-          <div
-            style={{
-              background: c.darkCard,
-              border: '1px solid rgba(255,255,255,.1)',
-              borderRadius: 22,
-              padding: 24,
-            }}
-          >
-            <div style={{ fontSize: 15, fontWeight: 600, color: '#fff', marginBottom: 14 }}>
-              Reach you on
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {app.channelNames.map((name) => {
-                const on = app.channels[name]
-                return (
-                  <div
-                    key={name}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: '12px 14px',
-                      borderRadius: 12,
-                      background: on ? 'rgba(0,197,128,.08)' : 'rgba(255,255,255,.03)',
-                      border: `1px solid ${on ? 'rgba(0,197,128,.28)' : 'rgba(255,255,255,.08)'}`,
-                    }}
-                  >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 500, color: '#fff' }}>{name}</div>
-                      <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,.5)' }}>
-                        {CHANNEL_DETAIL[name]}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => app.toggleChannel(name)}
-                      role="switch"
-                      aria-checked={on}
-                      aria-label={`${name} notifications`}
-                      style={{
-                        flex: 'none',
-                        width: 44,
-                        height: 24,
-                        border: 'none',
-                        borderRadius: 999,
-                        background: on ? c.green : 'rgba(255,255,255,.18)',
-                        cursor: 'pointer',
-                        padding: 3,
-                        display: 'flex',
-                        justifyContent: on ? 'flex-end' : 'flex-start',
-                        transition: 'background .18s ease',
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: 18,
-                          height: 18,
-                          borderRadius: '50%',
-                          background: '#fff',
-                          display: 'block',
-                        }}
-                      />
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-            <p
-              style={{
-                marginTop: 14,
-                fontSize: 12,
-                lineHeight: 1.5,
-                color: 'rgba(255,255,255,.4)',
-              }}
-            >
-              Safety alerts always go out on every enabled channel, even at night. Everything else
-              respects quiet hours 22:00–07:00.
-            </p>
           </div>
         </div>
       </div>

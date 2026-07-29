@@ -7,6 +7,8 @@ interface SectionProps {
   background?: string
   /** Shorthand for the repeated `88px var(--page-pad)` block rhythm. */
   padding?: string
+  /** Drops the 1240px column cap so wide content (sliders) can use the full viewport. */
+  wide?: boolean
   children: ReactNode
   style?: CSSProperties
 }
@@ -16,12 +18,15 @@ export function Section({
   id,
   background,
   padding = '88px var(--page-pad)',
+  wide = false,
   children,
   style,
 }: SectionProps) {
   return (
     <section id={id} style={{ background, padding, ...style }}>
-      <div style={{ maxWidth: 'var(--page-max)', margin: '0 auto' }}>{children}</div>
+      <div style={{ maxWidth: wide ? 'none' : 'var(--page-max)', margin: '0 auto' }}>
+        {children}
+      </div>
     </section>
   )
 }

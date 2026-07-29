@@ -11,7 +11,6 @@ import {
 
 import { BASE_ITINERARY, EXTRA_DAY } from '@/data/catalogue'
 import { CHANNEL_NAMES, PLANS, VOICE_SCRIPT } from '@/data/content'
-import type { SearchTabId } from '@/data/content'
 import { config } from '@/lib/config'
 import { makeMoney, parsePrice } from '@/lib/money'
 import { runSearch } from '@/lib/search'
@@ -19,9 +18,11 @@ import type {
   CartDraft,
   CartItem,
   ChannelName,
+  FeedAlert,
   ItineraryDay,
   Pace,
   SearchResult,
+  TraditionalCategory,
   VoiceTurn,
 } from '@/lib/types'
 
@@ -45,18 +46,26 @@ function useAppStore() {
 
   // --- search ------------------------------------------------------------
   const [query, setQuery] = useState('')
-  const [tab, setTab] = useState<SearchTabId>('ask')
   const [status, setStatus] = useState<SearchStatus>('idle')
   const [results, setResults] = useState<SearchResult[]>([])
   const [criteria, setCriteria] = useState<string[]>([])
   const [answer, setAnswer] = useState('')
   const [typed, setTyped] = useState(0)
+  const [pendingQuery, setPendingQuery] = useState<string | null>(null)
 
-  // structured search form (non-"Ask AI" tabs)
-  const [where, setWhere] = useState('')
-  const [month, setMonth] = useState('February')
-  const [nights, setNights] = useState('10')
-  const [pax, setPax] = useState('2')
+  // --- AI search page ------------------------------------------------------
+  // Full-page conversational view, its own route (/search). The transcript
+  // grows every time `search` resolves, whichever surface asked.
+  const [searchTurns, setSearchTurns] = useState<{ q: string; a: string }[]>([])
+
+  // --- traditional search bar -----------------------------------------------
+  // Plain keyword/category/date filters, controlled here so they persist while
+  // the traveller flips between the Search and Ask AI tabs. Submitting them
+  // navigates to the /search/traditional route, which reads its own copy from
+  // the URL — see TraditionalSearchPage.
+  const [searchCategory, setSearchCategory] = useState<TraditionalCategory | null>(null)
+  const [searchStartDate, setSearchStartDate] = useState('')
+  const [searchEndDate, setSearchEndDate] = useState('')
 
   // --- monetisation ------------------------------------------------------
   const [aiUses, setAiUses] = useState(0)
@@ -66,6 +75,7 @@ function useAppStore() {
   // --- auth ----------------------------------------------------------------
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null)
 
   // --- cart --------------------------------------------------------------
   const [cart, setCart] = useState<CartItem[]>([])
@@ -79,6 +89,9 @@ function useAppStore() {
 
   // --- companion ---------------------------------------------------------
   const [companionOn, setCompanionOn] = useState(false)
+  // The AI tour guide's "add me to the trip" popup — offered on the AI
+  // search page, either from its own button or right after checkout.
+  const [tourGuideOpen, setTourGuideOpen] = useState(false)
   const [resolved, setResolved] = useState<string[]>([])
   const [dismissed, setDismissed] = useState<string[]>([])
   const [channels, setChannels] = useState<Record<ChannelName, boolean>>({
@@ -127,6 +140,7 @@ function useAppStore() {
     window.clearTimeout(searchTimer.current)
     setStatus('thinking')
     setTyped(0)
+    setPendingQuery(q)
 
     searchTimer.current = window.setTimeout(() => {
       const outcome = runSearch(q, config.resultCount)
@@ -134,28 +148,31 @@ function useAppStore() {
       setCriteria(outcome.criteria)
       setAnswer(outcome.answer)
       setStatus(outcome.results.length ? 'done' : 'empty')
+      setSearchTurns((turns) =>
+        turns.concat({
+          q,
+          a: outcome.answer || 'Nothing matched that exactly — try loosening the budget or dates.',
+        }),
+      )
+      setPendingQuery(null)
     }, Math.max(0, config.thinkingDelay))
   }, [])
 
-  const submitQuery = useCallback(
-    () => useAiFeature(() => search(query)),
-    [search, query, useAiFeature],
-  )
+  const submitQuery = useCallback(() => search(query), [search, query])
 
-  /** Chips and follow-up questions: fill the box, switch to Ask, run it. */
+  const setSearchDates = useCallback((start: string, end: string) => {
+    setSearchStartDate(start)
+    setSearchEndDate(end)
+  }, [])
+
+  /** Chips and follow-up questions: fill the box and run it. */
   const askSuggestion = useCallback(
     (text: string) => {
       setQuery(text)
-      setTab('ask')
-      useAiFeature(() => search(text))
+      search(text)
     },
-    [search, useAiFeature],
+    [search],
   )
-
-  const submitForm = useCallback(() => {
-    const kind = tab === 'ask' ? '' : `${tab} `
-    search(`${kind}${where || 'Sri Lanka'}, ${nights} nights in ${month}, ${pax} travellers`)
-  }, [tab, where, nights, month, pax, search])
 
   // Type the AI overview out one chunk at a time.
   useEffect(() => {
@@ -240,7 +257,7 @@ function useAppStore() {
     [removeDay],
   )
 
-  const travellers = parseInt(pax, 10) || 2
+  const travellers = 2 as number
 
   const plannerTotals = useMemo(() => {
     const nightTotal = plannerDays.reduce((n, d) => n + d.nights, 0)
@@ -313,6 +330,12 @@ function useAppStore() {
     [useAiFeature],
   )
 
+  const openTourGuide = useCallback(
+    () => useAiFeature(() => setTourGuideOpen(true)),
+    [useAiFeature],
+  )
+  const closeTourGuide = useCallback(() => setTourGuideOpen(false), [])
+
   const acceptAlert = useCallback(
     (id: string) => setResolved((prev) => (prev.includes(id) ? prev : prev.concat(id))),
     [],
@@ -354,6 +377,31 @@ function useAppStore() {
     [voiceTurns, askVoice],
   )
 
+  /**
+   * A companion feed alert was actioned — either accepted (move/shift/rebook)
+   * or dismissed (kept as planned). Either way the traveller asked the agent
+   * to do something, so the AI panel opens and answers in character rather
+   * than the change happening silently in the feed.
+   */
+  const respondToAlert = useCallback(
+    (alert: FeedAlert, accepted: boolean) => {
+      if (accepted) acceptAlert(alert.id)
+      else dismissAlert(alert.id)
+
+      useAiFeature(() => {
+        setVoiceOpen(true)
+        askVoice({
+          short: alert.title,
+          q: accepted ? alert.acceptLabel : 'Keep as planned',
+          a: accepted
+            ? `Done — ${alert.resolvedLabel[0].toLowerCase()}${alert.resolvedLabel.slice(1)}. I'll keep checking the rest of the trip for anything else this touches.`
+            : alert.dismissReply,
+        })
+      })
+    },
+    [acceptAlert, dismissAlert, useAiFeature, askVoice],
+  )
+
   // --- derived cart totals -----------------------------------------------
 
   const cartTotals = useMemo(() => {
@@ -377,8 +425,6 @@ function useAppStore() {
     // search
     query,
     setQuery,
-    tab,
-    setTab,
     status,
     results,
     criteria,
@@ -386,19 +432,22 @@ function useAppStore() {
     streaming: status === 'done' && typed < answer.length,
     submitQuery,
     askSuggestion,
-    where,
-    setWhere,
-    month,
-    setMonth,
-    nights,
-    setNights,
-    pax,
-    setPax,
     travellers,
-    submitForm,
+    pendingQuery,
+
+    // AI search page
+    searchTurns,
+
+    // traditional search bar
+    searchCategory,
+    setSearchCategory,
+    searchStartDate,
+    searchEndDate,
+    setSearchDates,
 
     // monetisation
     paywallOpen,
+    openPaywall: useCallback(() => setPaywallOpen(true), []),
     closePaywall: useCallback(() => setPaywallOpen(false), []),
     choosePlan: useCallback((id: string) => {
       setChosenPlan(id)
@@ -421,12 +470,19 @@ function useAppStore() {
       setAuthOpen(true)
     }, []),
     closeAuth: useCallback(() => setAuthOpen(false), []),
+    user,
+    login: useCallback((name: string, email: string) => {
+      setUser({ name: name.trim() || email.split('@')[0], email })
+      setAuthOpen(false)
+    }, []),
+    logout: useCallback(() => setUser(null), []),
 
     // cart
     cart,
     cartOpen,
     toggleCart: useCallback(() => setCartOpen((o) => !o), []),
     addToCart,
+    addManyToCart,
     removeFromCart,
     cartTotals,
 
@@ -442,16 +498,20 @@ function useAppStore() {
     swapDay,
     addDay: useCallback(() => setExtraDay(true), []),
     optimised,
-    optimise: useCallback(() => useAiFeature(() => setOptimised((o) => !o)), [useAiFeature]),
+    optimise: useCallback(() => setOptimised((o) => !o), []),
     addPlanToCart,
 
     // companion
     companionOn,
     activateCompanion,
+    tourGuideOpen,
+    openTourGuide,
+    closeTourGuide,
     resolved,
     dismissed,
     acceptAlert,
     dismissAlert,
+    respondToAlert,
     channels,
     toggleChannel,
     channelNames: CHANNEL_NAMES,

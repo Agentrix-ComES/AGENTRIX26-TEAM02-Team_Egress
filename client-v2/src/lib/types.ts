@@ -24,6 +24,34 @@ export interface SearchResult extends InventoryItem {
   matchLabel: string
 }
 
+/** The four catalogue sections traditional search can filter to. */
+export type TraditionalCategory = 'stays' | 'activities' | 'packages' | 'transport'
+
+/** Search parameters for the plain keyword + category + date-range search. */
+export interface TraditionalSearchParams {
+  text: string
+  category: TraditionalCategory | null
+  startDate: string
+  endDate: string
+}
+
+/** A Stay/Activity/Package/Transport item normalised to one shape for traditional search results. */
+export interface CatalogueSearchItem {
+  id: string
+  kind: ItemKind
+  category: TraditionalCategory
+  slotId: string
+  name: string
+  subtitle: string
+  price: number
+  unitLabel: string
+  badgeLabel: string
+  badgeBg?: string
+  badgeColor?: string
+  aiNote: string
+  placeholder: string
+}
+
 /** Structured intent pulled out of a free-text query. */
 export interface ParsedQuery {
   interests: string[]
@@ -72,6 +100,7 @@ export interface Activity {
   rating: string
   chipBg: string
   chipColor: string
+  aiNote: string
   placeholder: string
 }
 
@@ -85,6 +114,29 @@ export interface Package {
   price: number
   includes: string[]
   accent: Accent
+  aiNote: string
+  placeholder: string
+}
+
+export type TransportMode =
+  | 'Private driver'
+  | 'Train'
+  | 'Tuk-tuk'
+  | 'Domestic flight'
+  | 'Coach'
+  | 'Seaplane'
+
+export interface Transport {
+  id: string
+  slotId: string
+  name: string
+  mode: TransportMode
+  route: string
+  detail: string
+  price: number
+  unit: string
+  rating: string
+  aiNote: string
   placeholder: string
 }
 
@@ -118,7 +170,7 @@ export type ChannelName = 'Email' | 'WhatsApp' | 'SMS' | 'Push'
 export interface FeedAlert {
   id: string
   time: string
-  mark: string
+  icon: string
   title: string
   source: string
   channel: ChannelName
@@ -127,6 +179,8 @@ export interface FeedAlert {
   iconBg: string
   iconColor: string
   resolvedLabel: string
+  /** What the AI says in the assistant panel when the traveller keeps this item as planned. */
+  dismissReply: string
 }
 
 export interface Plan {

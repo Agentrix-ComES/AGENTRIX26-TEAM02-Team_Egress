@@ -29,7 +29,7 @@ const labelStyle = {
  * submitting either form just closes the modal — it exists to show the flow.
  */
 export function AuthModal() {
-  const { authOpen, authMode, setAuthMode, closeAuth } = useApp()
+  const { authOpen, authMode, setAuthMode, closeAuth, login } = useApp()
   const isLogin = authMode === 'login'
 
   if (!authOpen) return null
@@ -143,7 +143,7 @@ export function AuthModal() {
           ))}
         </div>
 
-        <AuthForm isLogin={isLogin} onSubmit={closeAuth} />
+        <AuthForm isLogin={isLogin} onSubmit={login} />
 
         <p style={{ marginTop: 18, fontSize: 12.5, color: c.textSubtle, textAlign: 'center' }}>
           {isLogin ? "Don't have an account? " : 'Already have an account? '}
@@ -169,7 +169,13 @@ export function AuthModal() {
   )
 }
 
-function AuthForm({ isLogin, onSubmit }: { isLogin: boolean; onSubmit: () => void }) {
+function AuthForm({
+  isLogin,
+  onSubmit,
+}: {
+  isLogin: boolean
+  onSubmit: (name: string, email: string) => void
+}) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -178,7 +184,7 @@ function AuthForm({ isLogin, onSubmit }: { isLogin: boolean; onSubmit: () => voi
     <form
       onSubmit={(e) => {
         e.preventDefault()
-        onSubmit()
+        onSubmit(name, email)
       }}
       style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
     >

@@ -11,7 +11,13 @@ export type MoneyFn = (n: number) => string
 
 export function makeMoney(currency: Currency): MoneyFn {
   const { sym, rate } = RATES[currency] ?? RATES.USD
-  return (n: number) => sym + Math.round(n * rate).toLocaleString()
+  return (n: number) => {
+    const value = Math.round(n * rate * 100) / 100
+    const formatted = Number.isInteger(value)
+      ? value.toLocaleString()
+      : value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    return sym + formatted
+  }
 }
 
 /** Itinerary prices are authored as strings ("$210", "Free"). */

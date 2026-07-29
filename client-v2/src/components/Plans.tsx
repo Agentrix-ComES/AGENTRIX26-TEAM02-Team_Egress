@@ -8,12 +8,12 @@ export function Plans() {
     <Section id="plans">
       <SectionHead
         eyebrow="AI plans"
-        title="Booking is free. The agent is a subscription."
+        title="Planning is free. The live companion is a subscription."
         marginBottom={14}
         aside={
           <SectionAside maxWidth={380}>
-            Start with 7 days free — full access, no card charged. After that pick the level that
-            matches how much you want the agent doing.
+            The AI planner is free forever. Add the live trip companion or voice guide when you
+            want the agent watching and running the trip for you.
           </SectionAside>
         }
       />

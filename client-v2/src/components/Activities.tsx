@@ -1,11 +1,12 @@
-import { ImageSlot } from '@/components/ui/ImageSlot'
+import { CardTitleRow, CatalogueCard } from '@/components/ui/CatalogueCard'
+import { ScrollRow } from '@/components/ui/ScrollRow'
 import { Section, SectionHead } from '@/components/ui/Section'
 import { ACTIVITIES, ACTIVITY_FILTERS } from '@/data/catalogue'
 import { c } from '@/lib/theme'
 import { useApp } from '@/state/store'
 
 export function Activities() {
-  const { activityFilter, setActivityFilter, addToCart, travellers, money } = useApp()
+  const { activityFilter, setActivityFilter, addToCart, travellers } = useApp()
 
   const visible =
     activityFilter === 'All'
@@ -13,7 +14,7 @@ export function Activities() {
       : ACTIVITIES.filter((a) => a.category === activityFilter)
 
   return (
-    <Section id="activities">
+    <Section id="activities" wide>
       <SectionHead
         eyebrow="Activities"
         title="Things worth getting up early for."
@@ -47,117 +48,35 @@ export function Activities() {
         }
       />
 
-      <div
-        className="cs-scroll"
-        style={{
-          display: 'grid',
-          gridAutoFlow: 'column',
-          gridAutoColumns: 270,
-          gap: 18,
-          overflowX: 'auto',
-          paddingBottom: 12,
-        }}
-      >
+      <ScrollRow itemWidth={300} gap={20}>
         {visible.map((activity) => (
-          <div
+          <CatalogueCard
             key={activity.id}
-            style={{
-              position: 'relative',
-              height: 360,
-              borderRadius: 22,
-              overflow: 'hidden',
-              background: '#e7eef2',
-            }}
+            id={activity.id}
+            category="activities"
+            slotId={activity.slotId}
+            placeholder={activity.placeholder}
+            badgeLabel={activity.category}
+            badgeBg={activity.chipBg}
+            badgeColor={activity.chipColor}
+            aiNote={activity.aiNote}
+            price={activity.price}
+            unitLabel="/ person"
+            onAdd={() =>
+              addToCart({
+                id: activity.id,
+                kind: 'Activity',
+                name: activity.name,
+                meta: `${activity.detail} · ${travellers} traveller${travellers === 1 ? '' : 's'}`,
+                price: activity.price * travellers,
+                free: true,
+              })
+            }
           >
-            <ImageSlot id={activity.slotId} placeholder={activity.placeholder} />
-
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                pointerEvents: 'none',
-                background:
-                  'linear-gradient(180deg,rgba(13,13,17,0) 38%,rgba(13,13,17,.85) 100%)',
-              }}
-            />
-
-            <span
-              style={{
-                position: 'absolute',
-                top: 14,
-                left: 14,
-                padding: '5px 11px',
-                borderRadius: 999,
-                background: activity.chipBg,
-                color: activity.chipColor,
-                fontSize: 11.5,
-                fontWeight: 600,
-              }}
-            >
-              {activity.category}
-            </span>
-
-            <div
-              style={{
-                position: 'absolute',
-                left: 18,
-                right: 18,
-                bottom: 16,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 7,
-              }}
-            >
-              <span style={{ fontSize: 19, fontWeight: 600, color: '#fff', lineHeight: 1.25 }}>
-                {activity.name}
-              </span>
-              <span style={{ fontSize: 13, color: 'rgba(255,255,255,.78)' }}>
-                {activity.detail}
-              </span>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 12,
-                  marginTop: 4,
-                }}
-              >
-                <span style={{ fontSize: 16, fontWeight: 600, color: '#fff' }}>
-                  from {money(activity.price)}
-                </span>
-                <button
-                  type="button"
-                  data-hover="yellow"
-                  onClick={() =>
-                    addToCart({
-                      id: activity.id,
-                      kind: 'Activity',
-                      name: activity.name,
-                      meta: `${activity.detail} · ${travellers} traveller${travellers === 1 ? '' : 's'}`,
-                      price: activity.price * travellers,
-                      free: true,
-                    })
-                  }
-                  style={{
-                    height: 32,
-                    padding: '0 14px',
-                    border: 'none',
-                    borderRadius: 8,
-                    background: '#fff',
-                    color: c.ink,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Add
-                </button>
-              </div>
-            </div>
-          </div>
+            <CardTitleRow rating={activity.rating} name={activity.name} subtitle={activity.detail} />
+          </CatalogueCard>
         ))}
-      </div>
+      </ScrollRow>
     </Section>
   )
 }
