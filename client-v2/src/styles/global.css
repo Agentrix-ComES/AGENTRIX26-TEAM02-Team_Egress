@@ -6,11 +6,26 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
   background: var(--surface-page);
+}
+
+section[id],
+div[id] {
+  scroll-margin-top: calc(var(--header-h) + 16px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
@@ -72,6 +87,23 @@ p {
 @keyframes csSlideInRight {
   from { opacity: 0; transform: translateX(28px); }
   to { opacity: 1; transform: translateX(0); }
+}
+@keyframes csSlideInLeft {
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+/* Route transition: fades the page content in on every navigation, so moving
+   between pages reads as one smooth motion rather than a hard cut. Opacity
+   only, deliberately — a `transform` here would turn this wrapper into the
+   containing block for any `position: fixed` page (AiSearchPage,
+   TraditionalSearchPage), breaking their full-viewport layout. */
+.cs-route-in {
+  animation: csFadeIn .32s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-route-in {
+    animation: none;
+  }
 }
 @keyframes csCtaGlow {
   0%, 100% {
@@ -231,6 +263,15 @@ p {
   }
   [data-itin-price] {
     margin-left: auto;
+  }
+  /* Companion feed rows: same squeeze as the itinerary rows above — shrink
+     the time/icon gutter so the alert text gets the room on narrow phones. */
+  [data-companion-row] {
+    padding: 14px 16px !important;
+    gap: 12px !important;
+  }
+  [data-companion-gutter] {
+    width: 40px !important;
   }
   [data-grid="two-up"],
   [data-grid="three-up"],

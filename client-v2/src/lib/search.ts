@@ -1,5 +1,13 @@
-import { INVENTORY } from '@/data/catalogue'
-import type { InventoryItem, ParsedQuery, SearchResult } from './types'
+import { ACTIVITIES, INVENTORY, PACKAGES, STAYS, TRANSPORT } from '@/data/catalogue'
+import { isAvailableInRange } from './availability'
+import { kindOf } from './theme'
+import type {
+  CatalogueSearchItem,
+  InventoryItem,
+  ParsedQuery,
+  SearchResult,
+  TraditionalSearchParams,
+} from './types'
 
 const MONTHS = [
   'january',
@@ -160,4 +168,102 @@ function buildAnswer(q: ParsedQuery, results: SearchResult[]): string {
     ` I'd stay on the ${coast} — that's the dry side then. ${top.name} is the strongest single match: ` +
     `${top.note}, from $${top.price.toLocaleString()} ${top.unit}. ${tail}`
   )
+}
+
+/** The full Stays/Activities/Packages/Transport catalogues, normalised to one shape. */
+function allCatalogueItems(): CatalogueSearchItem[] {
+  const stay = kindOf('Stay')
+  const activity = kindOf('Activity')
+  const pkg = kindOf('Package')
+  const transfer = kindOf('Transfer')
+
+  return [
+    ...STAYS.map((s): CatalogueSearchItem => ({
+      id: s.id,
+      kind: 'Stay',
+      category: 'stays',
+      slotId: s.slotId,
+      name: s.name,
+      subtitle: s.place,
+      price: s.price,
+      unitLabel: '/ night',
+      badgeLabel: s.badge,
+      badgeBg: stay.bg,
+      badgeColor: stay.color,
+      aiNote: s.aiNote,
+      placeholder: s.placeholder,
+    })),
+    ...ACTIVITIES.map((a): CatalogueSearchItem => ({
+      id: a.id,
+      kind: 'Activity',
+      category: 'activities',
+      slotId: a.slotId,
+      name: a.name,
+      subtitle: a.detail,
+      price: a.price,
+      unitLabel: '/ person',
+      badgeLabel: a.category,
+      badgeBg: activity.bg,
+      badgeColor: activity.color,
+      aiNote: a.aiNote,
+      placeholder: a.placeholder,
+    })),
+    ...PACKAGES.map((p): CatalogueSearchItem => ({
+      id: p.id,
+      kind: 'Package',
+      category: 'packages',
+      slotId: p.slotId,
+      name: p.name,
+      subtitle: `${p.duration} · ${p.blurb}`,
+      price: p.price,
+      unitLabel: '/ person',
+      badgeLabel: p.tag,
+      badgeBg: pkg.bg,
+      badgeColor: pkg.color,
+      aiNote: p.aiNote,
+      placeholder: p.placeholder,
+    })),
+    ...TRANSPORT.map((t): CatalogueSearchItem => ({
+      id: t.id,
+      kind: 'Transfer',
+      category: 'transport',
+      slotId: t.slotId,
+      name: t.name,
+      subtitle: `${t.route} · ${t.detail}`,
+      price: t.price,
+      unitLabel: t.unit,
+      badgeLabel: t.mode,
+      badgeBg: transfer.bg,
+      badgeColor: transfer.color,
+      aiNote: t.aiNote,
+      placeholder: t.placeholder,
+    })),
+  ]
+}
+
+/**
+ * Plain keyword search across the real Stays/Activities/Packages/Transport
+ * catalogues — matches product name or location/route, optionally narrowed by
+ * category and a date range (checked against the same pseudo-availability
+ * used on the product detail calendar).
+ */
+export function runTraditionalSearch(params: TraditionalSearchParams): CatalogueSearchItem[] {
+  const text = params.text.trim().toLowerCase()
+  let items = allCatalogueItems()
+
+  if (params.category) items = items.filter((i) => i.category === params.category)
+
+  if (text) {
+    items = items.filter(
+      (i) => i.name.toLowerCase().includes(text) || i.subtitle.toLowerCase().includes(text),
+    )
+  }
+
+  if (params.startDate) {
+    const start = new Date(`${params.startDate}T00:00:00`)
+    const end = new Date(`${params.endDate || params.startDate}T00:00:00`)
+    items = items.filter((i) => isAvailableInRange(i.slotId, start, end))
+  }
+
+  return items
 }

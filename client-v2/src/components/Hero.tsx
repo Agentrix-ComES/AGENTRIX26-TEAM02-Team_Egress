@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { c } from '@/lib/theme'
 import { useApp } from '@/state/store'
@@ -44,7 +44,21 @@ function HeroPhotos() {
   )
 }
 
-export function Hero() {
+interface HeroProps {
+  /**
+   * Set to `false` to render just the photo/gradient banner — no location
+   * badge, headline, paragraph or CTAs. Used by pages (e.g. traditional
+   * search) that only want the ambient image behind their own search bar;
+   * the homepage keeps the default (`true`) unchanged.
+   */
+  content?: boolean
+  /** Shorter banner for pages that aren't the homepage — same photos, less height. */
+  compact?: boolean
+  /** Rendered bottom-anchored inside the banner itself (e.g. a search bar), on top of the photo. */
+  children?: ReactNode
+}
+
+export function Hero({ content = true, compact = false, children }: HeroProps) {
   const { openPaywall } = useApp()
 
   return (
@@ -58,7 +72,8 @@ export function Hero() {
           marginRight: 'calc(50% - 50vw)',
           position: 'relative',
           // Fixed 560px on the desktop canvas; grows to fit once the type shrinks.
-          minHeight: 'clamp(460px, 42vw, 560px)',
+          // Compact pages (e.g. traditional search) get a noticeably shorter banner.
+          minHeight: compact ? 'clamp(240px, 26vw, 340px)' : 'clamp(460px, 42vw, 560px)',
           overflow: 'hidden',
           background: `linear-gradient(140deg,${c.cyan} 0%,${c.cyanInk} 55%,${c.navy} 100%)`,
         }}
@@ -77,6 +92,7 @@ export function Hero() {
           }}
         />
 
+        {content && (
         <div
           style={{
             position: 'relative',
@@ -194,6 +210,23 @@ export function Hero() {
             </div>
           </div>
         </div>
+        )}
+
+        {children && (
+          <div
+            style={{
+              position: 'relative',
+              minHeight: 'inherit',
+              maxWidth: 1080,
+              margin: '0 auto',
+              padding: 'clamp(16px, 3vw, 28px) var(--page-pad)',
+              display: 'flex',
+              alignItems: 'flex-end',
+            }}
+          >
+            <div style={{ width: '100%' }}>{children}</div>
+          </div>
+        )}
       </div>
     </section>
   )

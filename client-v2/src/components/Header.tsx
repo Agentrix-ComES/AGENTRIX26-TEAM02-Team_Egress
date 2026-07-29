@@ -6,11 +6,11 @@ import { useApp } from '@/state/store'
 import { c } from '@/lib/theme'
 
 const NAV = [
-  { href: '#stays', label: 'Stays' },
-  { href: '#activities', label: 'Activities' },
-  { href: '#transport', label: 'Transport' },
-  { href: '#packages', label: 'Packages' },
-  { href: '#companion', label: 'AI Tour Guider', ai: true },
+  { href: '/#stays', label: 'Stays' },
+  { href: '/#activities', label: 'Activities' },
+  { href: '/#transport', label: 'Transport' },
+  { href: '/#packages', label: 'Packages' },
+  { href: '/#companion', label: 'AI Tour Guider', ai: true },
 ]
 
 export function Header() {
@@ -39,30 +39,10 @@ export function Header() {
         }}
       >
         <a
-          href="#top"
-          style={{ display: 'flex', alignItems: 'center', gap: 9, flex: 'none' }}
+          href="/#top"
+          style={{ display: 'flex', alignItems: 'center', gap: 0, flex: 'none' }}
         >
-          <span
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 32,
-              height: 32,
-              borderRadius: 10,
-              background: c.primary,
-              color: '#fff',
-              fontSize: 15,
-              fontWeight: 600,
-            }}
-          >
-            c
-          </span>
-          <span
-            style={{ fontSize: 18.5, fontWeight: 600, letterSpacing: -0.4, color: c.ink }}
-          >
-            ceylon<span style={{ color: c.primary }}>trips</span>
-          </span>
+          <img src="/logo.png" alt="ceylontrips" style={{ height: 36, width: 'auto' }} />
         </a>
 
         <nav

@@ -1,9 +1,20 @@
+import { useNavigate } from 'react-router-dom'
+
 import { Icon } from '@/components/ui/Icon'
 import { useApp } from '@/state/store'
 import { c, kindOf } from '@/lib/theme'
 
 export function CartDrawer() {
-  const { cartOpen, toggleCart, cart, cartTotals, removeFromCart, money } = useApp()
+  const { cartOpen, toggleCart, cart, cartTotals, removeFromCart, money, openTourGuide } = useApp()
+  const navigate = useNavigate()
+
+  // Demo checkout: closes the drawer, lands on the AI search page, and
+  // offers the tour guide popup so the trip doesn't go unmonitored.
+  const checkout = () => {
+    toggleCart()
+    navigate('/search')
+    openTourGuide()
+  }
 
   if (!cartOpen) return null
 
@@ -291,6 +302,7 @@ export function CartDrawer() {
 
             <button
               type="button"
+              onClick={checkout}
               data-hover="primary"
               style={{
                 height: 48,

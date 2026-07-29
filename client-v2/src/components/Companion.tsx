@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom'
+
 import { Icon } from '@/components/ui/Icon'
 import { Section, SectionAside, SectionHead } from '@/components/ui/Section'
 import { AGENT_JOBS, FEED } from '@/data/content'
@@ -6,6 +8,7 @@ import { useApp } from '@/state/store'
 
 export function Companion() {
   const app = useApp()
+  const navigate = useNavigate()
 
   // Alerts fall back to Email when their preferred channel is switched off.
   const feed = FEED.filter((f) => !app.dismissed.includes(f.id)).map((f) => ({
@@ -23,10 +26,37 @@ export function Companion() {
         titleMaxWidth={640}
         marginBottom={36}
         aside={
-          <SectionAside dark maxWidth={360}>
-            Once a plan is booked it stops being a document. The companion follows it day by day
-            and reaches you on the channel you choose.
-          </SectionAside>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 16 }}>
+            <button
+              type="button"
+              onClick={() => navigate('/search')}
+              data-hover="primary"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                height: 42,
+                padding: '0 18px',
+                border: 'none',
+                borderRadius: 999,
+                background: `linear-gradient(90deg,${c.cyan},${c.purple},${c.primary},${c.yellow},${c.cyan})`,
+                backgroundSize: '200% 100%',
+                animation: 'csShimmer 9s linear infinite',
+                color: '#fff',
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Icon name="AutoAwesome" size={17} />
+              Plan with AI
+            </button>
+            <SectionAside dark maxWidth={360}>
+              Once a plan is booked it stops being a document. The companion follows it day by day
+              and reaches you on the channel you choose.
+            </SectionAside>
+          </div>
         }
       />
 
@@ -88,6 +118,7 @@ export function Companion() {
             {feed.map((f) => (
               <div
                 key={f.id}
+                data-companion-row
                 style={{
                   display: 'flex',
                   gap: 16,
@@ -96,6 +127,7 @@ export function Companion() {
                 }}
               >
                 <div
+                  data-companion-gutter
                   style={{
                     flex: 'none',
                     display: 'flex',
@@ -120,11 +152,9 @@ export function Companion() {
                       borderRadius: 9,
                       background: f.iconBg,
                       color: f.iconColor,
-                      fontSize: 13,
-                      fontWeight: 700,
                     }}
                   >
-                    {f.mark}
+                    <Icon name={f.icon} size={16} />
                   </span>
                 </div>
 
@@ -173,7 +203,7 @@ export function Companion() {
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
                       <button
                         type="button"
-                        onClick={() => app.acceptAlert(f.id)}
+                        onClick={() => app.respondToAlert(f, true)}
                         data-hover="primary"
                         style={{
                           padding: '7px 14px',
@@ -190,7 +220,7 @@ export function Companion() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => app.dismissAlert(f.id)}
+                        onClick={() => app.respondToAlert(f, false)}
                         data-hover="light-strong"
                         style={{
                           padding: '7px 14px',

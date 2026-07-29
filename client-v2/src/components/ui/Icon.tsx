@@ -68,6 +68,16 @@ const PATHS = {
   /** Car — the "Transport" search category. */
   DirectionsCar:
     'M5 11 6.5 6.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11h1a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-1a2 2 0 0 1-4 0H8a2 2 0 0 1-4 0H3a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2Zm1.5-.5h11l-1-3.5H7.5l-1 3.5ZM6 17a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm12 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z',
+  /** Calendar — the date / date-range picker trigger. */
+  Calendar:
+    'M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm12 6H5v12h14V8ZM7 10h4v4H7v-4Z',
+  /** Warning triangle — weather and safety alerts in the companion feed. */
+  WarningAmber: 'M1 21h22L12 2 1 21Zm12-3h-2v-2h2v2Zm0-4h-2v-4h2v4Z',
+  /** Info circle — advisory / news alerts in the companion feed. */
+  Info: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 15h-2v-6h2v6Zm0-8h-2V7h2v2Z',
+  /** Check circle — confirmed bookings in the companion feed. */
+  CheckCircle:
+    'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.5 14.5-4-4L7.9 11.1l2.6 2.6 6.6-6.6L18.5 8.5l-8 8Z',
 } as const
 
 export type IconName = keyof typeof PATHS

@@ -35,6 +35,14 @@ export const AGENT_JOBS: AgentJob[] = [
     color: '#01a1d2',
   },
   {
+    icon: 'CreditCard',
+    title: 'Budget watch',
+    note: "Adds up every booking against your trip budget as it lands, and if a change would tip you over, it swaps in a cheaper stay or activity instead of just flagging it.",
+    cadence: 'On every booking',
+    bg: 'rgba(138,109,0,.16)',
+    color: '#8a6d00',
+  },
+  {
     icon: 'Mood',
     title: 'Enquiry handling',
     note: 'Answers your questions on any channel, holds or cancels within policy, and hands to a human within 60 seconds when you ask.',
@@ -49,7 +57,7 @@ export const FEED: FeedAlert[] = [
   {
     id: 'f1',
     time: '06:10',
-    mark: '!',
+    icon: 'WarningAmber',
     title: 'Heavy rain at Sigiriya tomorrow, 07:00',
     source: 'Weather',
     channel: 'WhatsApp',
@@ -58,11 +66,13 @@ export const FEED: FeedAlert[] = [
     iconBg: 'rgba(241,202,1,.16)',
     iconColor: '#f1ca01',
     resolvedLabel: 'Moved to 14:30 · guide and ticket updated',
+    dismissReply:
+      "Understood, keeping the 07:00 climb as booked. I'll watch the radar and come back to you if the rain risk rises before sunrise.",
   },
   {
     id: 'f2',
     time: '09:42',
-    mark: 'i',
+    icon: 'Info',
     title: 'Road works on the A9 toward Kandy',
     source: 'News',
     channel: 'Email',
@@ -71,11 +81,13 @@ export const FEED: FeedAlert[] = [
     iconBg: 'rgba(1,161,210,.16)',
     iconColor: '#01a1d2',
     resolvedLabel: 'Driver notified · pickup now 08:00',
+    dismissReply:
+      "Got it, keeping the 09:30 pickup. I'll keep tracking the bypass and warn you if the delay grows past 50 minutes.",
   },
   {
     id: 'f3',
     time: '13:05',
-    mark: '✓',
+    icon: 'CheckCircle',
     title: "Tomorrow's safari is re-confirmed",
     source: 'Booking',
     channel: 'Push',
@@ -84,11 +96,13 @@ export const FEED: FeedAlert[] = [
     iconBg: 'rgba(0,197,128,.16)',
     iconColor: '#00c580',
     resolvedLabel: 'Driver saved to your contacts',
+    dismissReply:
+      "No problem, I won't save the driver for now — just ask me any time before the 05:15 pickup and I'll send the number over.",
   },
   {
     id: 'f4',
     time: '17:20',
-    mark: '!',
+    icon: 'WarningAmber',
     title: 'Sea swell advisory, Mirissa',
     source: 'Safety',
     channel: 'SMS',
@@ -97,6 +111,8 @@ export const FEED: FeedAlert[] = [
     iconBg: 'rgba(212,38,79,.18)',
     iconColor: '#ec8299',
     resolvedLabel: 'Rebooked Saturday 06:30 · confirmation sent',
+    dismissReply:
+      "Understood — I'll hold your original Friday slot and flag it as at-risk. If the advisory isn't lifted by Thursday evening, I'll bring the rebook option back to you.",
   },
 ]
 

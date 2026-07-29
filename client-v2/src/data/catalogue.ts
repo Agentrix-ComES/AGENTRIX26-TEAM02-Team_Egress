@@ -20,7 +20,7 @@ export const INVENTORY: InventoryItem[] = [
   {
     id: 'h1',
     kind: 'Stay',
-    slotId: 'v4-r-h1',
+    slotId: 'v4-stay1',
     name: 'Cape Weligama',
     place: 'Weligama · south coast',
     price: 320,
@@ -31,7 +31,7 @@ export const INVENTORY: InventoryItem[] = [
   {
     id: 'h2',
     kind: 'Stay',
-    slotId: 'v4-r-h2',
+    slotId: 'v4-stay2',
     name: 'Heritance Tea Factory',
     place: 'Nuwara Eliya · hill country',
     price: 180,
@@ -42,7 +42,7 @@ export const INVENTORY: InventoryItem[] = [
   {
     id: 'a1',
     kind: 'Activity',
-    slotId: 'v4-r-a1',
+    slotId: 'v4-act1',
     name: 'Yala leopard safari, dawn',
     place: 'Yala · south east',
     price: 95,
@@ -53,7 +53,7 @@ export const INVENTORY: InventoryItem[] = [
   {
     id: 'a2',
     kind: 'Activity',
-    slotId: 'v4-r-a2',
+    slotId: 'v4-act2',
     name: 'Ella train + Nine Arch walk',
     place: 'Ella · hill country',
     price: 42,
@@ -64,7 +64,7 @@ export const INVENTORY: InventoryItem[] = [
   {
     id: 'p1',
     kind: 'Package',
-    slotId: 'v4-r-p1',
+    slotId: 'v4-pkg1',
     name: 'Classic Sri Lanka, 10 nights',
     place: 'Coast · culture · tea',
     price: 1690,
@@ -75,7 +75,7 @@ export const INVENTORY: InventoryItem[] = [
   {
     id: 'p2',
     kind: 'Package',
-    slotId: 'v4-r-p2',
+    slotId: 'v4-pkg2',
     name: 'Surf & Slow South, 7 nights',
     place: 'Weligama → Hiriketiya',
     price: 1140,

@@ -36,31 +36,14 @@ export function Footer() {
       <div
         data-grid="footer"
         style={{
-          maxWidth: 'var(--page-max)',
-          margin: '0 auto',
           display: 'grid',
           gridTemplateColumns: '1.4fr 1fr 1fr 1fr',
           gap: 40,
         }}
       >
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 14 }}>
-            <span
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 30,
-                height: 30,
-                borderRadius: 9,
-                background: c.primary,
-                color: '#fff',
-                fontSize: 14,
-                fontWeight: 600,
-              }}
-            >
-              c
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 14 }}>
+            <img src="/logo.png" alt="ceylontrips" style={{ height: 48, width: 'auto', marginRight: -6 }} />
             <span style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>
               ceylon<span style={{ color: c.primarySoft }}>trips</span>
             </span>
@@ -94,8 +77,7 @@ export function Footer() {
 
       <div
         style={{
-          maxWidth: 'var(--page-max)',
-          margin: '40px auto 0',
+          margin: '40px 0 0',
           paddingTop: 20,
           borderTop: '1px solid rgba(255,255,255,.12)',
           display: 'flex',
