@@ -6,7 +6,17 @@ import { c } from '@/lib/theme'
  * Drop a real photo in by adding the slot id to IMAGES below — every call site
  * already passes one, so no component changes are needed.
  */
-const IMAGES: Record<string, string> = {}
+const IMAGES: Record<string, string> = {
+  'v4-act1': '/images/activites/leopard.jpg',
+  'v4-act4': '/images/activites/surfing.jpg',
+  'v4-act6': '/images/activites/gallefort.jpg',
+  'v4-act8': '/images/activites/dambulla-temple.jpg',
+  'v4-act9': '/images/activites/hot-air-balloon-dambulla.webp',
+  'v4-act10': '/images/activites/waterfalls-talawakale.jpg',
+  'v4-act11': '/images/activites/white-water-rafting.jpg',
+  'v4-stay5': '/images/hotels/heritence-kandalama.webp',
+  'v4-stay6': '/images/hotels/jetwing-lake.webp',
+}
 
 /** Deterministic tint per slot so the page isn't a wall of identical grey. */
 const TINTS = [

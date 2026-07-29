@@ -1,0 +1,10 @@
+folder,file,item_id,item_name,category,slot_id
+activites,leopard.jpg,a1,Yala leopard safari,Wildlife,v4-act1
+activites,surfing.jpg,a4,Beginner surf lesson,Beach,v4-act4
+activites,gallefort.jpg,a6,Galle Fort food walk,Food,v4-act6
+activites,dambulla-temple.jpg,a8,Dambulla Cave Temple,Culture,v4-act8
+activites,hot-air-balloon-dambulla.webp,a9,"Hot air balloon, Dambulla",Culture,v4-act9
+activites,waterfalls-talawakale.jpg,a10,Talawakele waterfall hike,Hiking,v4-act10
+activites,white-water-rafting.jpg,a11,"White-water rafting, Kitulgala",Hiking,v4-act11
+hotels,heritence-kandalama.webp,s5,Heritance Kandalama,Stay,v4-stay5
+hotels,jetwing-lake.webp,s6,Jetwing Lake,Stay,v4-stay6

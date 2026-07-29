@@ -3,16 +3,9 @@ import { Icon } from '@/components/ui/Icon'
 import { c } from '@/lib/theme'
 
 const HERO_PHOTOS = [
-  '/images/hero/hero.jpg',
-  '/images/hero/hero2.webp',
   '/images/hero/pexels-srkportraits-10710560.jpg',
   '/images/hero/pexels-batagov-29813525.jpg',
-  '/images/hero/pexels-batagov-29644514.jpg',
   '/images/hero/pexels-aztec92-19287633.jpg',
-  '/images/hero/Angampora.jpg',
-  '/images/hero/download.jpg',
-  '/images/hero/download%20(2).jpg',
-  '/images/hero/download%20(3).jpg',
 ]
 const HERO_ROTATE_MS = 6000
 
@@ -52,7 +45,7 @@ function HeroPhotos() {
 
 export function Hero() {
   return (
-    <section id="top" style={{ padding: '28px 0 0' }}>
+    <section id="top" style={{ padding: 0 }}>
       <div
         style={{
           // Full-bleed: breaks out of the centered page column to span the
@@ -158,7 +151,7 @@ export function Hero() {
               the itinerary, watches the weather and news while you travel, and tells you what to
               change.
             </p>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginLeft: 'auto', justifyContent: 'flex-end' }}>
               <span
                 style={{
                   padding: '9px 16px',

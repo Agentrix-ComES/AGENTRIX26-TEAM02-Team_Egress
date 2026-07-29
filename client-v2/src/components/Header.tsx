@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Icon } from '@/components/ui/Icon'
+import { NotificationsMenu } from '@/components/ui/NotificationsMenu'
 import { useApp } from '@/state/store'
 import { c } from '@/lib/theme'
 
@@ -7,13 +8,11 @@ const NAV = [
   { href: '#stays', label: 'Stays' },
   { href: '#activities', label: 'Activities' },
   { href: '#packages', label: 'Packages' },
-  { href: '#planner', label: 'AI planner' },
-  { href: '#companion', label: 'Live companion' },
-  { href: '#plans', label: 'Pricing' },
+  { href: '#companion', label: 'AI Tour Guider' },
 ]
 
 export function Header() {
-  const { toggleCart, cart, cartTotals, money, openLogin, openSignup } = useApp()
+  const { toggleCart, cart, openLogin, openSignup } = useApp()
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
@@ -95,66 +94,72 @@ export function Header() {
           <button
             type="button"
             onClick={openLogin}
+            aria-label="Log in"
             data-hover="outline"
             data-hide-sm
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 7,
+              justifyContent: 'center',
+              width: 36,
               height: 36,
-              padding: '0 15px',
               border: `1px solid ${c.lineStrong}`,
               borderRadius: 999,
               background: '#fff',
-              color: c.body,
-              fontSize: 14,
-              fontWeight: 500,
+              color: c.ink,
               cursor: 'pointer',
+              flex: 'none',
             }}
           >
             <Icon name="Person" size={16} />
-            Log in
           </button>
+
+          <NotificationsMenu />
 
           <button
             type="button"
             onClick={toggleCart}
+            aria-label="Cart"
             data-hover="primary"
             style={{
               position: 'relative',
               display: 'flex',
               alignItems: 'center',
-              gap: 8,
+              justifyContent: 'center',
+              width: 36,
               height: 36,
-              padding: '0 16px',
               border: 'none',
               borderRadius: 999,
               background: c.primary,
               color: '#fff',
-              fontSize: 14,
-              fontWeight: 500,
               cursor: 'pointer',
+              flex: 'none',
             }}
           >
             <Icon name="ShoppingCart" size={17} />
-            <span data-hide-xs>Cart · {money(cartTotals.total)}</span>
-            <span
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minWidth: 20,
-                height: 20,
-                padding: '0 6px',
-                borderRadius: 999,
-                background: '#fff',
-                color: c.primary,
-                fontSize: 11.5,
-                fontWeight: 600,
-              }}
-            >
-              {cart.length}
-            </span>
+            {cart.length > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: -4,
+                  right: -4,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 18,
+                  height: 18,
+                  padding: '0 4px',
+                  borderRadius: 999,
+                  background: '#fff',
+                  color: c.primary,
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  border: `1px solid ${c.primary}`,
+                }}
+              >
+                {cart.length}
+              </span>
+            )}
           </button>
 
           <button
