@@ -6,9 +6,7 @@ import { c } from '@/lib/theme'
  * Drop a real photo in by adding the slot id to IMAGES below — every call site
  * already passes one, so no component changes are needed.
  */
-const IMAGES: Record<string, string> = {
-  // 'v4-hero': '/images/hero-coastline.jpg',
-}
+const IMAGES: Record<string, string> = {}
 
 /** Deterministic tint per slot so the page isn't a wall of identical grey. */
 const TINTS = [

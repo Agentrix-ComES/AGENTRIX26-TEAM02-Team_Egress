@@ -23,6 +23,23 @@ const PATHS = {
   /** Overlapping people — booking guard. */
   Diversity:
     'M12 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6ZM5.5 11a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Zm13 0a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM12 12c2.7 0 5 1.6 5 3.6V19H7v-3.4C7 13.6 9.3 12 12 12ZM5.5 17c.7 0 1.4.1 2 .4-.3.5-.5 1.1-.5 1.7V21H1v-1.9C1 17.9 3 17 5.5 17Zm13 0c2.5 0 4.5.9 4.5 2.1V21h-6v-1.9c0-.6-.2-1.2-.5-1.7.6-.3 1.3-.4 2-.4Z',
+  /** Compass — the travel guide identity, used on the voice-guide avatar and FAB. */
+  Explore:
+    'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm4.5 3.5-6 2.5-2.5 6 6-2.5 2.5-6ZM12 13a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z',
+  /** Shopping cart — the header cart button. */
+  ShoppingCart:
+    'M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2ZM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1Zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2Z',
+  /** Three lines — mobile nav toggle. */
+  Menu: 'M3 6h18v2H3V6Zm0 5h18v2H3v-2Zm0 5h18v2H3v-2Z',
+  /** X — closes the mobile nav. */
+  Close:
+    'M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5Z',
+  /** Trash bin — removes a cart line. */
+  Delete:
+    'M7 21q-.825 0-1.412-.587Q5 19.825 5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413Q17.825 21 17 21ZM17 6H7v13h10Zm-7 10h2V8h-2Zm4 0h2V8h-2ZM7 6v13Z',
+  /** Person outline — login / account. */
+  Person:
+    'M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v3h16v-3c0-2.76-3.58-5-8-5Z',
 } as const
 
 export type IconName = keyof typeof PATHS

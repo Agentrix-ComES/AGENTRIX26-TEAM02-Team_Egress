@@ -1,4 +1,5 @@
 import { Activities } from '@/components/Activities'
+import { AuthModal } from '@/components/AuthModal'
 import { CartDrawer } from '@/components/CartDrawer'
 import { Companion } from '@/components/Companion'
 import { Faq } from '@/components/Faq'
@@ -37,6 +38,7 @@ export default function App() {
       <CartDrawer />
       <PaywallModal />
       <VoiceGuide />
+      <AuthModal />
     </AppProvider>
   )
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { useApp } from '@/state/store'
 import { c } from '@/lib/theme'
@@ -12,7 +13,8 @@ const NAV = [
 ]
 
 export function Header() {
-  const { openVoice, toggleCart, cart, cartTotals, money } = useApp()
+  const { toggleCart, cart, cartTotals, money, openLogin, openSignup } = useApp()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <header
@@ -27,8 +29,7 @@ export function Header() {
     >
       <div
         style={{
-          maxWidth: 'var(--page-max)',
-          margin: '0 auto',
+          width: '100%',
           padding: '0 var(--page-pad)',
           height: 'var(--header-h)',
           display: 'flex',
@@ -64,7 +65,7 @@ export function Header() {
         </a>
 
         <nav
-          className="cs-hidebar"
+          data-nav-desktop
           style={{
             display: 'flex',
             gap: 20,
@@ -72,7 +73,6 @@ export function Header() {
             fontWeight: 500,
             minWidth: 0,
             whiteSpace: 'nowrap',
-            overflowX: 'auto',
           }}
         >
           {NAV.map((item) => (
@@ -92,10 +92,9 @@ export function Header() {
             whiteSpace: 'nowrap',
           }}
         >
-          {/* Redundant on small screens — the floating guide button covers it. */}
           <button
             type="button"
-            onClick={openVoice}
+            onClick={openLogin}
             data-hover="outline"
             data-hide-sm
             style={{
@@ -103,7 +102,7 @@ export function Header() {
               alignItems: 'center',
               gap: 7,
               height: 36,
-              padding: '0 14px',
+              padding: '0 15px',
               border: `1px solid ${c.lineStrong}`,
               borderRadius: 999,
               background: '#fff',
@@ -113,14 +112,14 @@ export function Header() {
               cursor: 'pointer',
             }}
           >
-            <Icon name="Mood" size={17} />
-            Voice guide
+            <Icon name="Person" size={16} />
+            Log in
           </button>
 
           <button
             type="button"
             onClick={toggleCart}
-            data-hover="ink"
+            data-hover="primary"
             style={{
               position: 'relative',
               display: 'flex',
@@ -130,14 +129,15 @@ export function Header() {
               padding: '0 16px',
               border: 'none',
               borderRadius: 999,
-              background: c.ink,
+              background: c.primary,
               color: '#fff',
               fontSize: 14,
               fontWeight: 500,
               cursor: 'pointer',
             }}
           >
-            Cart · {money(cartTotals.total)}
+            <Icon name="ShoppingCart" size={17} />
+            <span data-hide-xs>Cart · {money(cartTotals.total)}</span>
             <span
               style={{
                 display: 'flex',
@@ -147,7 +147,8 @@ export function Header() {
                 height: 20,
                 padding: '0 6px',
                 borderRadius: 999,
-                background: c.primary,
+                background: '#fff',
+                color: c.primary,
                 fontSize: 11.5,
                 fontWeight: 600,
               }}
@@ -155,8 +156,108 @@ export function Header() {
               {cart.length}
             </span>
           </button>
+
+          <button
+            type="button"
+            data-nav-toggle
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((open) => !open)}
+            data-hover="outline"
+            style={{
+              display: 'none',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 36,
+              height: 36,
+              border: `1px solid ${c.lineStrong}`,
+              borderRadius: 999,
+              background: '#fff',
+              color: c.ink,
+              cursor: 'pointer',
+              flex: 'none',
+            }}
+          >
+            <Icon name={menuOpen ? 'Close' : 'Menu'} size={18} />
+          </button>
         </div>
       </div>
+
+      {menuOpen && (
+        <nav
+          data-nav-mobile
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '4px var(--page-pad) 20px',
+            borderTop: `1px solid ${c.line}`,
+            background: c.card,
+          }}
+        >
+          {NAV.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              onClick={() => setMenuOpen(false)}
+              style={{
+                padding: '13px 4px',
+                borderBottom: `1px solid ${c.line}`,
+                color: c.body,
+                fontSize: 15.5,
+                fontWeight: 500,
+              }}
+              data-hover="text"
+            >
+              {item.label}
+            </a>
+          ))}
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false)
+                openLogin()
+              }}
+              data-hover="outline"
+              style={{
+                flex: 1,
+                height: 44,
+                border: `1px solid ${c.lineStrong}`,
+                borderRadius: 999,
+                background: '#fff',
+                color: c.ink,
+                fontSize: 14.5,
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
+            >
+              Log in
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false)
+                openSignup()
+              }}
+              data-hover="primary"
+              style={{
+                flex: 1,
+                height: 44,
+                border: 'none',
+                borderRadius: 999,
+                background: c.primary,
+                color: '#fff',
+                fontSize: 14.5,
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
+            >
+              Sign up
+            </button>
+          </div>
+        </nav>
+      )}
     </header>
   )
 }

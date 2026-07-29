@@ -65,9 +65,13 @@ p {
   0%, 100% { transform: scale(1); opacity: 0.55; }
   50% { transform: scale(1.5); opacity: 0; }
 }
-@keyframes csBar {
-  0%, 100% { height: 8px; }
-  50% { height: 22px; }
+@keyframes csFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes csSlideInRight {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 /* ---- Scrollbars -------------------------------------------------------- */
@@ -113,14 +117,51 @@ p {
 [data-hover="light-strong"]:hover {
   background: rgba(255, 255, 255, 0.1) !important;
 }
+
+.cs-focus-ring:focus-within {
+  border-color: var(--cs-primary) !important;
+  box-shadow: 0 0 0 3px rgba(212, 38, 79, 0.12);
+}
 [data-hover="yellow"]:hover {
   background: var(--cs-yellow) !important;
+}
+[data-hover="muted"]:hover {
+  background: var(--line-strong) !important;
+}
+[data-hover="danger"]:hover {
+  background: var(--cs-primary-tint) !important;
+  color: var(--cs-primary) !important;
+}
+
+/* ---- Cart drawer --------------------------------------------------------- */
+
+[data-cart-item] {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+[data-cart-item]:hover {
+  border-color: var(--line-strong) !important;
+  box-shadow: 0 10px 24px -18px rgba(39, 42, 70, 0.35);
 }
 
 /* ---- Responsive --------------------------------------------------------
    The mock is a 1240px desktop canvas. These breakpoints collapse the grids
    so the page is usable on tablet/mobile without re-authoring every section.
    Grid columns are declared inline, so the overrides need `!important`.      */
+
+@media (min-width: 1081px) {
+  [data-nav-mobile] {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1080px) {
+  [data-nav-desktop] {
+    display: none !important;
+  }
+  [data-nav-toggle] {
+    display: flex !important;
+  }
+}
 
 @media (max-width: 1080px) {
   :root {
@@ -184,6 +225,7 @@ p {
     left: 12px !important;
     bottom: 12px !important;
     width: auto !important;
+    height: min(644px, calc(100vh - 24px)) !important;
   }
 }
 

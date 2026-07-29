@@ -1,28 +1,74 @@
+import { useEffect, useState } from 'react'
 import { Icon } from '@/components/ui/Icon'
-import { ImageSlot } from '@/components/ui/ImageSlot'
 import { c } from '@/lib/theme'
+
+const HERO_PHOTOS = [
+  '/images/hero/hero.jpg',
+  '/images/hero/hero2.webp',
+  '/images/hero/pexels-srkportraits-10710560.jpg',
+  '/images/hero/pexels-batagov-29813525.jpg',
+  '/images/hero/pexels-batagov-29644514.jpg',
+  '/images/hero/pexels-aztec92-19287633.jpg',
+  '/images/hero/Angampora.jpg',
+  '/images/hero/download.jpg',
+  '/images/hero/download%20(2).jpg',
+  '/images/hero/download%20(3).jpg',
+]
+const HERO_ROTATE_MS = 6000
+
+/** Crossfades through the hero photo set on a timer — no controls, purely ambient. */
+function HeroPhotos() {
+  const [index, setIndex] = useState(0)
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setIndex((i) => (i + 1) % HERO_PHOTOS.length)
+    }, HERO_ROTATE_MS)
+    return () => window.clearInterval(id)
+  }, [])
+
+  return (
+    <>
+      {HERO_PHOTOS.map((src, i) => (
+        <img
+          key={src}
+          src={src}
+          alt=""
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: i === index ? 1 : 0,
+            transition: 'opacity 1.6s ease-in-out',
+          }}
+        />
+      ))}
+    </>
+  )
+}
 
 export function Hero() {
   return (
-    <section id="top" style={{ padding: '28px var(--page-pad) 0' }}>
+    <section id="top" style={{ padding: '28px 0 0' }}>
       <div
         style={{
-          maxWidth: 'var(--page-max)',
-          margin: '0 auto',
+          // Full-bleed: breaks out of the centered page column to span the
+          // whole viewport width, however wide the screen gets.
+          width: '100vw',
+          marginLeft: 'calc(50% - 50vw)',
+          marginRight: 'calc(50% - 50vw)',
           position: 'relative',
           // Fixed 560px on the desktop canvas; grows to fit once the type shrinks.
           minHeight: 'clamp(460px, 42vw, 560px)',
-          borderRadius: 28,
           overflow: 'hidden',
           background: `linear-gradient(140deg,${c.cyan} 0%,${c.cyanInk} 55%,${c.navy} 100%)`,
         }}
       >
         <div style={{ position: 'absolute', inset: 0 }}>
-          <ImageSlot
-            corner
-            id="v4-hero"
-            placeholder="Drop the hero photo — coastline, tea country or a temple at golden hour"
-          />
+          <HeroPhotos />
         </div>
 
         <div
@@ -39,7 +85,10 @@ export function Hero() {
           style={{
             position: 'relative',
             minHeight: 'inherit',
-            padding: 'clamp(22px, 4vw, 56px)',
+            minWidth: 0,
+            maxWidth: 'var(--page-max)',
+            margin: '0 auto',
+            padding: 'clamp(22px, 4vw, 56px) var(--page-pad)',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'flex-end',
@@ -53,6 +102,8 @@ export function Hero() {
               alignItems: 'center',
               gap: 8,
               alignSelf: 'flex-start',
+              maxWidth: '100%',
+              minWidth: 0,
               padding: '7px 15px 7px 11px',
               borderRadius: 999,
               background: 'rgba(255,255,255,.18)',
@@ -64,12 +115,15 @@ export function Hero() {
             }}
           >
             <Icon name="LocationOn" size={16} />
-            Sri Lanka · 1,400 stays · 620 activities · 48 packages
+            <span style={{ minWidth: 0 }}>
+              Sri Lanka · 1,400 stays · 620 activities · 48 packages
+            </span>
           </div>
 
           <h1
             style={{
               maxWidth: 780,
+              minWidth: 0,
               fontSize: 'clamp(30px, 5vw, 62px)',
               fontWeight: 500,
               lineHeight: 1.03,
@@ -88,11 +142,13 @@ export function Hero() {
               justifyContent: 'space-between',
               gap: 40,
               flexWrap: 'wrap',
+              minWidth: 0,
             }}
           >
             <p
               style={{
                 maxWidth: 480,
+                minWidth: 0,
                 fontSize: 'clamp(15px, 1.5vw, 18px)',
                 lineHeight: 1.55,
                 color: 'rgba(255,255,255,.88)',

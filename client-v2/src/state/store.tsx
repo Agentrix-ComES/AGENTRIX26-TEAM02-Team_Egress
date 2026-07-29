@@ -63,6 +63,10 @@ function useAppStore() {
   const [chosenPlan, setChosenPlan] = useState<string | null>(null)
   const [paywallOpen, setPaywallOpen] = useState(false)
 
+  // --- auth ----------------------------------------------------------------
+  const [authOpen, setAuthOpen] = useState(false)
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
+
   // --- cart --------------------------------------------------------------
   const [cart, setCart] = useState<CartItem[]>([])
   const [cartOpen, setCartOpen] = useState(false)
@@ -86,15 +90,15 @@ function useAppStore() {
 
   // --- voice -------------------------------------------------------------
   const [voiceOpen, setVoiceOpen] = useState(false)
-  const [listening, setListening] = useState(false)
   const [voiceTurns, setVoiceTurns] = useState<VoiceTurn[]>([])
+  const [voicePending, setVoicePending] = useState<VoiceTurn | null>(null)
+  const voiceThinkTimer = useRef<number | undefined>(undefined)
 
   // --- misc UI -----------------------------------------------------------
   const [openFaq, setOpenFaq] = useState(0)
   const [activityFilter, setActivityFilter] = useState('All')
 
   const searchTimer = useRef<number | undefined>(undefined)
-  const listenTimer = useRef<number | undefined>(undefined)
 
   /**
    * Gate for anything the AI does. Counts the use, opens the paywall once the
@@ -168,13 +172,12 @@ function useAppStore() {
     return () => window.clearInterval(id)
   }, [answer])
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    return () => {
       window.clearTimeout(searchTimer.current)
-      window.clearTimeout(listenTimer.current)
-    },
-    [],
-  )
+      window.clearTimeout(voiceThinkTimer.current)
+    }
+  }, [])
 
   // --- cart actions ------------------------------------------------------
 
@@ -328,29 +331,28 @@ function useAppStore() {
 
   const closeVoice = useCallback(() => {
     setVoiceOpen(false)
-    setListening(false)
   }, [])
 
-  /** Fakes a mic session: listen for a beat, then answer the next scripted turn. */
-  const toggleListening = useCallback(() => {
-    setListening((wasListening) => {
-      window.clearTimeout(listenTimer.current)
-      if (wasListening) return false
-
-      listenTimer.current = window.setTimeout(() => {
-        setVoiceTurns((turns) => turns.concat(VOICE_SCRIPT[turns.length % VOICE_SCRIPT.length]))
-        setListening(false)
-      }, 1400)
-
-      return true
-    })
-  }, [])
-
+  /** Shows the question immediately, then thinks for a beat before the answer lands. */
   const askVoice = useCallback((turn: VoiceTurn) => {
-    window.clearTimeout(listenTimer.current)
-    setVoiceTurns((turns) => turns.concat(turn))
-    setListening(false)
+    window.clearTimeout(voiceThinkTimer.current)
+    setVoicePending(turn)
+    voiceThinkTimer.current = window.setTimeout(() => {
+      setVoiceTurns((turns) => turns.concat(turn))
+      setVoicePending(null)
+    }, config.thinkingDelay)
   }, [])
+
+  /** Typed free-text question — answers with the next scripted reply, demo-style. */
+  const askVoiceText = useCallback(
+    (text: string) => {
+      const trimmed = text.trim()
+      if (!trimmed) return
+      const scripted = VOICE_SCRIPT[voiceTurns.length % VOICE_SCRIPT.length]
+      askVoice({ short: trimmed, q: trimmed, a: scripted.a })
+    },
+    [voiceTurns, askVoice],
+  )
 
   // --- derived cart totals -----------------------------------------------
 
@@ -406,6 +408,20 @@ function useAppStore() {
     planName,
     trialDay: Math.min(7, 1 + aiUses),
 
+    // auth
+    authOpen,
+    authMode,
+    setAuthMode,
+    openLogin: useCallback(() => {
+      setAuthMode('login')
+      setAuthOpen(true)
+    }, []),
+    openSignup: useCallback(() => {
+      setAuthMode('signup')
+      setAuthOpen(true)
+    }, []),
+    closeAuth: useCallback(() => setAuthOpen(false), []),
+
     // cart
     cart,
     cartOpen,
@@ -444,10 +460,10 @@ function useAppStore() {
     voiceOpen,
     openVoice,
     closeVoice,
-    listening,
-    toggleListening,
     voiceTurns,
+    voicePending,
     askVoice,
+    askVoiceText,
 
     // misc
     openFaq,
