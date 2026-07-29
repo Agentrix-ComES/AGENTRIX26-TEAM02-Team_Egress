@@ -59,6 +59,15 @@ const PATHS = {
   /** Arrow out of a door — log out. */
   Logout:
     'M10.09 15.59 11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59ZM19 3H5a2 2 0 0 0-2 2v4h2V5h14v14H5v-4H3v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z',
+  /** Magnifying glass — plain keyword search. */
+  Search:
+    'M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 5L20.49 19l-5-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z',
+  /** Suitcase — the "Packages" search category. */
+  Luggage:
+    'M9 4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2h3a2 2 0 0 1 2 2v2h1v2h-1v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10H3V8h1V6a2 2 0 0 1 2-2h3Zm2 0v2h2V4h-2ZM6 8v12h12V8H6Zm3 2h2v8H9v-8Zm4 0h2v8h-2v-8Z',
+  /** Car — the "Transport" search category. */
+  DirectionsCar:
+    'M5 11 6.5 6.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11h1a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-1a2 2 0 0 1-4 0H8a2 2 0 0 1-4 0H3a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2Zm1.5-.5h11l-1-3.5H7.5l-1 3.5ZM6 17a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm12 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z',
 } as const
 
 export type IconName = keyof typeof PATHS

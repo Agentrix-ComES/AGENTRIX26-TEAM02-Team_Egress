@@ -11,7 +11,6 @@ import {
 
 import { BASE_ITINERARY, EXTRA_DAY } from '@/data/catalogue'
 import { CHANNEL_NAMES, PLANS, VOICE_SCRIPT } from '@/data/content'
-import type { SearchTabId } from '@/data/content'
 import { config } from '@/lib/config'
 import { makeMoney, parsePrice } from '@/lib/money'
 import { runSearch } from '@/lib/search'
@@ -45,18 +44,11 @@ function useAppStore() {
 
   // --- search ------------------------------------------------------------
   const [query, setQuery] = useState('')
-  const [tab, setTab] = useState<SearchTabId>('ask')
   const [status, setStatus] = useState<SearchStatus>('idle')
   const [results, setResults] = useState<SearchResult[]>([])
   const [criteria, setCriteria] = useState<string[]>([])
   const [answer, setAnswer] = useState('')
   const [typed, setTyped] = useState(0)
-
-  // structured search form (non-"Ask AI" tabs)
-  const [where, setWhere] = useState('')
-  const [month, setMonth] = useState('February')
-  const [nights, setNights] = useState('10')
-  const [pax, setPax] = useState('2')
 
   // --- monetisation ------------------------------------------------------
   const [aiUses, setAiUses] = useState(0)
@@ -140,20 +132,14 @@ function useAppStore() {
 
   const submitQuery = useCallback(() => search(query), [search, query])
 
-  /** Chips and follow-up questions: fill the box, switch to Ask, run it. */
+  /** Chips and follow-up questions: fill the box and run it. */
   const askSuggestion = useCallback(
     (text: string) => {
       setQuery(text)
-      setTab('ask')
       search(text)
     },
     [search],
   )
-
-  const submitForm = useCallback(() => {
-    const kind = tab === 'ask' ? '' : `${tab} `
-    search(`${kind}${where || 'Sri Lanka'}, ${nights} nights in ${month}, ${pax} travellers`)
-  }, [tab, where, nights, month, pax, search])
 
   // Type the AI overview out one chunk at a time.
   useEffect(() => {
@@ -238,7 +224,7 @@ function useAppStore() {
     [removeDay],
   )
 
-  const travellers = parseInt(pax, 10) || 2
+  const travellers = 2 as number
 
   const plannerTotals = useMemo(() => {
     const nightTotal = plannerDays.reduce((n, d) => n + d.nights, 0)
@@ -375,8 +361,6 @@ function useAppStore() {
     // search
     query,
     setQuery,
-    tab,
-    setTab,
     status,
     results,
     criteria,
@@ -384,16 +368,7 @@ function useAppStore() {
     streaming: status === 'done' && typed < answer.length,
     submitQuery,
     askSuggestion,
-    where,
-    setWhere,
-    month,
-    setMonth,
-    nights,
-    setNights,
-    pax,
-    setPax,
     travellers,
-    submitForm,
 
     // monetisation
     paywallOpen,

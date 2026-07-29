@@ -611,17 +611,6 @@ export const EXTRA_DAY: ItineraryDay = {
   ],
 }
 
-export const MONTH_OPTIONS = [
-  'December',
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'July',
-  'August',
-]
-
 export const PLANNER_CHECKS = [
   {
     mark: '✓',

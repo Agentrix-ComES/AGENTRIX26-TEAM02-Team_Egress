@@ -1,14 +1,17 @@
-import { Icon } from '@/components/ui/Icon'
+import { useState } from 'react'
+
+import { Icon, type IconName } from '@/components/ui/Icon'
 import { ImageSlot } from '@/components/ui/ImageSlot'
-import { MONTH_OPTIONS } from '@/data/catalogue'
-import { FOLLOW_UPS, SEARCH_CHIPS, SEARCH_TABS } from '@/data/content'
+import { FOLLOW_UPS, SEARCH_CHIPS } from '@/data/content'
 import { config } from '@/lib/config'
 import { c, kindOf } from '@/lib/theme'
 import { useApp } from '@/state/store'
 
 export function SearchPanel() {
   const app = useApp()
-  const isAsk = app.tab === 'ask'
+  // Mirrors Google's search: a plain bar first, with an "AI Mode" chip that
+  // swaps in the conversational bar once the traveller opts in.
+  const [aiMode, setAiMode] = useState(false)
 
   return (
     <section id="search" style={{ padding: '0 var(--page-pad) 88px' }}>
@@ -35,52 +38,32 @@ export function SearchPanel() {
             flexWrap: 'wrap',
           }}
         >
-          <div
-            className="cs-hidebar"
+          <span
             style={{
               display: 'flex',
-              padding: 4,
+              alignItems: 'center',
+              gap: 7,
+              padding: '8px 15px',
               borderRadius: 999,
               background: c.muted,
-              gap: 2,
-              maxWidth: '100%',
-              overflowX: 'auto',
+              fontSize: 13.5,
+              fontWeight: 500,
+              color: aiMode ? c.primary : c.body,
             }}
           >
-            {SEARCH_TABS.map((tab) => {
-              const active = app.tab === tab.id
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => app.setTab(tab.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 7,
-                    flex: 'none',
-                    whiteSpace: 'nowrap',
-                    padding: '8px 15px',
-                    border: 'none',
-                    borderRadius: 999,
-                    fontSize: 13.5,
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    background: active ? '#fff' : 'transparent',
-                    color: active ? (tab.id === 'ask' ? c.primary : c.ink) : c.textMuted,
-                  }}
-                >
-                  {tab.label}
-                </button>
-              )
-            })}
-          </div>
+            <Icon name={aiMode ? 'AutoMode' : 'Search'} size={15} />
+            {aiMode ? 'Ask AI' : 'Search'}
+          </span>
           <span style={{ marginLeft: 'auto', fontSize: 13, color: c.textSubtle }}>
             Live inventory · prices in {config.currency}
           </span>
         </div>
 
-        {isAsk ? <AskBar /> : <StructuredForm />}
+        {aiMode ? (
+          <AskBar onExitAiMode={() => setAiMode(false)} />
+        ) : (
+          <TraditionalBar onEnterAiMode={() => setAiMode(true)} />
+        )}
 
         {app.status === 'thinking' && <Thinking />}
         {app.status === 'done' && <Results />}
@@ -103,8 +86,172 @@ export function SearchPanel() {
   )
 }
 
+/** The four catalogue sections travellers can jump the traditional search into. */
+const SEARCH_CATEGORIES: { id: string; label: string; icon: IconName; placeholder: string }[] = [
+  {
+    id: 'stays',
+    label: 'Stays',
+    icon: 'LocationOn',
+    placeholder: 'Search stays — hotels, villas, boutique escapes…',
+  },
+  {
+    id: 'activities',
+    label: 'Activities',
+    icon: 'Explore',
+    placeholder: 'Search activities — safaris, hikes, food walks…',
+  },
+  {
+    id: 'packages',
+    label: 'Packages',
+    icon: 'Luggage',
+    placeholder: 'Search packages — ready-made multi-day trips…',
+  },
+  {
+    id: 'transport',
+    label: 'Transport',
+    icon: 'DirectionsCar',
+    placeholder: 'Search transport — drivers, trains, transfers…',
+  },
+]
+
+/** Plain keyword search bar — what a traveller sees before opting into AI. */
+function TraditionalBar({ onEnterAiMode }: { onEnterAiMode: () => void }) {
+  const { query, setQuery, submitQuery } = useApp()
+  const [category, setCategory] = useState<string | null>(null)
+  const activeCategory = SEARCH_CATEGORIES.find((cat) => cat.id === category)
+
+  return (
+    <div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+        {SEARCH_CATEGORIES.map((cat) => {
+          const isActive = cat.id === category
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => {
+                setCategory(isActive ? null : cat.id)
+                document.getElementById(cat.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }}
+              aria-pressed={isActive}
+              data-hover="outline"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                width: 'clamp(72px, 9vw, 92px)',
+                padding: '12px 8px',
+                borderRadius: 14,
+                border: `1px solid ${isActive ? c.primary : c.lineStrong}`,
+                background: isActive ? c.primaryTint : '#fff',
+                color: isActive ? c.primary : c.body,
+                fontSize: 12,
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
+            >
+              <Icon name={cat.icon} size={20} />
+              {cat.label}
+            </button>
+          )
+        })}
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'clamp(6px, 1vw, 12px)',
+          padding: '7px 8px 7px clamp(12px, 1.5vw, 18px)',
+          borderRadius: 999,
+          border: `1px solid ${c.lineStrong}`,
+          background: '#fff',
+        }}
+      >
+        <span style={{ display: 'flex', color: c.textSubtle, flex: 'none' }}>
+          <Icon name="Search" size={20} />
+        </span>
+
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') submitQuery()
+          }}
+          placeholder={activeCategory?.placeholder ?? 'Search stays, activities, transport…'}
+          aria-label="Search"
+          style={{
+            flex: 1,
+            minWidth: 0,
+            border: 'none',
+            outline: 'none',
+            fontSize: 16,
+            color: c.ink,
+            background: 'transparent',
+            padding: '13px 0',
+          }}
+        />
+
+        {/* Opens the conversational bar — the Google "AI Mode" pattern. */}
+        <button
+          type="button"
+          onClick={onEnterAiMode}
+          title="Switch to AI search"
+          aria-label="Switch to AI search"
+          data-hover="outline"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            height: 38,
+            padding: '0 clamp(10px, 1.4vw, 15px)',
+            border: `1px solid ${c.lineStrong}`,
+            borderRadius: 999,
+            background: `linear-gradient(90deg,${c.cyanTint},${c.purpleTint})`,
+            color: c.primary,
+            fontSize: 13.5,
+            fontWeight: 600,
+            cursor: 'pointer',
+            flex: 'none',
+          }}
+        >
+          <Icon name="AutoAwesome" size={16} />
+          <span data-hide-xs>AI Mode</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={submitQuery}
+          data-hover="primary"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            height: 46,
+            padding: '0 clamp(14px, 2vw, 22px)',
+            border: 'none',
+            borderRadius: 999,
+            background: c.primary,
+            color: '#fff',
+            fontSize: 15,
+            fontWeight: 500,
+            cursor: 'pointer',
+            flex: 'none',
+          }}
+        >
+          Search
+        </button>
+      </div>
+    </div>
+  )
+}
+
 /** The gradient-ringed natural-language search bar. */
-function AskBar() {
+function AskBar({ onExitAiMode }: { onExitAiMode: () => void }) {
   const { query, setQuery, submitQuery, openVoice, askSuggestion } = useApp()
 
   return (
@@ -205,7 +352,15 @@ function AskBar() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 8,
+          marginTop: 14,
+        }}
+      >
         {SEARCH_CHIPS.map((chip) => (
           <button
             key={chip}
@@ -225,120 +380,24 @@ function AskBar() {
             {chip}
           </button>
         ))}
+
+        <button
+          type="button"
+          onClick={onExitAiMode}
+          data-hover="text"
+          style={{
+            marginLeft: 'auto',
+            border: 'none',
+            background: 'transparent',
+            color: c.textSubtle,
+            fontSize: 13,
+            cursor: 'pointer',
+            padding: '8px 4px',
+          }}
+        >
+          ← Back to standard search
+        </button>
       </div>
-    </div>
-  )
-}
-
-const fieldStyle = {
-  height: 46,
-  padding: '0 12px',
-  border: `1px solid ${c.lineStrong}`,
-  borderRadius: 8,
-  fontSize: 14.5,
-  color: c.ink,
-  outline: 'none',
-  background: '#fff',
-} as const
-
-const labelStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 6,
-  fontSize: 12.5,
-  fontWeight: 500,
-  color: c.textMuted,
-} as const
-
-/** Classic where/when/who search, shown on the non-AI tabs. */
-function StructuredForm() {
-  const app = useApp()
-
-  const firstLabel =
-    app.tab === 'activities'
-      ? 'What do you want to do?'
-      : app.tab === 'packages'
-        ? 'Trip style'
-        : 'Where to?'
-
-  return (
-    <div
-      data-grid="search-form"
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '1.4fr 1fr 1fr .9fr auto',
-        gap: 12,
-        alignItems: 'end',
-      }}
-    >
-      <label style={labelStyle}>
-        {firstLabel}
-        <input
-          type="text"
-          value={app.where}
-          onChange={(e) => app.setWhere(e.target.value)}
-          placeholder="Anywhere in Sri Lanka"
-          style={fieldStyle}
-        />
-      </label>
-
-      <label style={labelStyle}>
-        Month
-        <select
-          value={app.month}
-          onChange={(e) => app.setMonth(e.target.value)}
-          style={fieldStyle}
-        >
-          {MONTH_OPTIONS.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label style={labelStyle}>
-        Nights
-        <select
-          value={app.nights}
-          onChange={(e) => app.setNights(e.target.value)}
-          style={fieldStyle}
-        >
-          {['3', '7', '10', '14'].map((n) => (
-            <option key={n} value={n}>
-              {n} nights
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label style={labelStyle}>
-        Travellers
-        <select value={app.pax} onChange={(e) => app.setPax(e.target.value)} style={fieldStyle}>
-          <option value="1">1 adult</option>
-          <option value="2">2 adults</option>
-          <option value="4">Family of 4</option>
-        </select>
-      </label>
-
-      <button
-        type="button"
-        onClick={app.submitForm}
-        data-hover="ink"
-        style={{
-          height: 46,
-          padding: '0 26px',
-          border: 'none',
-          borderRadius: 8,
-          background: c.ink,
-          color: '#fff',
-          fontSize: 15,
-          fontWeight: 500,
-          cursor: 'pointer',
-        }}
-      >
-        Search
-      </button>
     </div>
   )
 }

@@ -15,20 +15,7 @@ export function VoiceGuide() {
   const app = useApp()
   const [draft, setDraft] = useState('')
   const [nudgeOpen, setNudgeOpen] = useState(false)
-  const panelRef = useRef<HTMLDivElement>(null)
   const nudgeShownRef = useRef(false)
-
-  // Click outside the panel minimizes it back to the fab.
-  useEffect(() => {
-    if (!app.voiceOpen) return
-    const onPointerDown = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        app.closeVoice()
-      }
-    }
-    document.addEventListener('mousedown', onPointerDown)
-    return () => document.removeEventListener('mousedown', onPointerDown)
-  }, [app.voiceOpen, app.closeVoice])
 
   // Proactive nudge: once, after a pause on the page, if nobody's opened the guide yet.
   useEffect(() => {
@@ -74,28 +61,38 @@ export function VoiceGuide() {
 
   return (
     <div
-      ref={panelRef}
-      data-voice-panel
-      role="dialog"
-      aria-label="Voice guide"
+      onClick={app.closeVoice}
       style={{
         position: 'fixed',
-        right: 28,
-        bottom: 28,
-        zIndex: 65,
-        width: 412,
-        height: 644,
-        maxHeight: 'calc(100vh - 48px)',
-        display: 'flex',
-        flexDirection: 'column',
-        background: c.card,
-        border: `1px solid ${c.line}`,
-        borderRadius: 24,
-        boxShadow: '0 40px 80px -32px rgba(39,42,70,.4), 0 4px 14px -6px rgba(39,42,70,.12)',
-        overflow: 'hidden',
-        animation: 'csRise .28s ease both',
+        top: 'var(--header-h)',
+        right: 0,
+        bottom: 0,
+        left: 0,
+        zIndex: 35,
+        background: 'transparent',
       }}
     >
+      <div
+        data-voice-panel
+        role="dialog"
+        aria-label="Voice guide"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: 420,
+          maxWidth: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          background: c.card,
+          borderLeft: `1px solid ${c.line}`,
+          boxShadow: '-24px 0 60px -30px rgba(39,42,70,.35)',
+          overflow: 'hidden',
+          animation: 'csSlideInRight .28s cubic-bezier(.2,.8,.2,1) both',
+        }}
+      >
       <div
         style={{
           display: 'flex',
@@ -342,6 +339,7 @@ export function VoiceGuide() {
             <span style={{ fontSize: 15, lineHeight: 1 }}>↗</span>
           </button>
         </div>
+      </div>
       </div>
     </div>
   )

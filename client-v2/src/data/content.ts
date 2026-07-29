@@ -226,12 +226,3 @@ export const FOLLOW_UPS = [
   'What will this cost with domestic flights instead?',
   'Is February too busy on the south coast?',
 ]
-
-export const SEARCH_TABS = [
-  { id: 'ask', label: 'Ask AI' },
-  { id: 'stays', label: 'Stays' },
-  { id: 'activities', label: 'Activities' },
-  { id: 'packages', label: 'Packages' },
-] as const
-
-export type SearchTabId = (typeof SEARCH_TABS)[number]['id']

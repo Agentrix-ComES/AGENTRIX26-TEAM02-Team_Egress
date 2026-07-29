@@ -13,7 +13,6 @@ const COLUMNS = [
   {
     title: 'AI agent',
     links: [
-      { href: '#planner', label: 'Trip planner' },
       { href: '#companion', label: 'Live companion' },
       { href: '#plans', label: 'Plans & trial' },
       { href: '#companion', label: 'Voice guide' },

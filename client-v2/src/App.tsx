@@ -8,7 +8,6 @@ import { Header } from '@/components/Header'
 import { Hero } from '@/components/Hero'
 import { Packages } from '@/components/Packages'
 import { PaywallModal } from '@/components/PaywallModal'
-import { Planner } from '@/components/Planner'
 import { Plans } from '@/components/Plans'
 import { SearchPanel } from '@/components/SearchPanel'
 import { Stays } from '@/components/Stays'
@@ -28,7 +27,6 @@ export default function App() {
         <Activities />
         <Transport />
         <Packages />
-        <Planner />
         <Companion />
         <Plans />
         <Faq />
