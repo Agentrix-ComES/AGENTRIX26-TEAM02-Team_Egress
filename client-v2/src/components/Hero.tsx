@@ -79,13 +79,16 @@ export function Hero() {
             position: 'relative',
             minHeight: 'inherit',
             minWidth: 0,
-            maxWidth: 'var(--page-max)',
-            margin: '0 auto',
+            // No page-max/auto-centering here on purpose: the hero copy should
+            // always hug the true left edge of the viewport, not the centered
+            // content column other sections use.
             padding: 'clamp(22px, 4vw, 56px) var(--page-pad)',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'flex-end',
-            gap: 22,
+            // space-between (not flex-end) so the location badge sits pinned
+            // to the top of the hero, separate from the headline/paragraph
+            // group anchored at the bottom.
+            justifyContent: 'space-between',
             pointerEvents: 'none',
           }}
         >
@@ -113,69 +116,72 @@ export function Hero() {
             </span>
           </div>
 
-          <h1
-            style={{
-              maxWidth: 780,
-              minWidth: 0,
-              fontSize: 'clamp(30px, 5vw, 62px)',
-              fontWeight: 500,
-              lineHeight: 1.03,
-              letterSpacing: '-0.032em',
-              color: '#fff',
-              textWrap: 'pretty',
-            }}
-          >
-            Book it yourself, or let the AI agent plan and run the trip.
-          </h1>
-
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-end',
-              justifyContent: 'space-between',
-              gap: 40,
-              flexWrap: 'wrap',
-              minWidth: 0,
-            }}
-          >
-            <p
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 22, minWidth: 0, marginBottom: 18 }}>
+            <h1
               style={{
-                maxWidth: 480,
+                maxWidth: 780,
                 minWidth: 0,
-                fontSize: 'clamp(15px, 1.5vw, 18px)',
-                lineHeight: 1.55,
-                color: 'rgba(255,255,255,.88)',
+                fontSize: 'clamp(30px, 5vw, 62px)',
+                fontWeight: 500,
+                lineHeight: 1.03,
+                letterSpacing: '-0.032em',
+                color: '#fff',
+                textWrap: 'pretty',
               }}
             >
-              Search and add to cart like any travel site — or hand it to the agent, which builds
-              the itinerary, watches the weather and news while you travel, and tells you what to
-              change.
-            </p>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginLeft: 'auto', justifyContent: 'flex-end' }}>
-              <span
+              Book it yourself, or let the AI agent plan and run the trip.
+            </h1>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'flex-start',
+                gap: 40,
+                flexWrap: 'wrap',
+                minWidth: 0,
+              }}
+            >
+              <p
                 style={{
-                  padding: '9px 16px',
-                  borderRadius: 999,
-                  background: 'rgba(255,255,255,.16)',
-                  border: '1px solid rgba(255,255,255,.3)',
-                  color: '#fff',
-                  fontSize: 14,
+                  flex: '1 1 260px',
+                  maxWidth: 480,
+                  minWidth: 0,
+                  fontSize: 'clamp(15px, 1.5vw, 18px)',
+                  lineHeight: 1.55,
+                  color: 'rgba(255,255,255,.88)',
                 }}
               >
-                Free cancellation
-              </span>
-              <span
-                style={{
-                  padding: '9px 16px',
-                  borderRadius: 999,
-                  background: c.yellow,
-                  color: c.navy,
-                  fontSize: 14,
-                  fontWeight: 500,
-                }}
-              >
-                7-day AI trial
-              </span>
+                Search and add to cart like any travel site — or hand it to the agent, which
+                builds the itinerary, watches the weather and news while you travel, and tells
+                you what to change.
+              </p>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', flex: 'none', marginLeft: 'auto', justifyContent: 'flex-end' }}>
+                <span
+                  style={{
+                    padding: '9px 16px',
+                    borderRadius: 999,
+                    background: 'rgba(255,255,255,.16)',
+                    border: '1px solid rgba(255,255,255,.3)',
+                    color: '#fff',
+                    fontSize: 14,
+                  }}
+                >
+                  Free cancellation
+                </span>
+                <span
+                  style={{
+                    padding: '9px 16px',
+                    borderRadius: 999,
+                    background: c.yellow,
+                    color: c.navy,
+                    fontSize: 14,
+                    fontWeight: 500,
+                  }}
+                >
+                  7-day AI trial
+                </span>
+              </div>
             </div>
           </div>
         </div>

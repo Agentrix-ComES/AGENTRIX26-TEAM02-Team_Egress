@@ -8,7 +8,7 @@ const NAV = [
   { href: '#stays', label: 'Stays' },
   { href: '#activities', label: 'Activities' },
   { href: '#packages', label: 'Packages' },
-  { href: '#companion', label: 'AI Tour Guider' },
+  { href: '#companion', label: 'AI Tour Guider', ai: true },
 ]
 
 export function Header() {
@@ -67,6 +67,7 @@ export function Header() {
           data-nav-desktop
           style={{
             display: 'flex',
+            alignItems: 'center',
             gap: 20,
             fontSize: 15,
             fontWeight: 500,
@@ -74,11 +75,33 @@ export function Header() {
             whiteSpace: 'nowrap',
           }}
         >
-          {NAV.map((item) => (
-            <a key={item.href} href={item.href} style={{ color: c.body }} data-hover="text">
-              {item.label}
-            </a>
-          ))}
+          {NAV.map((item) =>
+            item.ai ? (
+              <a
+                key={item.href}
+                href={item.href}
+                data-hover="text"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '5px 12px 5px 9px',
+                  borderRadius: 999,
+                  background: `linear-gradient(90deg,${c.cyanTint},${c.purpleTint})`,
+                  border: `1px solid ${c.purple}55`,
+                  color: c.purpleInk,
+                  fontWeight: 600,
+                }}
+              >
+                <Icon name="AutoAwesome" size={14} color={c.purple} />
+                {item.label}
+              </a>
+            ) : (
+              <a key={item.href} href={item.href} style={{ color: c.body }} data-hover="text">
+                {item.label}
+              </a>
+            )
+          )}
         </nav>
 
         <div
@@ -205,14 +228,18 @@ export function Header() {
               href={item.href}
               onClick={() => setMenuOpen(false)}
               style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 7,
                 padding: '13px 4px',
                 borderBottom: `1px solid ${c.line}`,
-                color: c.body,
+                color: item.ai ? c.purpleInk : c.body,
                 fontSize: 15.5,
-                fontWeight: 500,
+                fontWeight: item.ai ? 600 : 500,
               }}
               data-hover="text"
             >
+              {item.ai && <Icon name="AutoAwesome" size={15} color={c.purple} />}
               {item.label}
             </a>
           ))}
