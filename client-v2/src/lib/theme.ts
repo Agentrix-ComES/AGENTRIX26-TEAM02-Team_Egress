@@ -33,6 +33,7 @@ export const c = {
   muted: '#f6f4f1',
   dark: '#0d0d11',
   darkCard: '#16161c',
+  darkTeal: '#0a2e3d',
   photoBg: '#eef4f7',
 
   // text

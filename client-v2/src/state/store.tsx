@@ -66,6 +66,7 @@ function useAppStore() {
   // --- auth ----------------------------------------------------------------
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null)
 
   // --- cart --------------------------------------------------------------
   const [cart, setCart] = useState<CartItem[]>([])
@@ -137,19 +138,16 @@ function useAppStore() {
     }, Math.max(0, config.thinkingDelay))
   }, [])
 
-  const submitQuery = useCallback(
-    () => useAiFeature(() => search(query)),
-    [search, query, useAiFeature],
-  )
+  const submitQuery = useCallback(() => search(query), [search, query])
 
   /** Chips and follow-up questions: fill the box, switch to Ask, run it. */
   const askSuggestion = useCallback(
     (text: string) => {
       setQuery(text)
       setTab('ask')
-      useAiFeature(() => search(text))
+      search(text)
     },
-    [search, useAiFeature],
+    [search],
   )
 
   const submitForm = useCallback(() => {
@@ -399,6 +397,7 @@ function useAppStore() {
 
     // monetisation
     paywallOpen,
+    openPaywall: useCallback(() => setPaywallOpen(true), []),
     closePaywall: useCallback(() => setPaywallOpen(false), []),
     choosePlan: useCallback((id: string) => {
       setChosenPlan(id)
@@ -421,6 +420,12 @@ function useAppStore() {
       setAuthOpen(true)
     }, []),
     closeAuth: useCallback(() => setAuthOpen(false), []),
+    user,
+    login: useCallback((name: string, email: string) => {
+      setUser({ name: name.trim() || email.split('@')[0], email })
+      setAuthOpen(false)
+    }, []),
+    logout: useCallback(() => setUser(null), []),
 
     // cart
     cart,
@@ -442,7 +447,7 @@ function useAppStore() {
     swapDay,
     addDay: useCallback(() => setExtraDay(true), []),
     optimised,
-    optimise: useCallback(() => useAiFeature(() => setOptimised((o) => !o)), [useAiFeature]),
+    optimise: useCallback(() => setOptimised((o) => !o), []),
     addPlanToCart,
 
     // companion

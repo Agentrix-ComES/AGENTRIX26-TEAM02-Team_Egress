@@ -1,14 +1,15 @@
 import { ImageSlot } from '@/components/ui/ImageSlot'
+import { ScrollRow } from '@/components/ui/ScrollRow'
 import { Section, SectionAside, SectionHead } from '@/components/ui/Section'
 import { PACKAGES } from '@/data/catalogue'
-import { accentTheme, c } from '@/lib/theme'
+import { c } from '@/lib/theme'
 import { useApp } from '@/state/store'
 
 export function Packages() {
   const { addToCart, travellers, money } = useApp()
 
   return (
-    <Section id="packages" background="#fff">
+    <Section id="packages" background="#fff" wide>
       <SectionHead
         eyebrow="Holiday packages"
         title="Whole trips, one price."
@@ -20,132 +21,148 @@ export function Packages() {
         }
       />
 
-      <div
-        data-grid="three-up"
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 22 }}
-      >
-        {PACKAGES.map((pkg) => {
-          const t = accentTheme(pkg.accent)
-          return (
+      <ScrollRow itemWidth={300} gap={20}>
+        {PACKAGES.map((pkg) => (
+          <div
+            key={pkg.id}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              border: `1px solid ${c.line}`,
+              borderRadius: 20,
+              overflow: 'hidden',
+              background: '#fff',
+              boxShadow: '0 14px 34px -24px rgba(39,42,70,.24)',
+            }}
+          >
+            <div style={{ position: 'relative', height: 196, background: c.photoBg }}>
+              <ImageSlot id={pkg.slotId} placeholder={pkg.placeholder} />
+              <span
+                style={{
+                  position: 'absolute',
+                  top: 12,
+                  left: 12,
+                  padding: '5px 11px',
+                  borderRadius: 999,
+                  background: 'rgba(255,255,255,.94)',
+                  color: c.ink,
+                  fontSize: 11.5,
+                  fontWeight: 600,
+                }}
+              >
+                {pkg.tag}
+              </span>
+            </div>
+
             <div
-              key={pkg.id}
               style={{
+                padding: 18,
                 display: 'flex',
                 flexDirection: 'column',
-                borderRadius: 22,
-                overflow: 'hidden',
-                background: t.cardBg,
-                border: `1px solid ${t.cardBorder}`,
-                boxShadow: t.cardShadow,
+                gap: 9,
+                flex: 1,
               }}
             >
-              <div style={{ height: 212, background: c.photoBg }}>
-                <ImageSlot id={pkg.slotId} placeholder={pkg.placeholder} />
+              <div style={{ fontSize: 13.5, color: c.textSubtle }}>{pkg.duration}</div>
+
+              <div style={{ fontSize: 17, fontWeight: 600, color: c.ink, lineHeight: 1.25 }}>
+                {pkg.name}
+              </div>
+              <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5, color: c.body }}>
+                {pkg.blurb}
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {pkg.includes.map((line) => (
+                  <div
+                    key={line}
+                    style={{
+                      display: 'flex',
+                      gap: 7,
+                      alignItems: 'flex-start',
+                      fontSize: 13,
+                      color: c.body,
+                    }}
+                  >
+                    <span style={{ flex: 'none', color: c.primary, fontWeight: 700 }}>✓</span>
+                    {line}
+                  </div>
+                ))}
               </div>
 
               <div
                 style={{
-                  padding: 24,
                   display: 'flex',
-                  flexDirection: 'column',
-                  gap: 12,
-                  flex: 1,
+                  gap: 7,
+                  alignItems: 'flex-start',
+                  padding: 10,
+                  borderRadius: 10,
+                  background: '#f2f8fb',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <span
-                    style={{
-                      padding: '4px 11px',
-                      borderRadius: 999,
-                      background: t.tagBg,
-                      color: t.tagColor,
-                      fontSize: 12,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {pkg.tag}
+                <span
+                  style={{
+                    flex: 'none',
+                    color: c.cyan,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  AI
+                </span>
+                <span style={{ fontSize: 13, lineHeight: 1.5, color: c.body }}>{pkg.aiNote}</span>
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 8,
+                  marginTop: 'auto',
+                  paddingTop: 10,
+                }}
+              >
+                <span style={{ fontSize: 18, fontWeight: 600, color: c.ink }}>
+                  {money(pkg.price)}
+                  <span style={{ fontSize: 13, fontWeight: 400, color: c.textSubtle }}>
+                    {' '}
+                    / person
                   </span>
-                  <span style={{ fontSize: 13, color: t.subColor }}>{pkg.duration}</span>
-                </div>
-
-                <h3
+                </span>
+                <button
+                  type="button"
+                  data-hover="ink"
+                  onClick={() =>
+                    addToCart({
+                      id: pkg.id,
+                      kind: 'Package',
+                      name: pkg.name,
+                      meta: `${pkg.duration} · ${travellers} traveller${travellers === 1 ? '' : 's'}`,
+                      price: pkg.price * travellers,
+                      free: false,
+                    })
+                  }
                   style={{
-                    fontSize: 23,
-                    fontWeight: 600,
-                    lineHeight: 1.2,
-                    color: t.titleColor,
+                    height: 36,
+                    padding: '0 14px',
+                    border: 'none',
+                    borderRadius: 8,
+                    background: c.ink,
+                    color: '#fff',
+                    fontSize: 13.5,
+                    fontWeight: 500,
+                    cursor: 'pointer',
                   }}
                 >
-                  {pkg.name}
-                </h3>
-                <p style={{ fontSize: 15, lineHeight: 1.6, color: t.bodyColor }}>{pkg.blurb}</p>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginTop: 4 }}>
-                  {pkg.includes.map((line) => (
-                    <div
-                      key={line}
-                      style={{
-                        display: 'flex',
-                        gap: 9,
-                        alignItems: 'flex-start',
-                        fontSize: 14,
-                        color: t.bodyColor,
-                      }}
-                    >
-                      <span style={{ flex: 'none', color: t.checkColor, fontWeight: 700 }}>✓</span>
-                      {line}
-                    </div>
-                  ))}
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    justifyContent: 'space-between',
-                    gap: 12,
-                    marginTop: 'auto',
-                    paddingTop: 14,
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: 22, fontWeight: 600, color: t.titleColor }}>
-                      from {money(pkg.price)}
-                    </div>
-                    <div style={{ fontSize: 12.5, color: t.subColor }}>per person, twin share</div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      addToCart({
-                        id: pkg.id,
-                        kind: 'Package',
-                        name: pkg.name,
-                        meta: `${pkg.duration} · ${travellers} traveller${travellers === 1 ? '' : 's'}`,
-                        price: pkg.price * travellers,
-                        free: false,
-                      })
-                    }
-                    style={{
-                      height: 38,
-                      padding: '0 18px',
-                      border: 'none',
-                      borderRadius: 8,
-                      background: t.btnBg,
-                      color: t.btnColor,
-                      fontSize: 14,
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Add to cart
-                  </button>
-                </div>
+                  Add
+                </button>
               </div>
             </div>
-          )
-        })}
-      </div>
+          </div>
+        ))}
+      </ScrollRow>
     </Section>
   )
 }

@@ -1,4 +1,5 @@
 import { ImageSlot } from '@/components/ui/ImageSlot'
+import { ScrollRow } from '@/components/ui/ScrollRow'
 import { Section, SectionHead } from '@/components/ui/Section'
 import { ACTIVITIES, ACTIVITY_FILTERS } from '@/data/catalogue'
 import { c } from '@/lib/theme'
@@ -13,7 +14,7 @@ export function Activities() {
       : ACTIVITIES.filter((a) => a.category === activityFilter)
 
   return (
-    <Section id="activities">
+    <Section id="activities" wide>
       <SectionHead
         eyebrow="Activities"
         title="Things worth getting up early for."
@@ -47,88 +48,106 @@ export function Activities() {
         }
       />
 
-      <div
-        className="cs-scroll"
-        style={{
-          display: 'grid',
-          gridAutoFlow: 'column',
-          gridAutoColumns: 270,
-          gap: 18,
-          overflowX: 'auto',
-          paddingBottom: 12,
-        }}
-      >
+      <ScrollRow itemWidth={300} gap={20}>
         {visible.map((activity) => (
           <div
             key={activity.id}
             style={{
-              position: 'relative',
-              height: 360,
-              borderRadius: 22,
+              display: 'flex',
+              flexDirection: 'column',
+              border: `1px solid ${c.line}`,
+              borderRadius: 20,
               overflow: 'hidden',
-              background: '#e7eef2',
+              background: '#fff',
+              boxShadow: '0 14px 34px -24px rgba(39,42,70,.24)',
             }}
           >
-            <ImageSlot id={activity.slotId} placeholder={activity.placeholder} />
+            <div style={{ position: 'relative', height: 196, background: c.photoBg }}>
+              <ImageSlot id={activity.slotId} placeholder={activity.placeholder} />
+              <span
+                style={{
+                  position: 'absolute',
+                  top: 12,
+                  left: 12,
+                  padding: '5px 11px',
+                  borderRadius: 999,
+                  background: activity.chipBg,
+                  color: activity.chipColor,
+                  fontSize: 11.5,
+                  fontWeight: 600,
+                }}
+              >
+                {activity.category}
+              </span>
+            </div>
 
             <div
               style={{
-                position: 'absolute',
-                inset: 0,
-                pointerEvents: 'none',
-                background:
-                  'linear-gradient(180deg,rgba(13,13,17,0) 38%,rgba(13,13,17,.85) 100%)',
-              }}
-            />
-
-            <span
-              style={{
-                position: 'absolute',
-                top: 14,
-                left: 14,
-                padding: '5px 11px',
-                borderRadius: 999,
-                background: activity.chipBg,
-                color: activity.chipColor,
-                fontSize: 11.5,
-                fontWeight: 600,
-              }}
-            >
-              {activity.category}
-            </span>
-
-            <div
-              style={{
-                position: 'absolute',
-                left: 18,
-                right: 18,
-                bottom: 16,
+                padding: 18,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 7,
+                gap: 9,
+                flex: 1,
               }}
             >
-              <span style={{ fontSize: 19, fontWeight: 600, color: '#fff', lineHeight: 1.25 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 13, color: c.yellow }}>★</span>
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: c.ink }}>
+                  {activity.rating}
+                </span>
+              </div>
+
+              <div style={{ fontSize: 17, fontWeight: 600, color: c.ink, lineHeight: 1.25 }}>
                 {activity.name}
-              </span>
-              <span style={{ fontSize: 13, color: 'rgba(255,255,255,.78)' }}>
-                {activity.detail}
-              </span>
+              </div>
+              <div style={{ fontSize: 13.5, color: c.textSubtle }}>{activity.detail}</div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 7,
+                  alignItems: 'flex-start',
+                  padding: 10,
+                  borderRadius: 10,
+                  background: '#f2f8fb',
+                }}
+              >
+                <span
+                  style={{
+                    flex: 'none',
+                    color: c.cyan,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  AI
+                </span>
+                <span style={{ fontSize: 13, lineHeight: 1.5, color: c.body }}>
+                  {activity.aiNote}
+                </span>
+              </div>
+
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: 12,
-                  marginTop: 4,
+                  gap: 8,
+                  marginTop: 'auto',
+                  paddingTop: 10,
                 }}
               >
-                <span style={{ fontSize: 16, fontWeight: 600, color: '#fff' }}>
-                  from {money(activity.price)}
+                <span style={{ fontSize: 18, fontWeight: 600, color: c.ink }}>
+                  {money(activity.price)}
+                  <span style={{ fontSize: 13, fontWeight: 400, color: c.textSubtle }}>
+                    {' '}
+                    / person
+                  </span>
                 </span>
                 <button
                   type="button"
-                  data-hover="yellow"
+                  data-hover="ink"
                   onClick={() =>
                     addToCart({
                       id: activity.id,
@@ -140,13 +159,13 @@ export function Activities() {
                     })
                   }
                   style={{
-                    height: 32,
+                    height: 36,
                     padding: '0 14px',
                     border: 'none',
                     borderRadius: 8,
-                    background: '#fff',
-                    color: c.ink,
-                    fontSize: 13,
+                    background: c.ink,
+                    color: '#fff',
+                    fontSize: 13.5,
                     fontWeight: 500,
                     cursor: 'pointer',
                   }}
@@ -157,7 +176,7 @@ export function Activities() {
             </div>
           </div>
         ))}
-      </div>
+      </ScrollRow>
     </Section>
   )
 }

@@ -1,4 +1,5 @@
 import { ImageSlot } from '@/components/ui/ImageSlot'
+import { ScrollRow } from '@/components/ui/ScrollRow'
 import { Section, SectionAside, SectionHead } from '@/components/ui/Section'
 import { STAYS } from '@/data/catalogue'
 import { c } from '@/lib/theme'
@@ -8,17 +9,14 @@ export function Stays() {
   const { addToCart, money } = useApp()
 
   return (
-    <Section id="stays" background="#fff">
+    <Section id="stays" background="#fff" wide>
       <SectionHead
         eyebrow="Stays"
         title="Hotels, villas and boutique lodges."
         aside={<SectionAside maxWidth={330}>Book any of these on their own — no AI plan required.</SectionAside>}
       />
 
-      <div
-        data-grid="four-up"
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}
-      >
+      <ScrollRow itemWidth={300} gap={20}>
         {STAYS.map((stay) => (
           <div
             key={stay.id}
@@ -145,7 +143,7 @@ export function Stays() {
             </div>
           </div>
         ))}
-      </div>
+      </ScrollRow>
     </Section>
   )
 }

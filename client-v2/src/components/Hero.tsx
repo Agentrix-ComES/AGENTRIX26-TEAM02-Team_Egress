@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { c } from '@/lib/theme'
+import { useApp } from '@/state/store'
 
 const HERO_PHOTOS = [
   '/images/hero/pexels-srkportraits-10710560.jpg',
@@ -44,6 +45,8 @@ function HeroPhotos() {
 }
 
 export function Hero() {
+  const { openPaywall } = useApp()
+
   return (
     <section id="top" style={{ padding: 0 }}>
       <div
@@ -169,7 +172,10 @@ export function Hero() {
                 >
                   Free cancellation
                 </span>
-                <span
+                <button
+                  type="button"
+                  onClick={openPaywall}
+                  className="cs-cta-glow"
                   style={{
                     padding: '9px 16px',
                     borderRadius: 999,
@@ -177,10 +183,13 @@ export function Hero() {
                     color: c.navy,
                     fontSize: 14,
                     fontWeight: 500,
+                    border: 'none',
+                    cursor: 'pointer',
+                    pointerEvents: 'auto',
                   }}
                 >
                   7-day AI trial
-                </span>
+                </button>
               </div>
             </div>
           </div>

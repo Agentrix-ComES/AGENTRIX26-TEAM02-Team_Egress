@@ -12,6 +12,7 @@ import { Planner } from '@/components/Planner'
 import { Plans } from '@/components/Plans'
 import { SearchPanel } from '@/components/SearchPanel'
 import { Stays } from '@/components/Stays'
+import { Transport } from '@/components/Transport'
 import { VoiceGuide } from '@/components/VoiceGuide'
 import { AppProvider } from '@/state/store'
 
@@ -23,11 +24,12 @@ export default function App() {
       <main>
         <Hero />
         <SearchPanel />
-        <Planner />
-        <Companion />
         <Stays />
         <Activities />
+        <Transport />
         <Packages />
+        <Planner />
+        <Companion />
         <Plans />
         <Faq />
       </main>

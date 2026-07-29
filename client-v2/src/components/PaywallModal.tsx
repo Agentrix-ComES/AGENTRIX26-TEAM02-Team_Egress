@@ -31,27 +31,27 @@ export function PaywallModal() {
         className="cs-scroll"
         style={{
           width: '100%',
-          maxWidth: 1020,
-          maxHeight: '88vh',
+          maxWidth: 940,
+          maxHeight: '94vh',
           overflowY: 'auto',
           background: '#fff',
-          borderRadius: 24,
+          borderRadius: 22,
           boxShadow: '0 40px 90px -40px rgba(13,13,17,.6)',
           animation: 'csRise .3s ease both',
         }}
       >
-        <div style={{ padding: '32px 36px 0', display: 'flex', alignItems: 'flex-start', gap: 20 }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 12 }}>
+        <div style={{ padding: '24px 28px 0', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
               <span style={{ display: 'flex', color: c.primary }}>
-                <Icon name="AutoMode" size={20} />
+                <Icon name="AutoMode" size={18} />
               </span>
               <span
                 style={{
                   padding: '4px 11px',
                   borderRadius: 999,
-                  background: c.greenTint,
-                  color: c.greenInk,
+                  background: c.primaryTint,
+                  color: c.primaryHover,
                   fontSize: 12,
                   fontWeight: 600,
                 }}
@@ -61,20 +61,19 @@ export function PaywallModal() {
             </div>
             <h2
               style={{
-                marginBottom: 10,
-                fontSize: 32,
+                marginBottom: 6,
+                fontSize: 24,
                 fontWeight: 500,
-                letterSpacing: -0.8,
-                lineHeight: 1.12,
+                letterSpacing: -0.6,
+                lineHeight: 1.15,
                 color: c.ink,
               }}
             >
               Keep the AI travel agent working for you.
             </h2>
-            <p style={{ maxWidth: 620, fontSize: 15.5, lineHeight: 1.65, color: c.body }}>
-              Your 7-day trial covers everything below. Booking stays, activities and packages is
-              always free — you only pay for the AI planner, the live trip companion and the voice
-              guide.
+            <p style={{ maxWidth: 620, fontSize: 14, lineHeight: 1.55, color: c.body }}>
+              Planning and booking with the AI is always free — you only pay to turn on the live
+              trip companion and the hands-free voice guide.
             </p>
           </div>
           <button
@@ -83,13 +82,13 @@ export function PaywallModal() {
             aria-label="Close"
             style={{
               flex: 'none',
-              width: 34,
-              height: 34,
+              width: 32,
+              height: 32,
               border: 'none',
               borderRadius: 9,
               background: c.muted,
               color: c.body,
-              fontSize: 16,
+              fontSize: 15,
               cursor: 'pointer',
             }}
           >
@@ -100,31 +99,31 @@ export function PaywallModal() {
         <div
           data-grid="three-up"
           style={{
-            padding: '26px 36px 12px',
+            padding: '18px 28px 4px',
             display: 'grid',
             gridTemplateColumns: 'repeat(3,1fr)',
-            gap: 18,
+            gap: 14,
           }}
         >
           {PLANS.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} compact />
+            <PlanCard key={plan.id} plan={plan} compact maxFeatures={4} />
           ))}
         </div>
 
-        <div style={{ padding: '12px 36px 32px' }}>
+        <div style={{ padding: '14px 28px 24px' }}>
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: 14,
-              padding: '16px 18px',
-              borderRadius: 14,
+              padding: '13px 16px',
+              borderRadius: 12,
               background: c.page,
               border: `1px solid ${c.line}`,
               flexWrap: 'wrap',
             }}
           >
-            <span style={{ fontSize: 13.5, color: c.body }}>
+            <span style={{ fontSize: 13, color: c.body }}>
               Trial day {trialDay} of 7 — cancel any time, nothing is charged until it ends.
             </span>
             <button
@@ -136,7 +135,7 @@ export function PaywallModal() {
                 border: 'none',
                 background: 'transparent',
                 color: c.textMuted,
-                fontSize: 13.5,
+                fontSize: 13,
                 fontWeight: 500,
                 cursor: 'pointer',
               }}

@@ -6,27 +6,31 @@ interface PlanCardProps {
   plan: Plan
   /** The paywall renders a tighter version of the same card. */
   compact?: boolean
+  /** Paywall context trims the feature list so the whole modal fits without scrolling. */
+  maxFeatures?: number
 }
 
-export function PlanCard({ plan, compact = false }: PlanCardProps) {
+export function PlanCard({ plan, compact = false, maxFeatures }: PlanCardProps) {
   const { chosenPlan, choosePlan, money } = useApp()
-  const t = accentTheme(plan.accent)
+  const t = accentTheme('light')
   const isCurrent = chosenPlan === plan.id
+  const features = maxFeatures ? plan.features.slice(0, maxFeatures) : plan.features
+  const highlight = plan.badge
 
   return (
     <div
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 12,
-        padding: compact ? 24 : 28,
-        borderRadius: compact ? 20 : 22,
+        gap: compact ? 10 : 12,
+        padding: compact ? 20 : 28,
+        borderRadius: compact ? 18 : 22,
         background: t.cardBg,
-        border: `1px solid ${t.cardBorder}`,
-        boxShadow: t.cardShadow,
+        border: `1px solid ${highlight ? c.primary : t.cardBorder}`,
+        boxShadow: highlight ? '0 14px 34px -22px rgba(212,38,79,.35)' : t.cardShadow,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 22 }}>
         <span
           style={{
             fontSize: 12,
@@ -56,7 +60,7 @@ export function PlanCard({ plan, compact = false }: PlanCardProps) {
 
       <div
         style={{
-          fontSize: compact ? 22 : 24,
+          fontSize: compact ? 19 : 24,
           fontWeight: 600,
           color: t.titleColor,
           lineHeight: 1.2,
@@ -68,31 +72,33 @@ export function PlanCard({ plan, compact = false }: PlanCardProps) {
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
         <span
           style={{
-            fontSize: compact ? 34 : 40,
+            fontSize: compact ? 28 : 40,
             fontWeight: 600,
-            letterSpacing: compact ? -1 : -1.2,
+            letterSpacing: compact ? -0.8 : -1.2,
             color: t.titleColor,
           }}
         >
-          {money(plan.price)}
+          {plan.price === 0 ? 'Free' : money(plan.price)}
         </span>
-        <span style={{ fontSize: compact ? 13.5 : 14, color: t.subColor }}>{plan.unit}</span>
+        {plan.price !== 0 && (
+          <span style={{ fontSize: compact ? 13 : 14, color: t.subColor }}>{plan.unit}</span>
+        )}
       </div>
 
-      <p style={{ fontSize: compact ? 14 : 14.5, lineHeight: 1.6, color: t.bodyColor }}>
-        {plan.blurb}
-      </p>
+      {!compact && (
+        <p style={{ fontSize: 14.5, lineHeight: 1.6, color: t.bodyColor }}>{plan.blurb}</p>
+      )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: compact ? 8 : 9, marginTop: 4 }}>
-        {plan.features.map((feature) => (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: compact ? 7 : 9, marginTop: 4 }}>
+        {features.map((feature) => (
           <div
             key={feature}
             style={{
               display: 'flex',
-              gap: 9,
+              gap: 8,
               alignItems: 'flex-start',
-              fontSize: compact ? 13.5 : 14,
-              lineHeight: 1.55,
+              fontSize: compact ? 13 : 14,
+              lineHeight: 1.5,
               color: t.bodyColor,
             }}
           >
@@ -107,12 +113,12 @@ export function PlanCard({ plan, compact = false }: PlanCardProps) {
         onClick={() => choosePlan(plan.id)}
         style={{
           marginTop: 'auto',
-          height: compact ? 44 : 46,
+          height: compact ? 40 : 46,
           border: 'none',
           borderRadius: 8,
-          background: t.btnBg,
-          color: t.btnColor,
-          fontSize: compact ? 14.5 : 15,
+          background: highlight ? c.primary : t.btnBg,
+          color: highlight ? '#fff' : t.btnColor,
+          fontSize: compact ? 13.5 : 15,
           fontWeight: 500,
           cursor: 'pointer',
         }}

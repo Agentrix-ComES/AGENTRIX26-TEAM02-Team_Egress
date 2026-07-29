@@ -72,6 +72,7 @@ export interface Activity {
   rating: string
   chipBg: string
   chipColor: string
+  aiNote: string
   placeholder: string
 }
 
@@ -85,6 +86,29 @@ export interface Package {
   price: number
   includes: string[]
   accent: Accent
+  aiNote: string
+  placeholder: string
+}
+
+export type TransportMode =
+  | 'Private driver'
+  | 'Train'
+  | 'Tuk-tuk'
+  | 'Domestic flight'
+  | 'Coach'
+  | 'Seaplane'
+
+export interface Transport {
+  id: string
+  slotId: string
+  name: string
+  mode: TransportMode
+  route: string
+  detail: string
+  price: number
+  unit: string
+  rating: string
+  aiNote: string
   placeholder: string
 }
 
