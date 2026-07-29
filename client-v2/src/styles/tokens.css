@@ -1,0 +1,54 @@
+/* Creative Software brand tokens — ported from the Figma design system
+   (_ds/creative-software-design-system/tokens/{brand,typography}.css).
+   The TS mirror of the palette lives in src/lib/theme.ts — keep them in sync. */
+
+@font-face { font-family: "Poppins"; font-style: normal; font-weight: 300; font-display: swap; src: url("/fonts/Poppins-Light.ttf") format("truetype"); }
+@font-face { font-family: "Poppins"; font-style: normal; font-weight: 400; font-display: swap; src: url("/fonts/Poppins-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Poppins"; font-style: italic;  font-weight: 400; font-display: swap; src: url("/fonts/Poppins-Italic.ttf") format("truetype"); }
+@font-face { font-family: "Poppins"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/Poppins-Medium.ttf") format("truetype"); }
+@font-face { font-family: "Poppins"; font-style: normal; font-weight: 600; font-display: swap; src: url("/fonts/Poppins-SemiBold.ttf") format("truetype"); }
+@font-face { font-family: "Poppins"; font-style: normal; font-weight: 700; font-display: swap; src: url("/fonts/Poppins-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Poppins"; font-style: normal; font-weight: 800; font-display: swap; src: url("/fonts/Poppins-ExtraBold.ttf") format("truetype"); }
+
+:root {
+  --font-sans: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  /* Brand ramp (crimson) */
+  --cs-primary: #d4264f;
+  --cs-primary-hover: #ab1e40;
+  --cs-primary-soft: #ec8299;
+  --cs-primary-tint: #fdeef2;
+
+  /* Official palette */
+  --cs-secondary: #434243;
+  --cs-navy: #272a46;
+  --cs-yellow: #f1ca01;
+  --cs-green: #00c580;
+  --cs-cyan: #01a1d2;
+  --cs-purple: #7f7ddf;
+
+  /* Surfaces */
+  --surface-page: #fdfaf6;
+  --surface-card: #ffffff;
+  --surface-muted: #f6f4f1;
+  --surface-dark: #0d0d11;
+  --surface-dark-card: #16161c;
+
+  /* Text */
+  --text-ink: #0d0d11;
+  --text-body: #434243;
+  --text-muted: #81818b;
+  --text-subtle: #a09b95;
+  --text-faint: #b5b0aa;
+
+  /* Lines */
+  --line: #f0ebe4;
+  --line-strong: #ece7e1;
+  --line-soft: #f4f0eb;
+
+  /* Layout */
+  --page-max: 1240px;
+  --page-pad: 40px;
+  --header-h: 78px;
+}

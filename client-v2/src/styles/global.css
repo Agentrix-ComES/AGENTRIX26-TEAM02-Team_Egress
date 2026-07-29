@@ -1,0 +1,194 @@
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--surface-page);
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--cs-primary);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--cs-primary-hover);
+}
+
+input,
+button,
+select,
+textarea {
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+/* ---- Motion ------------------------------------------------------------ */
+
+@keyframes csDot {
+  0%, 100% { opacity: 0.22; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-3px); }
+}
+@keyframes csRise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes csCaret {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes csShimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+@keyframes csPulse {
+  0%, 100% { transform: scale(1); opacity: 0.55; }
+  50% { transform: scale(1.5); opacity: 0; }
+}
+@keyframes csBar {
+  0%, 100% { height: 8px; }
+  50% { height: 22px; }
+}
+
+/* ---- Scrollbars -------------------------------------------------------- */
+
+.cs-scroll::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.cs-scroll::-webkit-scrollbar-thumb {
+  background: #e3e0e1;
+  border-radius: 999px;
+}
+
+.cs-hidebar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.cs-hidebar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---- Hover states ------------------------------------------------------
+   The mock used a `style-hover` attribute the design tool understood. React
+   has no inline :hover, so hovers are expressed as data-attributes instead:
+   <button data-hover="primary"> etc. Add new variants here, not inline.      */
+
+[data-hover="primary"]:hover {
+  background: var(--cs-primary-hover) !important;
+}
+[data-hover="ink"]:hover {
+  background: var(--cs-navy) !important;
+}
+[data-hover="outline"]:hover {
+  border-color: var(--cs-primary) !important;
+  color: var(--cs-primary) !important;
+}
+[data-hover="text"]:hover {
+  color: var(--cs-primary) !important;
+}
+[data-hover="light"]:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+[data-hover="light-strong"]:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+[data-hover="yellow"]:hover {
+  background: var(--cs-yellow) !important;
+}
+
+/* ---- Responsive --------------------------------------------------------
+   The mock is a 1240px desktop canvas. These breakpoints collapse the grids
+   so the page is usable on tablet/mobile without re-authoring every section.
+   Grid columns are declared inline, so the overrides need `!important`.      */
+
+@media (max-width: 1080px) {
+  :root {
+    --page-pad: 24px;
+  }
+  [data-grid="two-up"],
+  [data-grid="three-up"],
+  [data-grid="four-up"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  [data-grid="split"] {
+    grid-template-columns: 1fr !important;
+  }
+  [data-grid="search-form"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  [data-grid="footer"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  :root {
+    --page-pad: 18px;
+  }
+  [data-hide-sm] {
+    display: none !important;
+  }
+
+  /* Itinerary rows: tighten the day gutter and drop price + Add onto their own
+     line, so the activity text isn't squeezed into a 4-line column. */
+  [data-itin-day] {
+    padding: 14px 12px !important;
+    gap: 10px !important;
+  }
+  [data-itin-gutter] {
+    width: 40px !important;
+  }
+  [data-itin-row] {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  [data-itin-text] {
+    min-width: calc(100% - 30px);
+  }
+  [data-itin-price] {
+    margin-left: auto;
+  }
+  [data-grid="two-up"],
+  [data-grid="three-up"],
+  [data-grid="four-up"],
+  [data-grid="search-form"],
+  [data-grid="footer"] {
+    grid-template-columns: 1fr !important;
+  }
+  [data-drawer] {
+    width: 100% !important;
+  }
+  [data-voice-panel] {
+    right: 12px !important;
+    left: 12px !important;
+    bottom: 12px !important;
+    width: auto !important;
+  }
+}
+
+@media (max-width: 480px) {
+  [data-hide-xs] {
+    display: none !important;
+  }
+}
