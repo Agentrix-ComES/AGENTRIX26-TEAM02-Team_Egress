@@ -1,0 +1,15 @@
+# Handle text files automatically and normalize them to LF in the repo
+* text=auto
+
+# Force LF line endings on checkout for all text files
+* eol=lf
+
+# Explicitly ensure specific file types always use LF
+*.sh text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+
+# Leave binary files completely untouched
+*.png binary
+*.jpg binary
+*.pdf binary

@@ -1,0 +1,18 @@
+/* Creative Software Design System — global CSS entry point.
+   Consumers link THIS file. It is a manifest of @imports only. */
+
+/* Webfonts (Poppins) */
+@import "./tokens/fonts.css";
+
+/* Raw Figma Variables (the file's structured token system, all theme modes) */
+@import "./components/fig-tokens.css";
+
+/* Brand overrides — bind crimson + Poppins onto the SDS token layer.
+   MUST load after fig-tokens.css. */
+@import "./tokens/brand.css";
+
+/* Brand type scale */
+@import "./tokens/typography.css";
+
+/* Figma bitmap-fill helper classes (.fig-asset-*) */
+@import "./components/fig-assets.css";

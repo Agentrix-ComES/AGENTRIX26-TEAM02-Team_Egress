@@ -1,0 +1,45 @@
+/* Creative Software — brand overrides layered on top of fig-tokens.css.
+   The Figma file was built on the "Simple Design System" kit whose brand ramp
+   was left grayscale and whose type was Inter. These overrides bind the true
+   Creative Software identity (crimson primary + Poppins) onto those tokens so
+   every materialized SDS component renders on-brand. Loaded AFTER fig-tokens. */
+
+:root{
+  /* ---- Brand typeface ---- */
+  --family-sans:"Poppins"; /* @kind font */
+  --family-sans-2:"Poppins"; /* @kind font */
+
+  /* ---- Crimson brand ramp (overrides the grayscale SDS brand-* scale) ----
+     --brand-800 is the SDS "brand default" background; --brand-900 the hover.
+     --brand-100 is the light "on-brand"/tertiary tint. */
+  --brand-100:#fdeef2; --brand-100-2:#fdeef2; --brand-100-3:#fdeef2;
+  --brand-200:#fbd5df;
+  --brand-300:#f4aabb; --brand-300-2:#f4aabb; --brand-300-3:#f4aabb;
+  --brand-400:#ec8299; --brand-400-2:#ec8299;
+  --brand-500:#e15476;
+  --brand-600:#d92f56; --brand-600-2:#d92f56; --brand-600-3:#d92f56;
+  --brand-700:#cc244c; --brand-700-2:#cc244c;
+  --brand-800:#d4264f; --brand-800-2:#d4264f; --brand-800-3:#d4264f;
+  --brand-900:#ab1e40; --brand-900-2:#ab1e40; --brand-900-3:#ab1e40;
+
+  /* ---- Official palette (from the Visual Identity Guide) ---- */
+  --cs-primary:#d4264f;          /* Web/RGB primary */
+  --cs-primary-pantone:#cf3854;  /* Pantone match */
+  --cs-primary-hover:#ab1e40;
+  --cs-secondary:#434243;        /* Pantone Cool Gray 11C */
+  --cs-white:#ffffff;
+  --cs-yellow:#f1ca01;           /* tertiary */
+  --cs-navy:#272a46;
+  --cs-green:#00c580;
+  --cs-cyan:#01a1d2;
+  --cs-blue:#003fc2;
+  --cs-purple:#7f7ddf;
+
+  /* ---- Semantic brand aliases ---- */
+  --color-primary:var(--cs-primary);
+  --color-ink:var(--cs-secondary);
+  --surface-page:#ffffff;
+  --surface-muted:#f6f5f5;
+  --text-body:var(--cs-secondary);
+  --text-muted:#81818b;
+}

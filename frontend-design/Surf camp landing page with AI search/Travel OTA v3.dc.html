@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/creative-software-design-system-ab67e036-555c-4e1c-8dbf-ba402004f8a6/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/creative-software-design-system-ab67e036-555c-4e1c-8dbf-ba402004f8a6/components/fig-tokens.css">
+<link rel="stylesheet" href="_ds/creative-software-design-system-ab67e036-555c-4e1c-8dbf-ba402004f8a6/tokens/brand.css">
+<link rel="stylesheet" href="_ds/creative-software-design-system-ab67e036-555c-4e1c-8dbf-ba402004f8a6/tokens/typography.css">
+<link rel="stylesheet" href="_ds/creative-software-design-system-ab67e036-555c-4e1c-8dbf-ba402004f8a6/components/fig-assets.css">
+<link rel="stylesheet" href="_ds/creative-software-design-system-ab67e036-555c-4e1c-8dbf-ba402004f8a6/styles.css">
+<script src="_ds/creative-software-design-system-ab67e036-555c-4e1c-8dbf-ba402004f8a6/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #fdfaf6; }
+  * { box-sizing: border-box; }
+  a { color: #d4264f; text-decoration: none; }
+  a:hover { color: #ab1e40; }
+  input, button, select, textarea { font-family: "Poppins", sans-serif; }
+  @keyframes csDot { 0%, 100% { opacity: .22; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+  @keyframes csRise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes csCaret { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+  @keyframes csShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+  .cs-scroll::-webkit-scrollbar { height: 6px; }
+  .cs-scroll::-webkit-scrollbar-thumb { background: #e3e0e1; border-radius: 999px; }
+</style>
+</helmet>
+<div style="font-family:'Poppins',sans-serif;color:#434243;background:#fdfaf6;overflow-x:hidden">
+
+  <header style="position:sticky;top:0;z-index:40;background:rgba(253,250,246,.92);backdrop-filter:blur(10px);border-bottom:1px solid #f0ebe4">
+    <div style="max-width:1240px;margin:0 auto;padding:0 40px;height:78px;display:flex;align-items:center;gap:34px">
+      <div style="display:flex;align-items:center;gap:9px;flex:none">
+        <span style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;background:#d4264f;color:#fff;font-size:15px;font-weight:600">c</span>
+        <span style="font-size:18.5px;font-weight:600;letter-spacing:-.4px;color:#0d0d11">ceylon<span style="color:#d4264f">trips</span></span>
+      </div>
+      <nav class="cs-scroll" style="display:flex;gap:22px;font-size:15px;font-weight:500;min-width:0;white-space:nowrap;overflow-x:auto">
+        <a href="#stays" style="color:#434243">Stays</a>
+        <a href="#activities" style="color:#434243">Activities</a>
+        <a href="#packages" style="color:#434243">Packages</a>
+        <a href="#planner" style="color:#434243">AI trip planner</a>
+        <a href="#tools" style="color:#434243">AI tools</a>
+      </nav>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:14px;flex:none;white-space:nowrap">
+        <a href="#planner" style="display:flex;align-items:center;gap:6px;font-size:14.5px;font-weight:500;color:#434243">
+          <x-import component-from-global-scope="CreativeSoftwareDesignSystem_ab67e0.Icon" name="AutoModeStyleRound" size="17" hint-size="17px,17px"></x-import>
+          Plan with AI
+        </a>
+        <a href="#" style="font-size:14.5px;font-weight:500;color:#434243">Sign in</a>
+        <x-import component-from-global-scope="CreativeSoftwareDesignSystem_ab67e0.Button" variant="primary" size="sm" label="My trips" hint-size="106px,36px"></x-import>
+      </div>
+    </div>
+  </header>
+
+  <section style="padding:28px 40px 0">
+    <div style="max-width:1240px;margin:0 auto;position:relative;height:560px;border-radius:28px;overflow:hidden;background:linear-gradient(140deg,#01a1d2 0%,#0d6f9c 55%,#272a46 100%)">
+      <div style="position:absolute;inset:0"><image-slot id="v3-hero" shape="rect" placeholder="Drop the hero photo — coastline, tea country or a temple at golden hour"></image-slot></div>
+      <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,rgba(13,13,17,.72) 0%,rgba(13,13,17,.34) 52%,rgba(1,161,210,.14) 100%)"></div>
+      <div style="position:relative;height:100%;padding:56px;display:flex;flex-direction:column;justify-content:flex-end;gap:22px;pointer-events:none">
+        <div style="display:flex;align-items:center;gap:8px;align-self:flex-start;padding:7px 15px 7px 11px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:13px;font-weight:500;backdrop-filter:blur(4px)">
+          <x-import component-from-global-scope="CreativeSoftwareDesignSystem_ab67e0.Icon" name="LocationOn" size="16" hint-size="16px,16px"></x-import>
+          Sri Lanka · 1,400 stays · 620 activities · 48 packages
+        </div>
+        <h1 style="margin:0;max-width:780px;font-size:62px;font-weight:500;line-height:1.03;letter-spacing:-2px;color:#fff;text-wrap:pretty">Describe the trip. We'll plan and book the whole thing.</h1>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;flex-wrap:wrap">
+          <p style="margin:0;max-width:470px;font-size:18px;line-height:1.55;color:rgba(255,255,255,.88)">Hotels, tours, transfers and holiday packages across Sri Lanka — searched, sequenced and priced by AI, booked in one checkout.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <span style="padding:9px 16px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:14px">Free cancellation</span>
+            <span style="padding:9px 16px;border-radius:999px;background:#f1ca01;color:#272a46;font-size:14px;font-weight:500">4.8 · 26k reviews</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="search" style="padding:0 40px 88px">
+    <div style="max-width:1080px;margin:-56px auto 0;position:relative;background:#fff;border:1px solid #f0ebe4;border-radius:26px;box-shadow:0 28px 70px -32px rgba(39,42,70,.28);padding:26px">
+
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap">
+        <div style="display:flex;padding:4px;border-radius:999px;background:#f6f4f1;gap:2px">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+            <button type="button" onClick="{{ t.pick }}" style="display:flex;align-items:center;gap:7px;padding:8px 15px;border:none;border-radius:999px;font-size:13.5px;font-weight:500;cursor:pointer;background:{{ t.bg }};color:{{ t.color }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <span style="margin-left:auto;font-size:13px;color:#a09b95">Live inventory · prices in {{ currencyLabel }}</span>
+      </div>
+
+      <sc-if value="{{ isAskMode }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="padding:2px;border-radius:999px;background:linear-gradient(90deg,#01a1d2,#7f7ddf,#d4264f,#f1ca01,#01a1d2);background-size:200% 100%;animation:csShimmer 9s linear infinite">
+            <div style="display:flex;align-items:center;gap:12px;padding:7px 8px 7px 18px;border-radius:999px;background:#fff">
+              <span style="display:flex;color:#d4264f;flex:none">
+                <x-import component-from-global-scope="CreativeSoftwareDesignSystem_ab67e0.Icon" name="AutoModeStyleRound" size="22" hint-size="22px,22px"></x-import>
+              </span>
+              <input type="text" value="{{ q }}" onChange="{{ onQuery }}" onKeyDown="{{ onKey }}" placeholder="Ask anything — “10 days in February, beaches and tea country, two people, under $2,500”" style="flex:1;min-width:0;border:none;outline:none;font-size:16px;color:#0d0d11;background:transparent;padding:13px 0"/>
+              <button type="button" onClick="{{ onSearch }}" style="display:flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 22px;border:none;border-radius:999px;background:#d4264f;color:#fff;font-size:15px;font-weight:500;cursor:pointer;flex:none" style-hover="background:#ab1e40">Ask<span style="font-size:15px;line-height:1">↗</span></button>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
+            <sc-for list="{{ chips }}" as="chip" hint-placeholder-count="4">
+              <button type="button" onClick="{{ chip.pick }}" style="padding:8px 14px;border-radius:999px;border:1px solid #ece7e1;background:#fdfaf6;color:#434243;font-size:13.5px;cursor:pointer" style-hover="border-color:#d4264f;color:#d4264f">{{ chip.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isFormMode }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr .9fr auto;gap:12px;align-items:end">
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:500;color:#81818b">{{ formFirstLabel }}
+            <input type="text" value="{{ fWhere }}" onChange="{{ onWhere }}" placeholder="Anywhere in Sri Lanka" style="height:46px;padding:0 12px;border:1px solid #ece7e1;border-radius:8px;font-size:14.5px;color:#0d0d11;outline:none"/>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:500;color:#81818b">Month
+            <select value="{{ fMonth }}" onChange="{{ onMonth }}" style="height:46px;padding:0 12px;border:1px solid #ece7e1;border-radius:8px;background:#fff;font-size:14.5px;color:#0d0d11">
+              <sc-for list="{{ monthOptions }}" as="m" hint-placeholder-count="5">
+                <option value="{{ m }}">{{ m }}</option>
+              </sc-for>
+            </select>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:500;color:#81818b">Nights
+            <select value="{{ fNights }}" onChange="{{ onNights }}" style="height:46px;padding:0 12px;border:1px solid #ece7e1;border-radius:8px;background:#fff;font-size:14.5px;color:#0d0d11">
+              <option value="3">3 nights</option>
+              <option value="7">7 nights</option>
+              <option value="10">10 nights</option>
+              <option value="14">14 nights</option>
+            </select>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:500;color:#81818b">Travellers
+            <select value="{{ fPax }}" onChange="{{ onPax }}" style="height:46px;padding:0 12px;border:1px solid #ece7e1;border-radius:8px;background:#fff;font-size:14.5px;color:#0d0d11">
+              <option value="1">1 adult</option>
+              <option value="2">2 adults</option>
+              <option value="4">Family of 4</option>
+            </select>
+          </label>
+          <button type="button" onClick="{{ onFormSearch }}" style="height:46px;padding:0 26px;border:none;border-radius:8px;background:#0d0d11;color:#fff;font-size:15px;font-weight:500;cursor:pointer" style-hover="background:#272a46">Search</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ thinking }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:12px;margin-top:24px;padding-top:22px;border-top:1px solid #f4f0eb;font-size:14px;color:#a09b95">
+          <span style="display:flex;gap:5px">
+            <span style="width:7px;height:7px;border-radius:50%;background:#01a1d2;animation:csDot 1s ease-in-out infinite"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:#d4264f;animation:csDot 1s ease-in-out .15s infinite"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:#f1ca01;animation:csDot 1s ease-in-out .3s infinite"></span>
+          </span>
+          {{ thinkingLabel }}
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:24px;animation:csRise .4s ease both">
+          <div style="border-radius:20px;background:linear-gradient(180deg,#f2f8fb 0%,#fdfaf6 70%,#fff 100%);border:1px solid #eaf1f5;padding:22px">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;flex-wrap:wrap">
+              <span style="display:flex;color:#01a1d2"><x-import component-from-global-scope="CreativeSoftwareDesignSystem_ab67e0.Icon" name="AutoModeStyleRound" size="19" hint-size="19px,19px"></x-import></span>
+              <span style="font-size:15px;font-weight:600;color:#0d0d11">AI overview</span>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-left:6px">
+                <sc-for list="{{ criteria }}" as="c" hint-placeholder-count="3">
+                  <span style="padding:4px 11px;border-radius:999px;background:#fff;border:1px solid #e6eef3;color:#0d6f9c;font-size:12px;font-weight:500">{{ c }}</span>
+                </sc-for>
+              </div>
+            </div>
+            <p style="margin:0;font-size:16.5px;line-height:1.65;color:#0d0d11;max-width:820px;text-wrap:pretty">{{ typedAnswer }}<sc-if value="{{ streaming }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;width:9px;color:#d4264f;animation:csCaret 1s step-end infinite">▍</span></sc-if></p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+              <span style="padding:6px 12px;border-radius:8px;background:#fff;border:1px solid #eee9e3;font-size:12px;color:#81818b">Live rates &amp; availability</span>
+              <span style="padding:6px 12px;border-radius:8px;background:#fff;border:1px solid #eee9e3;font-size:12px;color:#81818b">Monsoon &amp; weather data</span>
+              <span style="padding:6px 12px;border-radius:8px;background:#fff;border:1px solid #eee9e3;font-size:12px;color:#81818b">26,400 verified reviews</span>
+              <span style="padding:6px 12px;border-radius:8px;background:#fff;border:1px solid #eee9e3;font-size:12px;color:#81818b">Drive times</span>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
+            <sc-for list="{{ results }}" as="r" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:18px;padding:14px;border:1px solid #f0ebe4;border-radius:18px;background:#fff;box-shadow:0 12px 30px -26px rgba(39,42,70,.4)">
+                <span style="flex:none;width:76px;height:76px;border-radius:14px;overflow:hidden;background:#eef4f7">
+                  <image-slot id="{{ r.slotId }}" shape="rounded" radius="14" placeholder="Photo"></image-slot>
+                </span>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px">
+                  <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                    <span style="padding:3px 9px;border-radius:5px;background:{{ r.kindBg }};color:{{ r.kindColor }};font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase">{{ r.kind }}</span>
+                    <span style="font-size:16.5px;font-weight:600;color:#0d0d11">{{ r.name }}</span>
+                    <span style="font-size:13px;color:#a09b95">{{ r.place }}</span>
+                    <span style="padding:3px 9px;border-radius:5px;background:#f2fbf7;color:#00a06a;font-size:11.5px;font-weight:500">{{ r.matchLabel }}</span>
+                  </div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px">
+                    <sc-for list="{{ r.reasons }}" as="reason" hint-placeholder-count="2">
+                      <span style="padding:4px 10px;border-radius:5px;background:#f6f4f1;color:#434243;font-size:12px">{{ reason }}</span>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+                  <span style="font-size:17px;font-weight:600;color:#0d0d11">{{ r.priceLabel }}</span>
+                  <span style="font-size:12.5px;color:#a09b95">{{ r.unitLabel }}</span>
+                </div>
+                <x-import component-from-global-scope="CreativeSoftwareDesignSystem_ab67e0.Button" variant="neutral" size="sm" label="View" hint-size="82px,36px"></x-import>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="margin-top:20px;border-top:1px solid #f4f0eb;padding-top:18px">
+            <div style="font-size:14px;font-weight:600;color:#0d0d11;margin-bottom:10px">People also ask</div>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ followUps }}" as="f" hint-placeholder-count="4">
+                <button type="button" onClick="{{ f.pick }}" style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 2px;border:none;border-bottom:1px solid #f4f0eb;background:transparent;cursor:pointer;text-align:left;font-size:15px;color:#434243" style-hover="color:#d4264f">
+                  {{ f.label }}
+                  <span style="font-size:18px;color:#c9c4be;font-weight:300">+</span>
+                </button>
+              </sc-for>
+            </div>
+            <p style="margin:14px 0 0;font-size:12px;color:#b5b0aa">AI answers can be wrong — confirm dates, prices and visa rules before booking.</p>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:24px 0 0;padding-top:20px;border-top:1px solid #f4f0eb;font-size:15px;color:#434243">Nothing matched that exactly. Loosen the budget or dates — or open the AI trip planner and we'll build a custom itinerary.</p>
+      </sc-if>
+    </div>
+  </section>
+
+  <section id="planner" style="padding:0 40px 92px">
+    <div style="max-width:1240px;margin:0 auto">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:28px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:13px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#d4264f;margin-bottom:12px">AI trip planner</div>
+          <h2 style="margin:0;font-size:42px;font-weight:500;line-height:1.08;letter-spacing:-1px;color:#0d0d11">A day-by-day itinerary, editable and bookable.</h2>
+        </div>
+        <p style="margin:0;max-width:360px;font-size:15.5px;line-height:1.6;color:#81818b">Generated from your answer above. Change the pace, swap a stop, or let AI re-optimise around drive times and weather.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.55fr 1fr;gap:22px;align-items:start">
+        <div style="background:#fff;border:1px solid #f0ebe4;border-radius:22px;box-shadow:0 16px 40px -28px rgba(39,42,70,.3);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid #f4f0eb;flex-wrap:wrap">
+            <span style="font-size:16px;font-weight:600;color:#0d0d11">{{ itinTitle }}</span>
+            <span style="padding:3px 9px;border-radius:5px;background:#fdeef2;color:#ab1e40;font-size:11.5px;font-weight:600">AI draft</span>
+            <div style="margin-left:auto;display:flex;padding:3px;border-radius:999px;background:#f6f4f1;gap:2px">
+              <sc-for list="{{ paceOptions }}" as="p" hint-placeholder-count="3">
+                <button type="button" onClick="{{ p.pick }}" style="padding:6px 13px;border:none;border-radius:999px;font-size:12.5px;font-weight:500;cursor:pointer;background:{{ p.bg }};color:{{ p.color }}">{{ p.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ itinerary }}" as="d" hint-placeholder-count="5">
+              <div style="display:flex;gap:18px;padding:18px 22px;border-bottom:1px solid #f6f2ed">
+                <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:8px;width:52px">
+                  <span style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:11px;background:#fdeef2;color:#d4264f;font-size:13px;font-weight:600">{{ d.dayLabel }}</span>
+                  <span style="font-size:11.5px;color:#b5b0aa;text-align:center">{{ d.drive }}</span>
+                </div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    <span style="font-size:16px;font-weight:600;color:#0d0d11">{{ d.place }}</span>
+                    <span style="font-size:13px;color:#a09b95">{{ d.nightsLabel }}</span>
+                    <span style="padding:3px 9px;border-radius:5px;background:{{ d.weatherBg }};color:{{ d.weatherColor }};font-size:11.5px;font-weight:500">{{ d.weather }}</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <sc-for list="{{ d.items }}" as="it" hint-placeholder-count="3">
+                      <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #f0ebe4;border-radius:10px;background:#fdfaf6">
+                        <span style="flex:none;width:20px;font-size:11px;font-weight:600;color:#01a1d2">{{ it.tag }}</span>
+                        <span style="flex:1;min-width:0;font-size:14.5px;color:#434243">{{ it.text }}</span>
+                        <span style="flex:none;font-size:13px;font-weight:500;color:#0d0d11">{{ it.price }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px">
+                    <button type="button" onClick="{{ d.swap }}" style="padding:6px 12px;border-radius:999px;border:1px dashed #d9d4ce;background:#fff;color:#434243;font-size:12.5px;cursor:pointer" style-hover="border-color:#d4264f;color:#d4264f">Swap this day</button>
+                    <button type="button" onClick="{{ d.remove }}" style="padding:6px 12px;border-radius:999px;border:1px dashed #d9d4ce;background:#fff;color:#434243;font-size:12.5px;cursor:pointer" style-hover="border-color:#d4264f;color:#d4264f">Remove</button>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;padding:16px 22px;flex-wrap:wrap">
+            <button type="button" onClick="{{ optimise }}" style="display:flex;align-items:center;gap:8px;height:42px;padding:0 18px;border:none;border-radius:8px;background:#0d0d11;color:#fff;font-size:14.5px;font-weight:500;cursor:pointer" style-hover="background:#272a46">
+              <x-import component-from-global-scope="CreativeSoftwareDesignSystem_ab67e0.Icon" name="AutoModeStyleRound" size="17" hint-size="17px,17px"></x-import>
+              Re-optimise route
+            </button>
+            <button type="button" onClick="{{ addDay }}" style="height:42px;padding:0 18px;border:1px solid #ece7e1;border-radius:8px;background:#fff;color:#434243;font-size:14.5px;font-weight:500;cursor:pointer" style-hover="border-color:#d4264f;color:#d4264f">Add a day</button>
+            <span style="margin-left:auto;font-size:13px;color:#a09b95">{{ optimiseNote }}</span>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="background:#272a46;border-radius:22px;padding:24px;color:#fff">
+            <div style="font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#f1ca01;margin-bottom:14px">Trip total</div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+              <span style="font-size:38px;font-weight:600;letter-spacing:-1px">{{ tripTotal }}</span>
+              <span style="font-size:14px;color:rgba(255,255,255,.6)">{{ tripPerPerson }}</span>
+            </div>
+            <div style="font-size:13.5px;color:rgba(255,255,255,.62);margin-bottom:18px">{{ tripSummary }}</div>
+            <div style="display:flex;flex-direction:column;gap:9px;padding-top:16px;border-top:1px solid rgba(255,255,255,.14)">
+              <sc-for list="{{ costLines }}" as="c" hint-placeholder-count="4">
+                <div style="display:flex;justify-content:space-between;gap:16px;font-size:14px">
+                  <span style="color:rgba(255,255,255,.7)">{{ c.label }}</span>
+                  <span style="font-weight:500">{{ c.value }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <button type="button" style="width:100%;margin-top:20px;height:46px;border:none;border-radius:8px;background:#d4264f;color:#fff;font-size:15px;font-weight:500;cursor:pointer" style-hover="background:#ab1e40">Book this itinerary</button>
+            <button type="button" style="width:100%;margin-top:10px;height:42px;border:1px solid rgba(255,255,255,.4);border-radius:8px;background:transparent;color:#fff;font-size:14.5px;font-weight:500;cursor:pointer" style-hover="background:rgba(255,255,255,.12)">Share with travel mates</button>
+          </div>
+
+          <div style="background:#fff;border:1px solid #f0ebe4;border-radius:22px;padding:22px">
+            <div style="font-size:15px;font-weight:600;color:#0d0d11;margin-bottom:14px">AI checks on this trip</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <sc-for list="{{ checks }}" as="c" hint-placeholder-count="4">
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                  <span style="flex:none;display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:{{ c.bg }};color:{{ c.color }};font-size:12px;font-weight:700">{{ c.mark }}</span>
+                  <div>
+                    <div style="font-size:14.5px;font-weight:500;color:#0d0d11">{{ c.title }}</div>
+                    <div style="font-size:13.5px;line-height:1.5;color:#81818b">{{ c.note }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="stays" style="background:#fff;padding:88px 40px">
+    <div style="max-width:1240px;margin:0 auto">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:30px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:13px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#d4264f;margin-bottom:12px">Stays</div>
+          <h2 style="margin:0;font-size:42px;font-weight:500;line-height:1.08;letter-spacing:-1px;color:#0d0d11">Hotels, villas and boutique lodges.</h2>
+        </div>
+        <p style="margin:0;max-width:330px;font-size:15.5px;line-height:1.6;color:#81818b">Every stay AI-summarised from real guest reviews — not marketing copy.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+        <sc-for list="{{ stays }}" as="s" hint-placeholder-count="4">
+          <div style="display:flex;flex-direction:column;border:1px solid #f0ebe4;border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 14px 34px -24px rgba(39,42,70,.24)">
+            <div style="position:relative;height:196px;background:#eef4f7">
+              <image-slot id="{{ s.slotId }}" shape="rect" placeholder="{{ s.placeholder }}"></image-slot>
+              <span style="position:absolute;top:12px;left:12px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.94);color:#0d0d11;font-size:11.5px;font-weight:600">{{ s.badge }}</span>
+            </div>
+            <div style="padding:18px;display:flex;flex-direction:column;gap:9px;flex:1">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:13px;color:#f1ca01">★</span>
+                <span style="font-size:13.5px;font-weight:600;color:#0d0d11">{{ s.rating }}</span>
+                <span style="font-size:13px;color:#a09b95">{{ s.reviews }}</span>
+              </div>
+              <div style="font-size:17px;font-weight:600;color:#0d0d11;line-height:1.25">{{ s.name }}</div>
+              <div style="font-size:13.5px;color:#a09b95">{{ s.place }}</div>
+              <div style="display:flex;gap:7px;align-items:flex-start;padding:10px;border-radius:10px;background:#f2f8fb">
+                <span style="flex:none;color:#01a1d2;font-size:11px;font-weight:700;letter-spacing:.3px">AI</span>
+                <span style="font-size:13px;line-height:1.5;color:#434243">{{ s.aiNote }}</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px">
+                <span style="font-size:18px;font-weight:600;color:#0d0d11">{{ s.priceLabel }}<span style="font-size:13px;font-weight:400;color:#a09b95"> / night</span></span>
+                <x-import component-from-global-scope="CreativeSoftwareDesignSystem_ab67e0.Button" variant="subtle" size="sm" label="View" hint-size="76px,36px"></x-import>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section id="activities" style="padding:88px 40px">
+    <div style="max-width:1240px;margin:0 auto">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:26px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:13px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#d4264f;margin-bottom:12px">Activities</div>
+          <h2 style="margin:0;font-size:42px;font-weight:500;line-height:1.08;letter-spacing:-1px;color:#0d0d11">Things worth getting up early for.</h2>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <sc-for list="{{ actFilters }}" as="a" hint-placeholder-count="5">
+            <button type="button" onClick="{{ a.pick }}" style="padding:8px 15px;border-radius:999px;border:1px solid {{ a.border }};background:{{ a.bg }};color:{{ a.color }};font-size:13.5px;font-weight:500;cursor:pointer">{{ a.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div class="cs-scroll" style="display:grid;grid-auto-flow:column;grid-auto-columns:270px;gap:18px;overflow-x:auto;padding-bottom:12px">
+        <sc-for list="{{ activities }}" as="a" hint-placeholder-count="5">
+          <div style="position:relative;height:360px;border-radius:22px;overflow:hidden;background:#e7eef2">
+            <image-slot id="{{ a.slotId }}" shape="rect" placeholder="{{ a.placeholder }}"></image-slot>
+            <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(13,13,17,0) 40%,rgba(13,13,17,.82) 100%)"></div>
+            <span style="position:absolute;top:14px;left:14px;padding:5px 11px;border-radius:999px;background:{{ a.chipBg }};color:{{ a.chipColor }};font-size:11.5px;font-weight:600">{{ a.category }}</span>
+            <div style="position:absolute;left:18px;right:18px;bottom:16px;pointer-events:none;display:flex;flex-direction:column;gap:7px">
+              <span style="font-size:19px;font-weight:600;color:#fff;line-height:1.25">{{ a.name }}</span>
+              <span style="font-size:13px;color:rgba(255,255,255,.78)">{{ a.detail }}</span>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:4px">
+                <span style="font-size:16px;font-weight:600;color:#fff">{{ a.priceLabel }}</span>
+                <span style="font-size:12.5px;color:#f1ca01">★ {{ a.rating }}</span>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section id="packages" style="background:#fff;padding:88px 40px">
+    <div style="max-width:1240px;margin:0 auto">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:32px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:13px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#d4264f;margin-bottom:12px">Holiday packages</div>
+          <h2 style="margin:0;font-size:42px;font-weight:500;line-height:1.08;letter-spacing:-1px;color:#0d0d11">Whole trips, one price.</h2>
+        </div>
+        <p style="margin:0;max-width:340px;font-size:15.5px;line-height:1.6;color:#81818b">Flights excluded, everything on the ground included — and every package can be edited in the AI planner.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
+        <sc-for list="{{ packages }}" as="p" hint-placeholder-count="3">
+          <div style="display:flex;flex-direction:column;border-radius:22px;overflow:hidden;background:{{ p.cardBg }};border:1px solid {{ p.cardBorder }};box-shadow:{{ p.cardShadow }}">
+            <div style="height:212px;background:#eef4f7"><image-slot id="{{ p.slotId }}" shape="rect" placeholder="{{ p.placeholder }}"></image-slot></div>
+            <div style="padding:24px;display:flex;flex-direction:column;gap:12px;flex:1">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="padding:4px 11px;border-radius:999px;background:{{ p.tagBg }};color:{{ p.tagColor }};font-size:12px;font-weight:600">{{ p.tag }}</span>
+                <span style="font-size:13px;color:{{ p.subColor }}">{{ p.duration }}</span>
+              </div>
+              <h3 style="margin:0;font-size:23px;font-weight:600;line-height:1.2;color:{{ p.titleColor }}">{{ p.name }}</h3>
+              <p style="margin:0;font-size:15px;line-height:1.6;color:{{ p.bodyColor }}">{{ p.blurb }}</p>
+              <div style="display:flex;flex-direction:column;gap:7px;margin-top:4px">
+                <sc-for list="{{ p.includes }}" as="inc" hint-placeholder-count="4">
+                  <div style="display:flex;gap:9px;align-items:flex-start;font-size:14px;color:{{ p.bodyColor }}">
+                    <span style="flex:none;color:{{ p.checkColor }};font-weight:700">✓</span>
+                    {{ inc }}
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:auto;padding-top:14px">
+                <div>
+                  <div style="font-size:22px;font-weight:600;color:{{ p.titleColor }}">{{ p.priceLabel }}</div>
+                  <div style="font-size:12.5px;color:{{ p.subColor }}">per person, twin share</div>
+                </div>
+                <button type="button" style="height:38px;padding:0 18px;border:none;border-radius:8px;background:{{ p.btnBg }};color:{{ p.btnColor }};font-size:14px;font-weight:500;cursor:pointer">See package</button>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section id="tools" style="padding:88px 40px">
+    <div style="max-width:1240px;margin:0 auto">
+      <div style="font-size:13px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#d4264f;margin-bottom:12px">AI travel tools</div>
+      <h2 style="margin:0 0 12px;font-size:42px;font-weight:500;letter-spacing:-1px;color:#0d0d11">Everything else AI is genuinely good at.</h2>
+      <p style="margin:0 0 38px;max-width:600px;font-size:16px;line-height:1.6;color:#81818b">Small tools that sit inside search, checkout and your trip — each one answering a question a traveller actually asks.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+        <sc-for list="{{ tools }}" as="t" hint-placeholder-count="6">
+          <div style="display:flex;flex-direction:column;gap:12px;padding:24px;background:#fff;border:1px solid #f0ebe4;border-radius:18px;box-shadow:0 14px 34px -26px rgba(39,42,70,.22)">
+            <span style="display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px;background:{{ t.iconBg }};color:{{ t.iconColor }}">
+              <x-import component-from-global-scope="CreativeSoftwareDesignSystem_ab67e0.Icon" name="{{ t.icon }}" size="22" hint-size="22px,22px"></x-import>
+            </span>
+            <div style="font-size:17px;font-weight:600;color:#0d0d11">{{ t.title }}</div>
+            <p style="margin:0;font-size:14.5px;line-height:1.6;color:#434243">{{ t.body }}</p>
+            <span style="font-size:13px;font-weight:500;color:#d4264f;margin-top:auto;padding-top:6px">{{ t.where }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding:0 40px 88px">
+    <div style="max-width:1240px;margin:0 auto;border-radius:28px;background:#272a46;padding:60px 56px">
+      <div style="display:grid;grid-template-columns:1fr 1.15fr;gap:56px;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#f1ca01;margin-bottom:14px">Best time to go</div>
+          <h2 style="margin:0 0 16px;font-size:38px;font-weight:500;letter-spacing:-.8px;line-height:1.1;color:#fff">Two monsoons, so somewhere is always dry.</h2>
+          <p style="margin:0 0 22px;font-size:15.5px;line-height:1.65;color:rgba(255,255,255,.68)">The planner picks your coast automatically: south and west from December to April, east from May to September. Bars show good-weather days per month on the south coast.</p>
+          <div style="display:flex;gap:20px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13.5px;color:rgba(255,255,255,.8)"><span style="width:12px;height:12px;border-radius:4px;background:#d4264f"></span>Peak</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13.5px;color:rgba(255,255,255,.8)"><span style="width:12px;height:12px;border-radius:4px;background:#01a1d2"></span>Shoulder</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13.5px;color:rgba(255,255,255,.8)"><span style="width:12px;height:12px;border-radius:4px;background:rgba(255,255,255,.2)"></span>Monsoon</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:9px;align-items:end;height:210px">
+          <sc-for list="{{ months }}" as="m" hint-placeholder-count="12">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:9px;height:100%;justify-content:flex-end">
+              <span style="font-size:12px;color:rgba(255,255,255,.55)">{{ m.days }}</span>
+              <div style="width:100%;border-radius:8px 8px 4px 4px;height:{{ m.h }};background:{{ m.fill }}"></div>
+              <span style="font-size:12.5px;font-weight:500;color:rgba(255,255,255,.85)">{{ m.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#fff;padding:88px 40px">
+    <div style="max-width:840px;margin:0 auto">
+      <h2 style="margin:0 0 32px;font-size:42px;font-weight:500;letter-spacing:-1px;color:#0d0d11;text-align:center">Before you book.</h2>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="5">
+          <div style="background:#fdfaf6;border:1px solid #f0ebe4;border-radius:14px;overflow:hidden">
+            <button type="button" onClick="{{ f.toggle }}" style="width:100%;display:flex;align-items:center;gap:16px;padding:20px 22px;border:none;background:transparent;cursor:pointer;text-align:left">
+              <span style="flex:1;font-size:16.5px;font-weight:600;color:#0d0d11">{{ f.q }}</span>
+              <span style="flex:none;font-size:13px;font-weight:500;color:#d4264f">{{ f.marker }}</span>
+            </button>
+            <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0;padding:0 22px 22px;font-size:15.5px;line-height:1.65;color:#434243">{{ f.a }}</p>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding:88px 40px">
+    <div style="max-width:1240px;margin:0 auto;border-radius:28px;background:#d4264f;box-shadow:0 32px 64px -32px rgba(212,38,79,.55);padding:60px 56px;display:flex;align-items:center;justify-content:space-between;gap:48px;flex-wrap:wrap">
+      <div style="max-width:560px">
+        <h2 style="margin:0 0 14px;font-size:38px;font-weight:500;letter-spacing:-.8px;line-height:1.1;color:#fff">Tell us the trip you want.</h2>
+        <p style="margin:0;font-size:17px;line-height:1.6;color:rgba(255,255,255,.9)">One sentence is enough. The planner builds it, prices it, and a local specialist checks it before you pay.</p>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a href="#search" style="display:flex;align-items:center;height:48px;padding:0 24px;border-radius:8px;background:#fff;color:#d4264f;font-size:15.5px;font-weight:500" style-hover="background:#fdeef2">Start with AI</a>
+        <a href="#packages" style="display:flex;align-items:center;height:48px;padding:0 24px;border:1px solid rgba(255,255,255,.55);border-radius:8px;background:transparent;color:#fff;font-size:15.5px;font-weight:500" style-hover="background:rgba(255,255,255,.14)">Browse packages</a>
+      </div>
+    </div>
+  </section>
+
+  <footer style="background:#272a46;padding:56px 40px 32px">
+    <div style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px">
+      <div>
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">
+          <span style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:#d4264f;color:#fff;font-size:14px;font-weight:600">c</span>
+          <span style="font-size:18px;font-weight:600;color:#fff">ceylon<span style="color:#ec8299">trips</span></span>
+        </div>
+        <p style="margin:0;font-size:14.5px;line-height:1.6;color:rgba(255,255,255,.6);max-width:280px">A Sri Lanka travel platform — stays, activities and packages, planned with AI and checked by locals.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:14.5px">
+        <span style="font-weight:600;color:#fff">Book</span>
+        <a href="#stays" style="color:rgba(255,255,255,.62)">Stays</a>
+        <a href="#activities" style="color:rgba(255,255,255,.62)">Activities</a>
+        <a href="#packages" style="color:rgba(255,255,255,.62)">Packages</a>
+        <a href="#search" style="color:rgba(255,255,255,.62)">Transfers</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:14.5px">
+        <span style="font-weight:600;color:#fff">AI</span>
+        <a href="#planner" style="color:rgba(255,255,255,.62)">Trip planner</a>
+        <a href="#tools" style="color:rgba(255,255,255,.62)">Review summaries</a>
+        <a href="#tools" style="color:rgba(255,255,255,.62)">Price forecast</a>
+        <a href="#tools" style="color:rgba(255,255,255,.62)">Trip concierge</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:14.5px">
+        <span style="font-weight:600;color:#fff">Company</span>
+        <a href="#" style="color:rgba(255,255,255,.62)">hello@ceylontrips.lk</a>
+        <a href="#" style="color:rgba(255,255,255,.62)">Support</a>
+        <a href="#" style="color:rgba(255,255,255,.62)">Partner with us</a>
+      </div>
+    </div>
+    <div style="max-width:1240px;margin:40px auto 0;padding-top:20px;border-top:1px solid rgba(255,255,255,.12);display:flex;justify-content:space-between;gap:24px;font-size:13px;color:rgba(255,255,255,.42);flex-wrap:wrap">
+      <span>© 2026 CeylonTrips · SLTDA licensed</span>
+      <span>AI features use availability, weather and review data. Always confirm before you pay.</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;resultCount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:4,&quot;min&quot;:1,&quot;max&quot;:6,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;AI search&quot;},&quot;thinkingDelay&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:850,&quot;min&quot;:0,&quot;max&quot;:2500,&quot;step&quot;:50,&quot;unit&quot;:&quot;ms&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;AI search&quot;},&quot;currency&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;USD&quot;,&quot;options&quot;:[&quot;USD&quot;,&quot;EUR&quot;,&quot;GBP&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Commerce&quot;}}">
+class Component extends DCLogic {
+  state = {
+    q: "", mode: "ask", status: "idle", results: [], criteria: [], answer: "", typed: 0,
+    openFaq: 0, pace: "balanced", actFilter: "All", removed: [], extraDay: false,
+    optimised: false, fWhere: "", fMonth: "February", fNights: "10", fPax: "2"
+  };
+
+  INVENTORY = [
+    { id: "h1", kind: "Stay", slotId: "v3-r-h1", name: "Cape Weligama", place: "Weligama · south coast", price: 320, unit: "per night", tags: ["beach", "luxury", "couple"], levelWet: false, note: "clifftop villas over the surf, adults-mostly" },
+    { id: "h2", kind: "Stay", slotId: "v3-r-h2", name: "Heritance Tea Factory", place: "Nuwara Eliya · hill country", price: 180, unit: "per night", tags: ["tea", "hills", "culture"], note: "a working tea factory turned hotel at 2,000m" },
+    { id: "a1", kind: "Activity", slotId: "v3-r-a1", name: "Yala leopard safari, dawn", place: "Yala · south east", price: 95, unit: "per person", tags: ["wildlife", "family", "safari"], note: "private jeep, 5:30am gate entry, best leopard odds" },
+    { id: "a2", kind: "Activity", slotId: "v3-r-a2", name: "Ella train + Nine Arch walk", place: "Ella · hill country", price: 42, unit: "per person", tags: ["train", "hills", "budget", "culture"], note: "reserved window seats on the Kandy–Ella line" },
+    { id: "p1", kind: "Package", slotId: "v3-r-p1", name: "Classic Sri Lanka, 10 nights", place: "Coast · culture · tea", price: 1690, unit: "per person", tags: ["beach", "culture", "tea", "family", "couple"], note: "five regions, private driver, all transfers" },
+    { id: "p2", kind: "Package", slotId: "v3-r-p2", name: "Surf & Slow South, 7 nights", place: "Weligama → Hiriketiya", price: 1140, unit: "per person", tags: ["beach", "surf", "budget", "solo"], note: "two beach bases, coached surf, no long drives" }
+  ];
+
+  STAYS = [
+    { slotId: "v3-stay1", name: "Cape Weligama", place: "Weligama, south coast", badge: "Clifftop", rating: "9.4", reviews: "1,208 reviews", price: 320, aiNote: "Guests love the ocean pools and calm; a few note the walk down to the beach is steep.", placeholder: "Clifftop resort pool" },
+    { slotId: "v3-stay2", name: "Heritance Tea Factory", place: "Nuwara Eliya, hill country", badge: "Heritage", rating: "9.0", reviews: "864 reviews", price: 180, aiNote: "Cold nights and misty views are the highlight — bring layers, rooms have no A/C by design.", placeholder: "Tea factory hotel in mist" },
+    { slotId: "v3-stay3", name: "Wallawwa Villa", place: "Negombo, near airport", badge: "First night", rating: "9.2", reviews: "2,041 reviews", price: 210, aiNote: "Most-booked arrival stay: 25 minutes from the airport, garden rooms, late check-in is routine.", placeholder: "Colonial garden villa" },
+    { slotId: "v3-stay4", name: "Palm Grove Cabanas", place: "Arugam Bay, east coast", badge: "May–Sep", rating: "8.7", reviews: "532 reviews", price: 74, aiNote: "Simple, spotless cabanas a minute from the point; reviewers mention early-morning surf noise.", placeholder: "Beach cabana under palms" }
+  ];
+
+  ACTIVITIES = [
+    { slotId: "v3-act1", name: "Yala leopard safari", category: "Wildlife", detail: "Private jeep · 5 hrs · dawn", price: 95, rating: "4.9", chipBg: "#f2fbf7", chipColor: "#00a06a", placeholder: "Leopard in Yala", cat: "Wildlife" },
+    { slotId: "v3-act2", name: "Kandy → Ella scenic train", category: "Culture", detail: "Reserved seats · 6.5 hrs", price: 42, rating: "4.8", chipBg: "#e6f7ff", chipColor: "#0d6f9c", placeholder: "Train through tea fields", cat: "Culture" },
+    { slotId: "v3-act3", name: "Sigiriya at sunrise", category: "Culture", detail: "Skip-the-line · guide · 4 hrs", price: 58, rating: "4.7", chipBg: "#e6f7ff", chipColor: "#0d6f9c", placeholder: "Sigiriya rock at dawn", cat: "Culture" },
+    { slotId: "v3-act4", name: "Beginner surf lesson", category: "Beach", detail: "Weligama · 2 hrs · board incl.", price: 28, rating: "4.9", chipBg: "#fdf6e0", chipColor: "#8a6d00", placeholder: "Surf lesson in the shallows", cat: "Beach" },
+    { slotId: "v3-act5", name: "Whale watching, Mirissa", category: "Wildlife", detail: "Small boat · 4 hrs · Nov–Apr", price: 62, rating: "4.6", chipBg: "#f2fbf7", chipColor: "#00a06a", placeholder: "Blue whale off Mirissa", cat: "Wildlife" },
+    { slotId: "v3-act6", name: "Galle Fort food walk", category: "Food", detail: "Evening · 8 tastings · 3 hrs", price: 45, rating: "4.9", chipBg: "#fdeef2", chipColor: "#ab1e40", placeholder: "Street food in Galle Fort", cat: "Food" },
+    { slotId: "v3-act7", name: "Knuckles trek + waterfall", category: "Hiking", detail: "Guided · 7 hrs · moderate", price: 70, rating: "4.8", chipBg: "#f6f4f1", chipColor: "#434243", placeholder: "Knuckles range trail", cat: "Hiking" }
+  ];
+
+  PACKAGES = [
+    { slotId: "v3-pkg1", tag: "Bestseller", duration: "10 nights", name: "Classic Sri Lanka", blurb: "The full loop — culture triangle, tea country, safari and four nights on the south coast.", price: 1690, includes: ["9 hotels, breakfast daily", "Private driver-guide throughout", "Sigiriya, Yala and Ella included", "Airport transfers both ways"], accent: "light" },
+    { slotId: "v3-pkg2", tag: "Most flexible", duration: "7 nights", name: "Surf & Slow South", blurb: "Two beach bases, coached surf every morning, nothing more than 40 minutes apart.", price: 1140, includes: ["2 boutique beach stays", "10 coached surf sessions", "Galle Fort food walk", "All ground transfers"], accent: "crimson" },
+    { slotId: "v3-pkg3", tag: "Family", duration: "12 nights", name: "Wild Family Sri Lanka", blurb: "Elephants, trains, turtles and a pool at the end of every day — paced for kids.", price: 1980, includes: ["Family rooms throughout", "Two safaris, one turtle hatchery", "Scenic train in reserved class", "Car seats and a flexible schedule"], accent: "light" }
+  ];
+
+  TOOLS = [
+    { icon: "AutoModeStyleOutlined", title: "Itinerary generator", body: "One sentence in, a day-by-day plan out — sequenced by drive time, opening hours and monsoon, not by guesswork.", where: "In the AI trip planner", iconBg: "#fdeef2", iconColor: "#d4264f" },
+    { icon: "Diversity1StyleOutlined", title: "Review summaries", body: "Thousands of guest reviews per property reduced to what actually matters, including the complaints.", where: "On every stay card", iconBg: "#e6f7ff", iconColor: "#0d6f9c" },
+    { icon: "VerifiedUserStyleOutlined", title: "Price forecast", body: "Tells you whether to book now or wait, based on how this room and week have moved historically.", where: "At checkout", iconBg: "#f2fbf7", iconColor: "#00a06a" },
+    { icon: "LightMode", title: "Weather & monsoon coach", body: "Picks the dry coast for your dates and flags the two weeks worth avoiding entirely.", where: "In search results", iconBg: "#fdf6e0", iconColor: "#8a6d00" },
+    { icon: "Mood", title: "24/7 trip concierge", body: "Answers mid-trip questions, rebooks a missed transfer, and escalates to a human within a minute.", where: "In your trip, once booked", iconBg: "#f3f2fb", iconColor: "#7f7ddf" },
+    { icon: "ReduceCapacityStyleOutlined", title: "Group split planner", body: "Balances a group's budgets and interests into one itinerary, then splits the bill per traveller.", where: "When you share a trip", iconBg: "#f6f4f1", iconColor: "#434243" }
+  ];
+
+  BASE_ITIN = [
+    { place: "Negombo", nights: 1, drive: "25 min", weather: "Dry", items: [{ tag: "STAY", text: "Wallawwa Villa — garden room", price: "$210" }, { tag: "DO", text: "Late arrival, fish market at dawn if awake", price: "Free" }] },
+    { place: "Sigiriya", nights: 2, drive: "3h 40m", weather: "Dry", items: [{ tag: "STAY", text: "Water Garden Sigiriya — pool villa", price: "$260" }, { tag: "DO", text: "Sigiriya rock at sunrise, skip-the-line", price: "$58" }, { tag: "DO", text: "Minneriya elephant gathering, afternoon", price: "$66" }] },
+    { place: "Kandy → Ella", nights: 2, drive: "2h + train", weather: "Showers", items: [{ tag: "STAY", text: "98 Acres Resort — tea-field cabin", price: "$190" }, { tag: "DO", text: "Kandy–Ella train, reserved window seats", price: "$42" }, { tag: "DO", text: "Nine Arch Bridge walk, early", price: "Free" }] },
+    { place: "Yala", nights: 2, drive: "2h 30m", weather: "Dry", items: [{ tag: "STAY", text: "Wild Coast Tented Lodge", price: "$390" }, { tag: "DO", text: "Dawn leopard safari, private jeep", price: "$95" }] },
+    { place: "Weligama", nights: 3, drive: "2h 15m", weather: "Dry", items: [{ tag: "STAY", text: "Cape Weligama — cliff villa", price: "$320" }, { tag: "DO", text: "Beginner surf lesson", price: "$28" }, { tag: "DO", text: "Galle Fort food walk, evening", price: "$45" }] }
+  ];
+
+  EXTRA_DAY = { place: "Mirissa", nights: 1, drive: "20 min", weather: "Dry", items: [{ tag: "STAY", text: "Mirissa Hills — garden suite", price: "$165" }, { tag: "DO", text: "Whale watching, small boat", price: "$62" }] };
+
+  MONTHS = [
+    { label: "Jan", days: 26 }, { label: "Feb", days: 27 }, { label: "Mar", days: 25 }, { label: "Apr", days: 21 },
+    { label: "May", days: 9 }, { label: "Jun", days: 6 }, { label: "Jul", days: 8 }, { label: "Aug", days: 9 },
+    { label: "Sep", days: 11 }, { label: "Oct", days: 13 }, { label: "Nov", days: 20 }, { label: "Dec", days: 25 }
+  ];
+
+  FAQS = [
+    { q: "Do I need a visa for Sri Lanka?", a: "Most nationalities need an ETA, applied for online before arrival — it takes minutes and is usually approved the same day. The planner reminds you 30 days out and links the official portal; we never charge a fee for it." },
+    { q: "Is the AI itinerary checked by a person?", a: "Yes. The AI drafts and prices the trip instantly, and a Sri Lanka–based specialist reviews every itinerary before payment is taken — checking drive times, hotel suitability and anything seasonal." },
+    { q: "Can I book only a hotel or only an activity?", a: "Absolutely. Stays, activities and transfers are all bookable on their own; packages simply bundle them at a lower total. Anything you book separately still appears in your trip timeline." },
+    { q: "What is your cancellation policy?", a: "Most stays and activities are free-cancellation up to 48 hours before. Each result shows its own policy before you pay, and package deposits are refundable up to 30 days out." },
+    { q: "Which coast should I pick for my dates?", a: "December to April the south and west are dry; May to September the east coast comes alive. Give the planner your dates and it chooses for you rather than making you research two monsoons." }
+  ];
+
+  TABS = [{ id: "ask", label: "Ask AI" }, { id: "stays", label: "Stays" }, { id: "activities", label: "Activities" }, { id: "packages", label: "Packages" }];
+
+  onQuery = (e) => this.setState({ q: e.target.value });
+  onKey = (e) => { if (e.key === "Enter") this.runSearch(); };
+  onSearch = () => this.runSearch();
+  onWhere = (e) => this.setState({ fWhere: e.target.value });
+  onMonth = (e) => this.setState({ fMonth: e.target.value });
+  onNights = (e) => this.setState({ fNights: e.target.value });
+  onPax = (e) => this.setState({ fPax: e.target.value });
+
+  onFormSearch = () => {
+    const s = this.state;
+    const kind = s.mode === "ask" ? "" : s.mode + " ";
+    this.runSearch(kind + (s.fWhere || "Sri Lanka") + ", " + s.fNights + " nights in " + s.fMonth + ", " + s.fPax + " travellers");
+  };
+
+  pick = (text) => { this.setState({ q: text, mode: "ask" }); this.runSearch(text); };
+  setMode = (id) => this.setState({ mode: id });
+  setPace = (p) => this.setState({ pace: p, optimised: false });
+  setActFilter = (f) => this.setState({ actFilter: f });
+  removeDay = (i) => this.setState((s) => ({ removed: s.removed.concat(i) }));
+  swapDay = (i) => this.setState((s) => ({ removed: s.removed.concat(i), extraDay: true }));
+  addDay = () => this.setState({ extraDay: true });
+  optimise = () => this.setState((s) => ({ optimised: !s.optimised }));
+  toggleFaq = (i) => this.setState((s) => ({ openFaq: s.openFaq === i ? -1 : i }));
+
+  parse(q) {
+    const s = q.toLowerCase();
+    const c = { interests: [] };
+    if (/beach|surf|coast|sea|swim/.test(s)) c.interests.push("beach");
+    if (/tea|hill|ella|nuwara|train/.test(s)) c.interests.push("tea");
+    if (/safari|leopard|elephant|wildlife|whale/.test(s)) c.interests.push("wildlife");
+    if (/culture|temple|sigiriya|kandy|heritage|fort/.test(s)) c.interests.push("culture");
+    if (/kid|family|children/.test(s)) c.interests.push("family");
+    if (/honeymoon|couple|romantic/.test(s)) c.interests.push("couple");
+    if (/solo|alone|by myself/.test(s)) c.interests.push("solo");
+    if (/cheap|budget|affordable/.test(s)) c.interests.push("budget");
+    if (/hotel|stay|villa|room/.test(s)) c.kind = "Stay";
+    else if (/activit|tour|thing to do|excursion|safari|lesson/.test(s)) c.kind = "Activity";
+    else if (/package|itinerar|whole trip|all inclusive/.test(s)) c.kind = "Package";
+    const b = s.match(/(?:under|below|max|less than|budget of|around)\s*\$?\s*([\d,]{3,6})/) || s.match(/\$\s*([\d,]{3,6})/);
+    if (b) c.budget = parseInt(b[1].replace(/,/g, ""), 10);
+    const n = s.match(/(\d{1,2})\s*(nights?|days?|weeks?)/);
+    if (n) c.nights = /week/.test(n[2]) ? parseInt(n[1], 10) * 7 : parseInt(n[1], 10);
+    const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+    const hit = months.find((m) => s.includes(m.slice(0, 3)));
+    if (hit) c.month = hit.charAt(0).toUpperCase() + hit.slice(1);
+    const p = s.match(/(\d{1,2})\s*(people|adults|travellers|travelers|of us|pax)/);
+    if (p) c.pax = parseInt(p[1], 10);
+    return c;
+  }
+
+  runSearch(override) {
+    const q = (override ?? this.state.q ?? "").trim();
+    if (!q) return;
+    const c = this.parse(q);
+    clearTimeout(this._t);
+    clearInterval(this._stream);
+    this.setState({ status: "thinking", typed: 0 });
+    this._t = setTimeout(() => {
+      const scored = this.INVENTORY.map((item) => {
+        let score = 1;
+        const reasons = [];
+        if (c.kind) { if (item.kind === c.kind) score += 3; else score -= 2; }
+        const overlap = c.interests.filter((i) => item.tags.includes(i));
+        if (overlap.length) { score += overlap.length * 1.6; reasons.push("Matches " + overlap.slice(0, 2).join(" + ")); }
+        if (c.budget) {
+          const perTrip = item.kind === "Stay" ? item.price * (c.nights || 7) : item.price;
+          if (perTrip <= c.budget) { score += 2; reasons.push("Fits a $" + c.budget + " budget"); } else score -= 2.5;
+        }
+        if (c.month) {
+          const east = item.place.toLowerCase().includes("east");
+          const wet = ["May", "June", "July", "August", "September"].includes(c.month);
+          if (east === wet) { score += 1.2; reasons.push(c.month + " is the dry window here"); }
+          else { score -= 1; reasons.push(c.month + " can be wet on this coast"); }
+        }
+        if (c.nights && item.kind === "Package") { score += 1; reasons.push("Reshapes to " + c.nights + " nights"); }
+        if (c.pax && c.pax >= 4) reasons.push("Family rooms available");
+        if (reasons.length < 2) reasons.push(item.note.charAt(0).toUpperCase() + item.note.slice(1));
+        return { ...item, score, reasons: reasons.slice(0, 3) };
+      }).filter((x) => x.score > 0).sort((a, b) => b.score - a.score);
+
+      const limit = Math.max(1, Math.min(6, this.props.resultCount ?? 4));
+      const results = scored.slice(0, limit);
+      const best = results.length ? results[0].score : 1;
+
+      const criteria = [];
+      if (c.kind) criteria.push(c.kind + "s");
+      if (c.nights) criteria.push(c.nights + " nights");
+      if (c.month) criteria.push(c.month);
+      if (c.pax) criteria.push(c.pax + " travellers");
+      if (c.budget) criteria.push("Under $" + c.budget.toLocaleString());
+      c.interests.forEach((i) => criteria.push(i.charAt(0).toUpperCase() + i.slice(1)));
+      if (!criteria.length) criteria.push("Open dates");
+
+      let answer = "";
+      if (results.length) {
+        const top = results[0];
+        const coast = c.month && ["May", "June", "July", "August", "September"].includes(c.month) ? "east coast" : "south and west coasts";
+        answer = "For " + (c.nights ? c.nights + " nights" : "this trip") + (c.month ? " in " + c.month : "") +
+          " I'd stay on the " + coast + " — that's the dry side then. " + top.name + " is the strongest single match: " +
+          top.note + ", from $" + top.price + " " + top.unit + ". " +
+          (c.interests.length > 1 ? "Because you want " + c.interests.slice(0, 2).join(" and ") + ", the planner below sequences both into one loop with no drive over four hours." :
+            "The planner below turns this into a day-by-day itinerary you can edit before booking.");
+      }
+
+      this.setState({
+        status: results.length ? "done" : "empty",
+        results: results.map((r) => ({ ...r, matchLabel: Math.round((r.score / best) * 100) + "% match" })),
+        criteria, answer, typed: 0
+      });
+
+      if (answer) {
+        this._stream = setInterval(() => {
+          this.setState((s) => {
+            if (s.typed >= answer.length) { clearInterval(this._stream); return { typed: answer.length }; }
+            return { typed: Math.min(answer.length, s.typed + 3) };
+          });
+        }, 16);
+      }
+    }, Math.max(0, this.props.thinkingDelay ?? 850));
+  }
+
+  componentWillUnmount() { clearTimeout(this._t); clearInterval(this._stream); }
+
+  renderVals() {
+    const cur = this.props.currency === "EUR" ? { sym: "€", rate: 0.92 } : this.props.currency === "GBP" ? { sym: "£", rate: 0.78 } : { sym: "$", rate: 1 };
+    const money = (n) => cur.sym + Math.round(n * cur.rate).toLocaleString();
+    const mode = this.state.mode;
+    const ask = mode === "ask";
+
+    const kindStyle = { Stay: { bg: "#e6f7ff", color: "#0d6f9c" }, Activity: { bg: "#f2fbf7", color: "#00a06a" }, Package: { bg: "#fdeef2", color: "#ab1e40" } };
+
+    // itinerary
+    let days = this.BASE_ITIN.filter((d, i) => !this.state.removed.includes(i));
+    if (this.state.extraDay) days = days.concat([this.EXTRA_DAY]);
+    if (this.state.pace === "relaxed") days = days.map((d) => ({ ...d, nights: d.nights + 1 }));
+    if (this.state.pace === "packed") days = days.map((d) => ({ ...d, nights: Math.max(1, d.nights - (d.nights > 1 ? 1 : 0)) }));
+    if (this.state.optimised) days = days.slice().sort((a, b) => a.drive.length - b.drive.length);
+
+    const nightTotal = days.reduce((n, d) => n + d.nights, 0);
+    const stayCost = days.reduce((sum, d) => {
+      const stay = d.items.find((i) => i.tag === "STAY");
+      const val = stay ? parseInt((stay.price || "0").replace(/[^\d]/g, ""), 10) || 0 : 0;
+      return sum + val * d.nights;
+    }, 0);
+    const actCost = days.reduce((sum, d) => sum + d.items.filter((i) => i.tag === "DO").reduce((a, i) => a + (parseInt((i.price || "0").replace(/[^\d]/g, ""), 10) || 0), 0), 0);
+    const pax = parseInt(this.state.fPax, 10) || 2;
+    const transport = nightTotal * 65;
+    const fees = Math.round((stayCost + actCost * pax + transport) * 0.06);
+    const total = stayCost + actCost * pax + transport + fees;
+
+    const weatherStyle = (w) => w === "Dry" ? { bg: "#f2fbf7", color: "#00a06a" } : { bg: "#fdf6e0", color: "#8a6d00" };
+
+    const filters = ["All", "Wildlife", "Culture", "Beach", "Food", "Hiking"];
+    const acts = this.state.actFilter === "All" ? this.ACTIVITIES : this.ACTIVITIES.filter((a) => a.cat === this.state.actFilter);
+
+    const pkgTheme = (accent) => accent === "crimson"
+      ? { cardBg: "#d4264f", cardBorder: "#d4264f", cardShadow: "0 22px 48px -24px rgba(212,38,79,.5)", tagBg: "#f1ca01", tagColor: "#272a46", titleColor: "#fff", bodyColor: "rgba(255,255,255,.88)", subColor: "rgba(255,255,255,.75)", checkColor: "#f1ca01", btnBg: "#fff", btnColor: "#d4264f" }
+      : { cardBg: "#fdfaf6", cardBorder: "#f0ebe4", cardShadow: "0 14px 34px -24px rgba(39,42,70,.22)", tagBg: "#e6f7ff", tagColor: "#0d6f9c", titleColor: "#0d0d11", bodyColor: "#434243", subColor: "#a09b95", checkColor: "#00a06a", btnBg: "#0d0d11", btnColor: "#fff" };
+
+    const maxDays = Math.max(...this.MONTHS.map((m) => m.days));
+
+    return {
+      q: this.state.q,
+      onQuery: this.onQuery, onKey: this.onKey, onSearch: this.onSearch,
+      currencyLabel: this.props.currency ?? "USD",
+      tabs: this.TABS.map((t) => ({
+        label: t.label,
+        bg: mode === t.id ? "#fff" : "transparent",
+        color: mode === t.id ? (t.id === "ask" ? "#d4264f" : "#0d0d11") : "#81818b",
+        pick: () => this.setMode(t.id)
+      })),
+      isAskMode: ask,
+      isFormMode: !ask,
+      formFirstLabel: mode === "activities" ? "What do you want to do?" : mode === "packages" ? "Trip style" : "Where to?",
+      fWhere: this.state.fWhere, fMonth: this.state.fMonth, fNights: this.state.fNights, fPax: this.state.fPax,
+      onWhere: this.onWhere, onMonth: this.onMonth, onNights: this.onNights, onPax: this.onPax, onFormSearch: this.onFormSearch,
+      monthOptions: ["December", "January", "February", "March", "April", "May", "July", "August"],
+      thinking: this.state.status === "thinking",
+      thinkingLabel: "Reading 1,400 stays, 620 activities and this month's monsoon data…",
+      hasResults: this.state.status === "done",
+      noResults: this.state.status === "empty",
+      criteria: this.state.criteria,
+      typedAnswer: this.state.answer.slice(0, this.state.typed),
+      streaming: this.state.status === "done" && this.state.typed < this.state.answer.length,
+      results: this.state.results.map((r) => ({
+        ...r,
+        kindBg: (kindStyle[r.kind] || kindStyle.Stay).bg,
+        kindColor: (kindStyle[r.kind] || kindStyle.Stay).color,
+        priceLabel: "from " + money(r.price),
+        unitLabel: r.unit
+      })),
+      chips: [
+        "10 days in February, beaches and tea country, 2 people under $2,500",
+        "Family of 4 in July — where is it dry?",
+        "Best hotels near Yala for a dawn safari",
+        "One week, surf and slow, travelling solo"
+      ].map((label) => ({ label, pick: () => this.pick(label) })),
+      followUps: [
+        "How many hours of driving is this in total?",
+        "Can I swap Yala for Udawalawe?",
+        "What will this cost with domestic flights instead?",
+        "Is February too busy on the south coast?"
+      ].map((label) => ({ label, pick: () => this.pick(label) })),
+
+      itinTitle: nightTotal + " nights · " + days.length + " stops · Sri Lanka loop",
+      paceOptions: [{ id: "relaxed", label: "Relaxed" }, { id: "balanced", label: "Balanced" }, { id: "packed", label: "Packed" }].map((p) => ({
+        label: p.label,
+        bg: this.state.pace === p.id ? "#fff" : "transparent",
+        color: this.state.pace === p.id ? "#0d0d11" : "#81818b",
+        pick: () => this.setPace(p.id)
+      })),
+      itinerary: days.map((d, i) => {
+        const w = weatherStyle(d.weather);
+        const origIndex = this.BASE_ITIN.indexOf(d) >= 0 ? this.BASE_ITIN.indexOf(d) : i;
+        return {
+          dayLabel: "D" + (days.slice(0, i).reduce((n, x) => n + x.nights, 0) + 1),
+          drive: d.drive,
+          place: d.place,
+          nightsLabel: d.nights + (d.nights === 1 ? " night" : " nights"),
+          weather: d.weather,
+          weatherBg: w.bg,
+          weatherColor: w.color,
+          items: d.items,
+          swap: () => this.swapDay(origIndex),
+          remove: () => this.removeDay(origIndex)
+        };
+      }),
+      optimise: this.optimise,
+      addDay: this.addDay,
+      optimiseNote: this.state.optimised ? "Route re-ordered to cut 2h 10m of driving" : "AI keeps every drive under 4 hours",
+      tripTotal: money(total),
+      tripPerPerson: "· " + money(Math.round(total / pax)) + " per person",
+      tripSummary: nightTotal + " nights, " + pax + " travellers, " + days.length + " stops, all ground transport",
+      costLines: [
+        { label: "Stays (" + nightTotal + " nights)", value: money(stayCost) },
+        { label: "Activities × " + pax, value: money(actCost * pax) },
+        { label: "Private driver & transfers", value: money(transport) },
+        { label: "Taxes & service", value: money(fees) }
+      ],
+      checks: [
+        { mark: "✓", bg: "#f2fbf7", color: "#00a06a", title: "Dry-season fit", note: "All coastal nights fall in the south-coast dry window." },
+        { mark: "✓", bg: "#f2fbf7", color: "#00a06a", title: "Drive times", note: "Longest single transfer is 3h 40m, with a lunch stop built in." },
+        { mark: "!", bg: "#fdf6e0", color: "#8a6d00", title: "One tight morning", note: "Sigiriya sunrise means a 5:00am start — the planner blocked the evening before." },
+        { mark: "✓", bg: "#f2fbf7", color: "#00a06a", title: "Cancellation", note: "Every stay in this plan is free-cancellation up to 48 hours out." }
+      ],
+
+      stays: this.STAYS.map((s) => ({ ...s, priceLabel: money(s.price) })),
+      actFilters: filters.map((f) => ({
+        label: f,
+        border: this.state.actFilter === f ? "#d4264f" : "#ece7e1",
+        bg: this.state.actFilter === f ? "#fdeef2" : "#fff",
+        color: this.state.actFilter === f ? "#ab1e40" : "#434243",
+        pick: () => this.setActFilter(f)
+      })),
+      activities: acts.map((a) => ({ ...a, priceLabel: "from " + money(a.price) })),
+      packages: this.PACKAGES.map((p) => ({ ...p, ...pkgTheme(p.accent), priceLabel: "from " + money(p.price) })),
+      tools: this.TOOLS,
+      months: this.MONTHS.map((m) => ({
+        label: m.label,
+        days: m.days + "d",
+        h: Math.round(26 + (m.days / maxDays) * 128) + "px",
+        fill: m.days >= 20 ? "#d4264f" : m.days >= 12 ? "#01a1d2" : "rgba(255,255,255,.2)"
+      })),
+      faqs: this.FAQS.map((f, i) => ({
+        q: f.q, a: f.a,
+        open: this.state.openFaq === i,
+        marker: this.state.openFaq === i ? "Close" : "Read",
+        toggle: () => this.toggleFaq(i)
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>
